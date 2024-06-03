@@ -68,7 +68,7 @@ See the [open issues](https://github.com/Zastinian/HedystiaBilling/issues) for a
 
 ## License
 
-This project is licensed under a proprietary license. For more details, see the [LICENSE](/license.md) file.
+This project is licensed under a proprietary license. For more details, see the [LICENSE](/LICENSE.md) file.
 
 <div align="center">
   <p>Thank you for using our shopping system!</p>
