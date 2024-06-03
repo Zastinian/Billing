@@ -37,7 +37,7 @@ try {
 }
 
 return [
-    'version' => 'v1.3.2',
+    'version' => 'v1.0.0',
     'company_name' => $company_name,
     'logo_file_path' => $logo_file_path,
     'favicon_file_path' => $favicon_file_path,
