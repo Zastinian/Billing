@@ -1,0 +1,1 @@
+@yield('client_scripts')
