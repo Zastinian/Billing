@@ -11,7 +11,7 @@ try {
     $terms = $page_model::where('name', 'terms')->value('content');
     $privacy = $page_model::where('name', 'privacy')->value('content');
 } catch (Throwable $err) {
-    $home = "<h1>Welcome to your new HedystiaBilling store.</h1>\n<p>This is the home page. You may edit this page in the admin area.</p>";
+    $home = "<h1>Welcome to your new store.</h1>\n<p>This is the home page. You may edit this page in the admin area.</p>";
     $contact = config('mail.from.address', 'hello@example.com');
     $status = "<h1>Welcome to your System Status page.</h1>\n<p>You may edit this page in the admin area.</p>";
     $terms = "<h1>Welcome to your Terms of Service page.</h1>\n<p>You may edit this page in the admin area.</p>";
