@@ -85,6 +85,8 @@ class UpdateServer implements ShouldQueue
             $buildData['allocation'] = $allocation_id;
         }
 
+        if (!$this->server->id) return;
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $apiKey,
             'Accept' => 'application/json',

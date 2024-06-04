@@ -38,6 +38,8 @@ class DeleteServer implements ShouldQueue
      */
     public function handle()
     {
+        if (!$this->server_id) return;
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Accept' => 'application/json',
@@ -45,7 +47,6 @@ class DeleteServer implements ShouldQueue
 
         if ($response->failed()) {
             Log::error("An error occurred while deleting a server!");
-
             foreach ($response->json('errors', []) as $error) {
                 Log::error($error['detail']);
             }
