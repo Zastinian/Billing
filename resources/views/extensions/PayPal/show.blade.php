@@ -14,6 +14,13 @@
                     <div class="card-body row">
                         <div class="col-lg-6">
                             <div class="form-group">
+                                <label for="modeInput">Enabled</label>
+                                <select class="form-control" name="enabled">
+                                    <option value="1" @if ($extension_model->where(['extension' => 'PayPal', 'key' => 'enabled'])->value('value') === '1') selected @endif>Enabled</option>
+                                    <option value="0" @if ($extension_model->where(['extension' => 'PayPal', 'key' => 'enabled'])->value('value') === '0') selected @endif>Disabled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label for="modeInput">Mode</label>
                                 <select class="form-control" name="mode">
                                     <option value="live" @if ($extension_model->where(['extension' => 'PayPal', 'key' => 'mode'])->value('value') === 'live') selected @endif>Live</option>

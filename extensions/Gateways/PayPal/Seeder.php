@@ -70,6 +70,15 @@ class Seeder extends DatabaseSeeder
             ++$i;
         }
 
+        if (is_null(Extension::where(['extension' => 'PayPal', 'key' => 'enabled'])->first())) {
+            Extension::create([
+                'extension' => 'PayPal',
+                'key' => 'enabled',
+                'value' => '0',
+            ]);
+            ++$i;
+        }
+
         if ($i > 0)
             $this->command->info('Seeded and updated the extensions table for PayPal extension successfully!');
         else

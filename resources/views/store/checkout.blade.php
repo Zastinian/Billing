@@ -6,6 +6,7 @@
 @section('header', 'Server Plans')
 
 @inject('plan_cycle_model', 'App\Models\PlanCycle')
+@inject('extension_model', 'App\Models\Extension')
 @inject('extension_manager', 'Extensions\ExtensionManager')
 @inject('carbon', 'Carbon\Carbon')
 
@@ -57,12 +58,14 @@
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Payment Method</label>
                     <div class="col-lg-7">
-                            @foreach ($extension_manager::$gateways as $gateway)
+                        @foreach ($extension_manager::$gateways as $gateway)
+                            @if ($extension_model->where(['extension' => $gateway::$display_name, 'key' => 'enabled'])->value('value') === '1')
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gateway" value="{{ $gateway::$display_name }}" checked>
+                                    <input class="form-check-input" type="radio" name="gateway" value="{{ $gateway::$display_name }}">
                                     <label class="form-check-label">{{ $gateway::$display_name }}</label>
                                 </div>
-                            @endforeach
+                            @endif
+                        @endforeach
                     </div>
                 </div>
                 <div class="form-group row">

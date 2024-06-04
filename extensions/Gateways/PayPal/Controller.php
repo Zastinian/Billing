@@ -76,6 +76,7 @@ class Controller extends ApiController implements Gateway
             'username' => 'required|string',
             'password' => 'required|string',
             'secret' => 'required|string',
+            'enabled' => 'required|string|in:0,1',
         ]);
 
         if ($validator->fails())
@@ -87,6 +88,7 @@ class Controller extends ApiController implements Gateway
         self::saveSetting('secret', $request->input('secret'));
         self::saveSetting('certificate', $request->input('certificate'));
         self::saveSetting('app_id', $request->input('app_id'));
+        self::saveSetting('enabled', $request->input('enabled'));
 
         return ['success' => 'You have updated the PayPal extension settings successfully! Please click \'Reload Config\' above on the navigation bar to apply the changes.'];
     }
@@ -105,7 +107,7 @@ class Controller extends ApiController implements Gateway
     {
         $data = [];
         $total = price($invoice->total, Currency::VALUE_ONLY, Currency::where('name', Client::find($invoice->client_id)->currency)->first());
-        
+
         if ($invoice->server_id) {
             $data['items'] = [
                 [
@@ -125,7 +127,7 @@ class Controller extends ApiController implements Gateway
                 ]
             ];
         }
-        
+
         $data['invoice_id'] = (string) Str::orderedUuid();
         $data['invoice_description'] = 'Invoice #'.$invoice->id;
         $data['return_url'] = route('api.store.payment');

@@ -11,6 +11,7 @@ try {
     $secret = $extension_model::where([['extension', 'PayPal'], ['key', 'secret']])->value('value');
     $certificate = $extension_model::where([['extension', 'PayPal'], ['key', 'certificate']])->value('value');
     $app_id = $extension_model::where([['extension', 'PayPal'], ['key', 'app_id']])->value('value');
+    $enabled = $extension_model::where([['extension', 'PayPal'], ['key', 'enabled']])->value('value');
 } catch (\Throwable $err) {
     $mode = 'live';
     $username = null;
@@ -18,6 +19,7 @@ try {
     $secret = null;
     $certificate = null;
     $app_id = null;
+    $enabled = '0';
 }
 
 return [

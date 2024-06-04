@@ -1,6 +1,7 @@
 @extends('layouts.client')
 
 @inject('credit_model', 'App\Models\Credit')
+@inject('extension_model', 'App\Models\Extension')
 @inject('extension_manager', 'Extensions\ExtensionManager')
 
 @section('title', 'Account Credit')
@@ -34,9 +35,11 @@
                         <div class="form-group">
                             <label class="form-check-label">Payment Method</label>
                             @foreach ($extension_manager::$gateways as $gateway)
-                                <select name="gateway" class="form-control">
-                                    <option value="{{ $gateway::$display_name }}">{{ $gateway::$display_name }}</option>
-                                </select>
+                                @if ($extension_model->where(['extension' => $gateway::$display_name, 'key' => 'enabled'])->value('value') === '1')
+                                    <select name="gateway" class="form-control">
+                                        <option value="{{ $gateway::$display_name }}">{{ $gateway::$display_name }}</option>
+                                    </select>
+                                @endif
                             @endforeach
                         </div>
                     </div>
