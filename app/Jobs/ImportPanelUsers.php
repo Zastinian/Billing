@@ -45,7 +45,7 @@ class ImportPanelUsers implements ShouldQueue, ShouldBeUnique
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Accept' => 'application/json',
-        ])->get($this->baseUrl . '/api/application/users?page=' . $page);
+        ])->get($this->apiUrl . '/api/application/users?page=' . $page);
 
         if ($response->failed()) {
             Log::error('An error occurred while getting users from Pterodactyl API!');
