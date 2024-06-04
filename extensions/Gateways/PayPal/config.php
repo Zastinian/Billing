@@ -12,7 +12,7 @@ try {
     $certificate = $extension_model::where([['extension', 'PayPal'], ['key', 'certificate']])->value('value');
     $app_id = $extension_model::where([['extension', 'PayPal'], ['key', 'app_id']])->value('value');
 } catch (\Throwable $err) {
-    $mode = 'sandbox';
+    $mode = 'live';
     $username = null;
     $password = null;
     $secret = null;
