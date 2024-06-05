@@ -39,8 +39,8 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
 
         foreach ($servers as $server) {
             $plan_cycle = PlanCycle::find($server->plan_cycle);
-
             $client = Client::find($server->client_id);
+            $plan = Plan::find($server->plan_id);
             $trial_minutes = null;
 
             /**
@@ -52,17 +52,17 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
                     case 1:
                         $trial_minutes = $plan_cycle->trial_length * 60;
                         break;
-    
+
                     // Daily
                     case 2:
                         $trial_minutes = $plan_cycle->trial_length * 60 * 24;
                         break;
-                    
+
                     // Monthly
                     case 3:
                         $trial_minutes = $plan_cycle->trial_length * 60 * 24 * 30;
                         break;
-                    
+
                     // Yearly
                     case 4:
                         $trial_minutes = $plan_cycle->trial_length * 60 * 24 * 30 * 12;
@@ -80,8 +80,8 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
             }
 
             // One-time servers won't expire
-            if (!$plan_cycle->cycle_type === 0) continue;
-            
+            if ($plan_cycle->cycle_type === 0) continue;
+
             $minutes = null;
 
             switch ($plan_cycle->cycle_type) {
@@ -94,12 +94,12 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
                 case 2:
                     $minutes = $plan_cycle->cycle_length * 60 * 24;
                     break;
-                
+
                 // Monthly
                 case 3:
                     $minutes = $plan_cycle->cycle_length * 60 * 24 * 30;
                     break;
-                
+
                 // Yearly
                 case 4:
                     $minutes = $plan_cycle->cycle_length * 60 * 24 * 30 * 12;
@@ -149,19 +149,33 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
                     $invoice->late_fee = $plan_cycle->late_fee;
                     $invoice->save();
                 }
-                
-                $plan = Plan::find($server->id);
-                if ($server->status !== 2 || $minutes_passed >= $plan->days_before_suspend * 1440) {
+
+                // Check for renew price and client credit
+                if ($client->credit >= $plan_cycle->renew_price) {
+                    $client->credit -= $plan_cycle->renew_price;
+                    $client->save();
+
+                    $server->due_date = Carbon::now()->addMinutes($minutes);
+                    $server->status = 0; // Set status back to active
+                    $server->save();
+                } else {
                     $server->status = 2;
                     $server->save();
 
+                    $client->notify(new InvoiceDueNotif(Invoice::where('server_id', $server->id)->first()));
+                }
+
+                if ($server->status === 2 && $minutes_passed >= $plan->days_before_suspend * 1440) {
                     // Suspend server after certain days have passed since the due date
+                    $server->status = 2;
+                    $server->save();
                     SuspendServer::dispatch($server->id);
-                } elseif ($server->status === 2 || $minutes_passed >= ($plan->days_before_suspend + 60) * 1440) {
+                }
+
+                if ($server->status === 2 && $minutes_passed >= ($plan->days_before_suspend + $plan->days_before_delete) * 1440) {
+                    // Delete server after the specified days before delete have passed since the suspension date
                     $server->status = 3;
                     $server->save();
-                    
-                    // Suspend server after 60 days have passed since the suspension date
                     DeleteServer::dispatch($server->id);
                 }
             }
