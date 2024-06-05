@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class ClientController extends ApiController
-{    
+{
     public function basic(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -44,7 +44,7 @@ class ClientController extends ApiController
 
         return $this->respondJson(['success' => 'The account settings have been updated!']);
     }
-    
+
     public function email(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -62,7 +62,7 @@ class ClientController extends ApiController
 
         return $this->respondJson(['success' => 'The email address has been updated!']);
     }
-    
+
     public function password(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -78,7 +78,7 @@ class ClientController extends ApiController
 
         return $this->respondJson(['success' => 'The account password has been updated!']);
     }
-    
+
     public function suspend($id)
     {
         $client = Client::find($id);
@@ -86,15 +86,12 @@ class ClientController extends ApiController
         $client->save();
 
         foreach (Server::where('client_id', $id)->get() as $server) {
-            $server->status = 2;
-            $server->save();
-
             SuspendServer::dispatch($server->id);
         }
 
         return $this->respondJson(['success' => 'You have suspended the client! The servers are also going to be suspended.']);
     }
-    
+
     public function unsuspend($id)
     {
         $client = Client::find($id);
@@ -103,7 +100,7 @@ class ClientController extends ApiController
 
         return $this->respondJson(['success' => 'You have unsuspended the client!']);
     }
-    
+
     public function promote($id)
     {
         $client = Client::find($id);
@@ -112,7 +109,7 @@ class ClientController extends ApiController
 
         return $this->respondJson(['success' => 'You have promoted the client to administrator!']);
     }
-    
+
     public function demote($id)
     {
         $client = Client::find($id);
@@ -121,17 +118,17 @@ class ClientController extends ApiController
 
         return $this->respondJson(['success' => 'You have demoted the client!']);
     }
-    
+
     public function delete($id)
     {
         $client = Client::find($id);
         $client->delete();
-        
+
         DeletePanelUser::dispatch($id);
 
         return $this->respondJson(['success' => 'You have deleted the client! The panel account is also going to be deleted.']);
     }
-    
+
     public function credit(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -140,9 +137,9 @@ class ClientController extends ApiController
 
         if ($validator->fails())
             return $this->respondJson(['errors' => $validator->errors()->all()]);
-        
+
         $client = Client::find($id);
-        
+
         Credit::create([
             'client_id' => $request->user()->id,
             'details' => 'Edited by an administrator',
@@ -152,7 +149,7 @@ class ClientController extends ApiController
 
         $client->credit = $request->input('credit');
         $client->save();
-        
+
         return $this->respondJson(['success' => 'You have updated the credit balance.']);
     }
 }

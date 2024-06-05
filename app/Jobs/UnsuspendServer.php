@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Server;
 use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,6 +41,12 @@ class UnsuspendServer implements ShouldQueue
     {
         if (!$this->server_id) return;
 
+        $server = Server::find($this->server_id);
+
+        if (!$server) return;
+
+        if ($server->status === 0) return;
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Accept' => 'application/json',
@@ -52,5 +59,8 @@ class UnsuspendServer implements ShouldQueue
             }
             return $this->fail();
         }
+
+        $server->status = 0;
+        $server->save();
     }
 }
