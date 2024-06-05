@@ -13,7 +13,7 @@ try {
     $app_id = $extension_model::where([['extension', 'PayPal'], ['key', 'app_id']])->value('value');
     $enabled = $extension_model::where([['extension', 'PayPal'], ['key', 'enabled']])->value('value');
 } catch (\Throwable $err) {
-    $mode = 'sandbox';
+    $mode = 'live';
     $username = null;
     $password = null;
     $secret = null;
