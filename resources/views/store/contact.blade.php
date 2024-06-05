@@ -11,7 +11,6 @@
                 </div>
                 <form action="{{ route('api.store.contact') }}" method="POST" data-callback="contactForm">
                     @csrf
-                    
                     <div class="card-body">
                         <div class="form-group">
                             <label for="emailInput">Email Address</label>
