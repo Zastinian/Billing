@@ -25,15 +25,15 @@ use App\Models\Category;
         if(is_null($plan_find->global_limit)) {
             $global_all_limit = NULL;
         } else {
-            $servers = 0;
-            $category = Category::find($plan->id);
-            foreach (Plan::where('category_id', $category->id)->get() as $plan_find) {
-                $servers += Server::where('plan_id', $plan_find->id)->where(function ($query) { $query->where('status', 0)->orWhere('status', 1); })->count();
+            $servers = Server::where('plan_id', $plan_find->id)
+                ->where(function ($query) {
+                    $query->where('status', 0)
+                          ->orWhere('status', 1);
+                })->count();
+            $global_all_limit = $plan_find->global_limit - $servers;
+            if ($global_all_limit < 0) {
+                $global_all_limit = 0;
             }
-            $plan_number = number_format($plan_find->global_limit);
-            $servers_number = number_format($servers);
-            $total = $plan->global_limit - $servers;
-            $global_all_limit = $total;
         }
         if (!is_null($global_all_limit) && $global_all_limit == 0) {
             echo '<script>window.location.href = "/"</script>';
@@ -287,7 +287,7 @@ use App\Models\Category;
                         } else {
                             addons.innerHTML = '<label>No add-ons are available for this server plan or billing cycle.</label>'
                         }
-                        
+
                         planCycle.innerHTML = data.success.cycle.name
                         planInit.innerHTML = data.success.cycle.data.init_price * currencyRate
                         planSetup.innerHTML = data.success.cycle.data.setup_fee * currencyRate
@@ -316,16 +316,16 @@ use App\Models\Category;
                                     ${data.success.coupon.code}${onetime} <span class="float-right">${data.success.coupon.percent_off}% Off</span><br>
                                 </small>
                                 <hr>
-                            `    
+                            `
                         }
-                        
+
                         if (taxPercent > 0 || taxAmount > 0) {
                             var taxVar = taxPercent > 0 ? `${taxPercent}%` : `{!! session('currency')->symbol !!}${taxAmount * currencyRate} {{ session('currency')->name }}`
                             taxSummary.innerHTML = `
                                 Tax <span class="float-right">+${taxVar}</span><br>
                             `
                         }
-                        
+
                         if (data.success.credit > 0) {
                             creditSummary.innerHTML = `
                                 Credit <span class="float-right">{!! session('currency')->symbol !!}${data.success.credit * currencyRate} {{ session('currency')->name }}</span>

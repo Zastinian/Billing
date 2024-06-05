@@ -79,23 +79,19 @@ use App\Models\Category;
                         @endif
                         <p class="card-text">
                             @php
-                                $plan_find = Plan::find($plan->id);
-                                if(is_null($plan_find->global_limit)) {
-                                    $global_all_limit = NULL;
-                                } else {
-                                    $servers = 0;
-                                    $category = Category::find($plan->id);
-                                    foreach (Plan::where('category_id', $category->id)->get() as $plan_find) {
-                                        $servers += Server::where('plan_id', $plan_find->id)->where(function ($query) { $query->where('status', 0)->orWhere('status', 1); })->count();
-                                    }
-                                    $plan_number = number_format($plan_find->global_limit);
-                                    $servers_number = number_format($servers);
-                                    $total = $plan->global_limit - $servers;
-                                    $global_all_limit = $total;
-                                }
+                                $servers = Server::where('plan_id', $plan->id)
+                                    ->where(function ($query) {
+                                        $query->where('status', 0)->orWhere('status', 1);
+                                    })->count();
+                                $global_all_limit = $plan->global_limit === 0 ? 0 : ($plan->global_limit ? ($plan->global_limit - $servers) : null);
                             @endphp
-                            @if (!is_null($global_all_limit) && $global_all_limit !== 0) <small>Only {{ $global_all_limit }} available!</small><br> @endif
-                            @if (!is_null($global_all_limit) && $global_all_limit == 0) <small>{{ $global_all_limit }} availables!</small><br> @endif
+                            @if (!is_null($global_all_limit))
+                                @if ($global_all_limit > 0)
+                                    <small>Only {{ $global_all_limit }} available!</small><br>
+                                @else
+                                    <small>0 disponibles</small><br>
+                                @endif
+                            @endif
                             <small>{{ $plan->description }}</small>
                             <ul class="list-unstyled">
                                 <li>RAM <span class="float-right">{{ $plan->ram }} MB</span></li>
@@ -106,9 +102,15 @@ use App\Models\Category;
                                 <li>Extra Ports <span class="float-right">{{ $plan->extra_ports }}</span></li>
                             </ul>
                         </p>
-                        @if (is_null($global_all_limit)) <a href="{{ route('order', ['id' => $plan->id]) }}" class="btn btn-primary col-12">Order <i class="fas fa-arrow-circle-right"></i></a> @endif
-                        @if (!is_null($global_all_limit) && $global_all_limit !== 0) <a href="{{ route('order', ['id' => $plan->id]) }}" class="btn btn-primary col-12">Order <i class="fas fa-arrow-circle-right"></i></a> @endif
-                        @if (!is_null($global_all_limit) && $global_all_limit == 0) <a href="{{ route('order', ['id' => $plan->id]) }}" class="btn btn-primary col-12 disabled">Order <i class="fas fa-arrow-circle-right"></i></a> @endif
+                        @if (!is_null($global_all_limit))
+                            @if ($global_all_limit > 0)
+                                <a href="{{ route('order', ['id' => $plan->id]) }}" class="btn btn-primary col-12">Order <i class="fas fa-arrow-circle-right"></i></a>
+                            @else
+                                <a href="#" class="btn btn-primary col-12 disabled">Order <i class="fas fa-arrow-circle-right"></i></a>
+                            @endif
+                        @else
+                            <a href="{{ route('order', ['id' => $plan->id]) }}" class="btn btn-primary col-12">Order <i class="fas fa-arrow-circle-right"></i></a>
+                        @endif
                     </div>
                 </div>
             </div>
