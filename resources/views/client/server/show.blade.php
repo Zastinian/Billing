@@ -1,4 +1,4 @@
-@php $header_route = 'admin.servers.active'; @endphp
+@php $header_route = 'client.server.index'; @endphp
 
 @extends('layouts.client')
 
