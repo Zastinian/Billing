@@ -41,7 +41,7 @@ class UnsuspendServer implements ShouldQueue
     {
         if (!$this->server_id) return;
 
-        $server = Server::find($this->server_id);
+        $server = Server::where('server_id', $this->server_id)->first();
 
         if (!$server) return;
 
