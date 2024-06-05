@@ -46,38 +46,41 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
             /**
              * Check if free trial is over
              */
+            /*
             if ($plan_cycle->trial_length) {
-                switch ($plan_cycle->trial_type) {
-                    // Hourly
-                    case 1:
-                        $trial_minutes = $plan_cycle->trial_length * 60;
-                        break;
+                // Check if the server is in trial
+                if ($server->is_trial) {
+                    switch ($plan_cycle->trial_type) {
+                        // Hourly
+                        case 1:
+                            $trial_minutes = $plan_cycle->trial_length * 60;
+                            break;
 
-                    // Daily
-                    case 2:
-                        $trial_minutes = $plan_cycle->trial_length * 60 * 24;
-                        break;
+                        // Daily
+                        case 2:
+                            $trial_minutes = $plan_cycle->trial_length * 60 * 24;
+                            break;
 
-                    // Monthly
-                    case 3:
-                        $trial_minutes = $plan_cycle->trial_length * 60 * 24 * 30;
-                        break;
+                        // Monthly
+                        case 3:
+                            $trial_minutes = $plan_cycle->trial_length * 60 * 24 * 30;
+                            break;
 
-                    // Yearly
-                    case 4:
-                        $trial_minutes = $plan_cycle->trial_length * 60 * 24 * 30 * 12;
-                        break;
-                }
+                        // Yearly
+                        case 4:
+                            $trial_minutes = $plan_cycle->trial_length * 60 * 24 * 30 * 12;
+                            break;
+                    }
 
-                if (Carbon::now()->diffInMinutes($server->created_at) >= $trial_minutes) {
-                    $server->last_notif = Carbon::now();
-                    $server->status = 2;
-                    $server->save();
+                    if (Carbon::now()->diffInMinutes($server->created_at) >= $trial_minutes) {
+                        $server->last_notif = Carbon::now();
 
-                    $client->notify(new InvoiceDueNotif(Invoice::where('server_id', $server->id)->first()));
-                    SuspendServer::dispatch($server->id);
+                        $client->notify(new InvoiceDueNotif(Invoice::where('server_id', $server->id)->first()));
+                        SuspendServer::dispatch($server->id);
+                    }
                 }
             }
+            */
 
             // One-time servers won't expire
             if ($plan_cycle->cycle_type === 0) continue;
@@ -160,29 +163,17 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
                     $client->save();
 
                     $server->due_date = Carbon::now()->addMinutes($minutes);
-                    $server->status = 0; // Set status back to active
-                    $server->save();
+                    UnsuspendServer::dispatch($server->id);
                 } else {
                     if (!$server->last_notif || $since_last_notif > 1440) {
                         $server->last_notif = Carbon::now();
-                        $server->status = 2;
-                        $server->save();
-
                         $client->notify(new InvoiceDueNotif(Invoice::where('server_id', $server->id)->first()));
+                        SuspendServer::dispatch($server->id);
                     }
-                }
-
-                if ($server->status === 2 && $minutes_passed >= $suspend_threshold) {
-                    // Suspend server after the configured days have passed since the due date
-                    $server->status = 2;
-                    $server->save();
-                    SuspendServer::dispatch($server->id);
                 }
 
                 if ($server->status === 2 && $minutes_passed >= ($suspend_threshold + $plan->days_before_delete * 1440)) {
                     // Delete server after the specified days before delete have passed since the suspension date
-                    $server->status = 3;
-                    $server->save();
                     DeleteServer::dispatch($server->id);
                 }
             }
