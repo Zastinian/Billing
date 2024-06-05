@@ -20,7 +20,7 @@ class Seeder extends DatabaseSeeder
             Extension::create([
                 'extension' => 'PayPal',
                 'key' => 'mode',
-                'value' => 'live',
+                'value' => 'sandbox',
             ]);
             ++$i;
         }
