@@ -131,8 +131,12 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
                 /**
                  * Server already expired
                  */
-                if (($minutes_passed = Carbon::now()->diffInMinutes($server->due_date)) < 1440 * 4) {
-                    // Less than 4 days passed since the due date
+                $days_before_suspend = $plan->days_before_suspend;
+                $minutes_passed = Carbon::now()->diffInMinutes($server->due_date);
+                $suspend_threshold = $days_before_suspend * 1440;
+
+                if ($minutes_passed < $suspend_threshold) {
+                    // Less than the configured days before suspend have passed since the due date
                     if (!$invoice) {
                         IssueServerInvoice::dispatch($server);
                     } elseif (!$server->last_notif || $since_last_notif > 1440) {
@@ -159,20 +163,23 @@ class ServerExpiry implements ShouldQueue, ShouldBeUnique
                     $server->status = 0; // Set status back to active
                     $server->save();
                 } else {
-                    $server->status = 2;
-                    $server->save();
+                    if (!$server->last_notif || $since_last_notif > 1440) {
+                        $server->last_notif = Carbon::now();
+                        $server->status = 2;
+                        $server->save();
 
-                    $client->notify(new InvoiceDueNotif(Invoice::where('server_id', $server->id)->first()));
+                        $client->notify(new InvoiceDueNotif(Invoice::where('server_id', $server->id)->first()));
+                    }
                 }
 
-                if ($server->status === 2 && $minutes_passed >= $plan->days_before_suspend * 1440) {
-                    // Suspend server after certain days have passed since the due date
+                if ($server->status === 2 && $minutes_passed >= $suspend_threshold) {
+                    // Suspend server after the configured days have passed since the due date
                     $server->status = 2;
                     $server->save();
                     SuspendServer::dispatch($server->id);
                 }
 
-                if ($server->status === 2 && $minutes_passed >= ($plan->days_before_suspend + $plan->days_before_delete) * 1440) {
+                if ($server->status === 2 && $minutes_passed >= ($suspend_threshold + $plan->days_before_delete * 1440)) {
                     // Delete server after the specified days before delete have passed since the suspension date
                     $server->status = 3;
                     $server->save();
