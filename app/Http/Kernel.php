@@ -16,7 +16,7 @@ class Kernel extends HttpKernel
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
-        \Fruitcake\Cors\HandleCors::class,
+        \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
@@ -85,7 +85,6 @@ class Kernel extends HttpKernel
         'check.store.order' => \App\Http\Middleware\Store\CheckPlanOrder::class,
         'close.register' => \App\Http\Middleware\Client\CloseRegistration::class,
         'csrf' => \App\Http\Middleware\VerifyCsrfToken::class,
-        'demo' => \App\Http\Middleware\DenyInDemo::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
