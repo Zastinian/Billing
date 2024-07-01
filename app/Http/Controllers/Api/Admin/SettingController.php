@@ -30,7 +30,6 @@ class SettingController extends ApiController
             'hcaptcha_site_key' => $optional,
             'hcaptcha_secret_key' => $optional,
             'google_analytics_id' => $optional,
-            'arc_widget_id' => $optional,
         ]);
 
         if ($validator->fails())
@@ -49,7 +48,6 @@ class SettingController extends ApiController
         $this->saveSetting($key = 'hcaptcha_site_key', $request->input($key));
         $this->saveSetting($key = 'hcaptcha_secret_key', $request->input($key));
         $this->saveSetting($key = 'google_analytics_id', $request->input($key));
-        $this->saveSetting($key = 'arc_widget_id', $request->input($key));
 
         return $this->respondJson(['success' => 'You have updated the store settings successfully! Reloading configurations...']);
     }
@@ -70,7 +68,7 @@ class SettingController extends ApiController
 
         if ($validator->fails())
             return $this->respondJson(['errors' => $validator->errors()->all()]);
-        
+
         $page = Page::where('name', $request->input('name'))->first();
         $page->content = $request->input('content');
         $page->save();

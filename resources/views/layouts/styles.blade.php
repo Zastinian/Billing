@@ -26,8 +26,3 @@
         gtag('config', '{{ config('app.google_analytics_id') }}');
     </script>
 @endif
-    
-@if (config('app.arc_widget_id'))
-    <!-- Arc.io -->
-    <script async src="https://arc.io/widget.min.js#{{ config('app.arc_widget_id') }}"></script>
-@endif

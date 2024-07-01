@@ -18,7 +18,6 @@ try {
     $hcaptcha_site_key = $setting_model::where('key', 'hcaptcha_site_key')->value('value');
     $hcaptcha_secret_key = $setting_model::where('key', 'hcaptcha_secret_key')->value('value');
     $google_analytics_id = $setting_model::where('key', 'google_analytics_id')->value('value');
-    $arc_widget_id = $setting_model::where('key', 'arc_widget_id')->value('value');
 } catch (Throwable $err) {
     $company_name = 'Company Name';
     $url = 'https://example.com';
@@ -33,7 +32,6 @@ try {
     $hcaptcha_site_key = '';
     $hcaptcha_secret_key = '';
     $google_analytics_id = null;
-    $arc_widget_id = '';
 }
 
 return [
@@ -50,7 +48,6 @@ return [
     'hcaptcha_site_key' => $hcaptcha_site_key,
     'hcaptcha_secret_key' => $hcaptcha_secret_key,
     'google_analytics_id' => $google_analytics_id,
-    'arc_widget_id' => $arc_widget_id,
     'name' => 'HedystiaBilling',
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),

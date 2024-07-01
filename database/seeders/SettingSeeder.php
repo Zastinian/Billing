@@ -120,14 +120,6 @@ class SettingSeeder extends Seeder
             ++$i;
         }
 
-        if (is_null(Setting::where('key', 'arc_widget_id')->first())) {
-            Setting::create([
-                'key' => 'arc_widget_id',
-                'value' => null,
-            ]);
-            ++$i;
-        }
-
         if ($i > 0)
             $this->command->info('Seeded and updated the settings table successfully!');
         else

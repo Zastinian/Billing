@@ -74,10 +74,6 @@
                                 <label for="analyticsIdInput">Google Analytics</label>
                                 <input type="text" name="google_analytics_id" value="{{ $setting_model->where('key', 'google_analytics_id')->value('value') }}" class="form-control" id="analyticsIdInput" placeholder="UA-XXXXXX or G-XXXXXX">
                             </div>
-                            <div class="form-group">
-                                <label for="arcInput">Arc Widget ID</label>
-                                <input type="text" name="arc_widget_id" value="{{ $setting_model->where('key', 'arc_widget_id')->value('value') }}" class="form-control" id="arcInput">
-                            </div>
                         </div>
                     </div>
                     <div class="card-footer">
