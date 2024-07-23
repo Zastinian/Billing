@@ -34,13 +34,13 @@
                         </div>
                         <div class="form-group">
                             <label class="form-check-label">Payment Method</label>
-                            @foreach ($extension_manager::$gateways as $gateway)
-                                @if ($extension_model->where(['extension' => $gateway::$display_name, 'key' => 'enabled'])->value('value') === '1')
-                                    <select name="gateway" class="form-control">
-                                        <option value="{{ $gateway::$display_name }}">{{ $gateway::$display_name }}</option>
-                                    </select>
-                                @endif
-                            @endforeach
+                            <select name="gateway" class="form-control">
+                                @foreach ($extension_manager::$gateways as $gateway)
+                                    @if ($extension_model->where(['extension' => $gateway::$display_name, 'key' => 'enabled'])->value('value') === '1')
+                                    <option value="{{ $gateway::$display_name }}">{{ $gateway::$display_name }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="card-footer">
