@@ -161,6 +161,7 @@ class Controller extends ApiController implements Gateway
         $client = new PaymentClient();
 
         try {
+            if (!$request->get('data')) return false;
             if (!$request->get('data')['id']) return false;
             $payment = $client->get($request->get('data')['id']);
             Log::debug('[MercadoPago::ipn] Payment: ' . json_encode($payment));
