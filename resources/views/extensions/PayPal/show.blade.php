@@ -10,7 +10,6 @@
             <div class="card">
                 <form action="{{ route('api.admin.extension.update', ['id' => 'PayPal']) }}" method="PUT" data-callback="settingForm">
                     @csrf
-
                     <div class="card-body row">
                         <div class="col-lg-6">
                             <div class="form-group">
