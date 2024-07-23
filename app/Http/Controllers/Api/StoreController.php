@@ -172,13 +172,16 @@ class StoreController extends ApiController
 
     public function payment(Request $request)
     {
-        if (is_null($invoice = session('payment_invoice')))
+        if (is_null($payment = session('payment_invoice')))
             return redirect()->route('client.invoice.index')->with('danger_msg', 'Invalid invoice! Please try again.');
 
         session()->forget('payment_invoice');
-        $url = $invoice->server_id ? route('client.server.index') : route('client.credit.show');
-        if (ExtensionManager::getGatewayExtension($invoice->payment_method)::payment($request, $invoice, $url)) {
-            InvoicePaid::dispatchSync($invoice);
+        $url = $payment->server_id ? route('client.server.index') : route('client.credit.show');
+        if (ExtensionManager::getGatewayExtension($payment->payment_method)::payment($request, $payment, $url)) {
+            $invoice = Invoice::where('id', $payment->id)->first();
+            if (!$invoice->paid) {
+                InvoicePaid::dispatchSync($invoice);
+            }
             return redirect($url)
                 ->with('success_msg', 'You have paid the invoice successfully!');
         }
