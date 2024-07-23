@@ -1,3 +1,3 @@
-<?php 
+<?php
 
 \Extensions\ExtensionManager::fetchAllRoutes();
