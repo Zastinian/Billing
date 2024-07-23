@@ -22,6 +22,7 @@
         "cerbero/command-validator": "^2.5",
         "laravel/framework": "^10.48",
         "laravel/tinker": "^2.9",
+        "mercadopago/dx-php": "3.0.7",
         "predis/predis": "^2.2",
         "queueworker/sansdaemon": "^1.2",
         "srmklive/paypal": "~1.0"
