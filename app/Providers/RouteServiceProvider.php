@@ -56,7 +56,6 @@ class RouteServiceProvider extends ServiceProvider
                 ->middleware(['web', 'auth', 'verified', 'admin'])
                 ->namespace($this->namespace)
                 ->group(base_path('routes/admin.php'));
-            
             /**
              * API (Internal Use Only)
              */
@@ -65,13 +64,11 @@ class RouteServiceProvider extends ServiceProvider
                 ->middleware(['web', 'throttle:api'])
                 ->namespace($this->namespace)
                 ->group(base_path('routes/api/store.php'));
-            
             Route::prefix('/api/client')
                 ->name('api.client.')
                 ->middleware(['web', 'auth', 'verified', 'throttle:api'])
                 ->namespace($this->namespace)
                 ->group(base_path('routes/api/client.php'));
-            
             Route::prefix('/api/admin')
                 ->name('api.admin.')
                 ->middleware(['web', 'auth', 'verified', 'admin', 'throttle:api'])
