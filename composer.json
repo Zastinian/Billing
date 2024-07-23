@@ -29,7 +29,6 @@
     },
     "require-dev": {
         "laravel/sail": "^1.29",
-        "laravel/telescope": "^5.0",
         "mockery/mockery": "^1.6",
         "phpunit/phpunit": "^10.5"
     },
