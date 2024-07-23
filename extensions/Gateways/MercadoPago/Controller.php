@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Currency;
 use App\Models\Extension;
 use App\Models\Invoice;
+use App\Jobs\InvoicePaid;
 use Extensions\Gateways\Gateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -133,6 +134,8 @@ class Controller extends ApiController implements Gateway
             ];
         }
 
+        $config = self::config();
+
         $data = [
             'items' => [$item],
             'payer' => [
@@ -145,6 +148,7 @@ class Controller extends ApiController implements Gateway
             ],
             'auto_return' => 'approved',
             'external_reference' => $invoice->id,
+            'notification_url' => config('app.url') . $config['notification_url'],
         ];
 
         Log::debug('[MercadoPago::getPreferenceData] Preference Data: ' . json_encode($data));
@@ -157,9 +161,17 @@ class Controller extends ApiController implements Gateway
         $client = new PaymentClient();
 
         try {
-            $payment = $client->get($request->get('payment_id'));
+            if (!$request->get('data')['id']) return false;
+            $payment = $client->get($request->get('data')['id']);
             Log::debug('[MercadoPago::ipn] Payment: ' . json_encode($payment));
-            return $payment->status === 'approved';
+            if ($payment->status === 'approved') {
+                $invoice = Invoice::where('id', $payment->external_reference)->first();
+                if (!$invoice->paid) {
+                    InvoicePaid::dispatchSync($invoice);
+                }
+                return true;
+            }
+            return false;
         } catch (MPApiException $e) {
             Log::error('[MercadoPago::ipn] Error: ' . $e->getMessage());
             return false;
