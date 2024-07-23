@@ -53,7 +53,7 @@ class Controller extends ApiController implements Gateway
 
         try {
             $payment = $client->get($request->get('payment_id'));
-            return $payment->status;
+            return $payment->status === 'approved';
         } catch (MPApiException $e) {
             Log::error('[MercadoPago::payment] Error: ' . $e->getMessage());
             return false;
