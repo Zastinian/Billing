@@ -14,5 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         // PayPal IPN
         '/extension/paypal/ipn',
+        // MercadoPago IPN
+        '/extension/mercadopago/ipn',
     ];
 }
