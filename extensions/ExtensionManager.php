@@ -9,6 +9,7 @@ class ExtensionManager
      */
     public static $gateways = [
         \Extensions\Gateways\PayPal\Controller::class,
+        \Extensions\Gateways\MercadoPago\Controller::class,
     ];
 
     /**
@@ -34,7 +35,7 @@ class ExtensionManager
     {
         return array_merge(self::$gateways, self::$auth, self::$email, self::$general);
     }
-    
+
     public static function getAllExtensionsWithSettings()
     {
         return array_merge(self::$gateways, self::$auth, self::$email);
