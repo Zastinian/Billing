@@ -1,0 +1,20 @@
+---
+export const prerender = false;
+
+const { id } = Astro.params;
+
+import Layout from "@/layouts/clients/Layout.astro";
+import View from "@/src/views/clients/servers/Addons.astro";
+---
+
+<Layout
+    title="Addons"
+    route="client.servers.show"
+    items={[
+        { title: "Dashboard", url: "/client" },
+        { title: "Servers", url: "/client/servers" },
+        { title: `Server #${id}`, url: `/client/servers/${id}` },
+    ]}
+>
+    <View />
+</Layout>

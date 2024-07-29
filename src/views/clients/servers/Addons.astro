@@ -1,0 +1,55 @@
+<div class="row">
+    <div class="col-md-5">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h5 class="card-title m-0">Your Current Add-ons</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">Addon 1</h6><h6 class="card-title float-right">$0 USD Monthly</h6>
+                <p class="card-text">
+                    <a
+                        href="{{ route('client.server.addon.remove', ['id' => $server->id, 'addon_id' => $addon_details->id]) }}"
+                        class="card-link text-danger">Remove Add-on</a
+                    >
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body row">
+                <div class="col-md-8">
+                    <h6 class="card-title">
+                        Addon 1<br /><br />
+                        $0 USD Monthly<br /><br />
+                        $0 USD setup fee
+                    </h6>
+                </div>
+                <div class="col-md-4">
+                    <a
+                        href="{{ route('client.server.addon.add', ['id' => $server->id, 'addon_id' => $addon->id]) }}"
+                        class="btn btn-primary float-right">Order Add-on <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body row">
+                <div class="col-md-8">
+                    <h6 class="card-title">
+                        Addon 2<br /><br />
+                        $0 USD Monthly<br /><br />
+                        $0 USD setup fee
+                    </h6>
+                </div>
+                <div class="col-md-4">
+                    <a
+                        href="{{ route('client.server.addon.add', ['id' => $server->id, 'addon_id' => $addon->id]) }}"
+                        class="btn btn-primary float-right">Order Add-on <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
