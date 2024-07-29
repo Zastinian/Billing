@@ -1,0 +1,146 @@
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Active Servers</h3>
+                <div class="card-tools">
+                    <a href="{{ config('app.panel_url') }}" class="btn btn-default btn-sm" target="_blank"
+                        >View in Panel <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Plan</th>
+                            <th>Server Name</th>
+                            <th>RAM (MB)</th>
+                            <th>CPU (%)</th>
+                            <th>Disk (MB)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Servers -->
+                        <tr>
+                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">1</a></td>
+                            <td>Plan 1</td>
+                            <td>Server Name 1</td>
+                            <td><span id="memory_usage_{{ $server->identifier }}">1024</span></td>
+                            <td><span id="cpu_usage_{{ $server->identifier }}">100</span></td>
+                            <td><span id="disk_usage_{{ $server->identifier }}">2048</span></td>
+                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Active</span></span></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">2</a></td>
+                            <td>Plan 2</td>
+                            <td>Server Name 2</td>
+                            <td><span id="memory_usage_{{ $server->identifier }}">1024</span></td>
+                            <td><span id="cpu_usage_{{ $server->identifier }}">100</span></td>
+                            <td><span id="disk_usage_{{ $server->identifier }}">2048</span></td>
+                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Active</span></span></td>
+                        </tr>
+                        <!-- End of Servers -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Pending Servers</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Plan</th>
+                            <th>Server Name</th>
+                            <th>Order Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Pending Servers -->
+                        <tr>
+                            <td>3</td>
+                            <td>Plan 1</td>
+                            <td>Server Name 3</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                        <!-- End of Pending Servers -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Canceled Servers</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Plan</th>
+                            <th>Server Name</th>
+                            <th>Cancellation Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Canceled Servers -->
+                        <tr>
+                            <td>4</td>
+                            <td>Plan 1</td>
+                            <td>Server Name 4</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                        <!-- End of Canceled Servers -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Suspended Servers</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Plan</th>
+                            <th>Server Name</th>
+                            <th>Suspension Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Suspended Servers -->
+                        <tr>
+                            <td>5</td>
+                            <td>Plan 1</td>
+                            <td>Server Name 5</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                        <!-- End of Suspended Servers -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

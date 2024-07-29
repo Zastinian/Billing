@@ -1,1 +1,0 @@
-@yield('admin_scripts')

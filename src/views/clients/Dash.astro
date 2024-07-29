@@ -1,0 +1,231 @@
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>$ USD</h3>
+                <p>Account Credit</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <a href="{{ route('client.credit.show') }}" class="small-box-footer">
+                Add Fund <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>2</h3>
+                <p>Active Servers</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <a href="{{ route('client.server.index') }}" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>0</h3>
+                <p>Unpaid Invoices</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <a href="{{ route('client.invoice.index') }}" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>0</h3>
+                <p>Pending Tickets</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <a href="{{ route('client.ticket.index') }}" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Active Servers</h3>
+                <div class="card-tools">
+                    <a href="{{ route('client.server.index') }}" class="btn btn-default btn-sm"
+                        >View All Servers <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Plan</th>
+                            <th>Server Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Servers -->
+                        <tr>
+                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">1</a></td>
+                            <td>Plan 1</td>
+                            <td>Server Name 1</td>
+                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Loading</span></span></td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">2</a></td>
+                            <td>Plan 2</td>
+                            <td>Server Name 2</td>
+                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Loading</span></span></td>
+                        </tr>
+                        <!-- End of Servers -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Support Tickets</h3>
+                <div class="card-tools">
+                    <a href="{{ route('client.ticket.index') }}" class="btn btn-default btn-sm"
+                        >View All Support Tickets <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Tickets -->
+                        <tr>
+                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">1</a></td>
+                            <td>Billing Issue</td>
+                            <td>
+                                <span class="badge bg-success">Resolved</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">2</a></td>
+                            <td>Billing Issue</td>
+                            <td>
+                                <span class="badge bg-info">Open</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">3</a></td>
+                            <td>Billing Issue</td>
+                            <td>
+                                <span class="badge bg-warning">Pending</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">4</a></td>
+                            <td>Billing Issue</td>
+                            <td>
+                                <span class="badge bg-danger">Closed</span>
+                            </td>
+                        </tr>
+                        <!-- End of Tickets -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Unpaid Invoices</h3>
+                <div class="card-tools">
+                    <a href="{{ route('client.invoice.index') }}" class="btn btn-default btn-sm"
+                        >View All Invoices <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Item</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Invoices -->
+                        <tr>
+                            <td><a href="{{ route('client.invoice.index', ['id' => $invoice->id]) }}">1</a></td>
+                            <td> Server #1 </td>
+                            <td>$0 USD</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                        <tr>
+                            <td><a href="{{ route('client.invoice.index', ['id' => $invoice->id]) }}">1</a></td>
+                            <td> 1 Credit </td>
+                            <td>$0 USD</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                        <!-- End of Invoices -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Credit Transactions</h3>
+                <div class="card-tools">
+                    <a href="{{ route('client.credit.show') }}" class="btn btn-default btn-sm"
+                        >More details <i class="fas fa-arrow-circle-right"></i></a
+                    >
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Details</th>
+                            <th>Change</th>
+                            <th>Balance</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Start of Credit Transactions -->
+                        <tr>
+                            <td>1</td>
+                            <td>Refund for Server #1</td>
+                            <td> +$0 USD </td>
+                            <td>$0 USD</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                        <!-- End of Credit Transactions -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

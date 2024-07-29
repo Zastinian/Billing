@@ -1,0 +1,46 @@
+---
+import type Breadcrumb from "@/types/breadcrumb.d.ts";
+
+import MainHeader from "@/components/header/Header.astro";
+import ClientsHeader from "@/components/header/clients/Header.astro";
+
+import MainScripts from "@/components/scripts/Scripts.astro";
+
+import NavClients from "@/components/nav/clients/Nav.astro";
+
+import SidebarClients from "@/components/sidebar/clients/Siderbar.astro";
+
+import FooterClients from "@/components/footer/clients/Footer.astro";
+
+interface Props {
+	title: string;
+	route: string;
+	items?: Breadcrumb[];
+}
+
+const { title, route, items } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<MainHeader title={`${title} - Company Name`} />
+	<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed dark-mode">
+		<div class="wrapper">
+			<div class="preloader flex-column justify-content-center align-items-center">
+				<img class="animation__shake" src="/favicon.webp" alt="{{ config('app.company_name') }} Logo" height="100" width="100" />
+			</div>
+			<NavClients />
+			<SidebarClients route={route} />
+			<div class="content-wrapper">
+				<ClientsHeader title={title} items={items} />
+				<div class="content">
+					<div class="container-fluid" id="content-container">
+						<slot />
+					</div>
+				</div>
+			</div>
+			<FooterClients />
+		</div>
+		<MainScripts />
+	</body>
+</html>
