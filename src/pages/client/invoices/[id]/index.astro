@@ -1,0 +1,19 @@
+---
+export const prerender = false;
+
+const { id } = Astro.params;
+
+import Layout from "@/layouts/clients/Layout.astro";
+import View from "@/views/clients/invoices/View.astro";
+---
+
+<Layout
+    title=`Invoice #${id}`
+    route="client.invoices.index"
+    items={[
+        { title: "Dashboard", url: "/client" },
+        { title: "Invoices", url: "/client/invoices" },
+    ]}
+>
+    <View />
+</Layout>
