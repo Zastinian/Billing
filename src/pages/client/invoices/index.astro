@@ -1,0 +1,8 @@
+---
+import Layout from "@/layouts/clients/Layout.astro";
+import View from "@/views/clients/invoices/Invoices.astro";
+---
+
+<Layout title="Invoices" route="client.invoices.index" items={[{ title: "Dashboard", url: "/client" }]}>
+	<View />
+</Layout>
