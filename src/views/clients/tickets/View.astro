@@ -1,0 +1,97 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title m-0">Ticket Information</h5>
+            </div>
+            <div class="card-body row">
+                <div class="col-lg-4 col-md-8 mb-1">
+                    <h6 class="card-title">Subject</h6>
+                    <p class="card-text">Billing Issue</p>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-1">
+                    <h6 class="card-title">Status</h6>
+                    <p class="card-text">
+                        <span class="badge bg-info">Open</span>
+                    </p>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-1">
+                    <h6 class="card-title">Created Date</h6>
+                    <p class="card-text">01/01/2022</p>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-1">
+                    <h6 class="card-title">Updated Date</h6>
+                    <p class="card-text">01/01/2022</p>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-1">
+                    <a href="{{ route('client.ticket.index') }}" class="card-link"><i class="fas fa-arrow-left text-sm"></i> View All Tickets</a>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="direct-chat-messages">
+                    <div class="direct-chat-infos clearfix">
+                        <div class="direct-chat-msg right">
+                            <div class="direct-chat-infos clearfix">
+                                <span class="direct-chat-name float-right">contact@zastinian.com</span>
+                                <span class="direct-chat-timestamp float-left">01/01/2022</span>
+                            </div>
+                            <div class="direct-chat-text">First Message</div>
+                        </div>
+                        <hr />
+                        <div class="direct-chat-msg">
+                            <div class="direct-chat-infos clearfix">
+                                <span class="direct-chat-name float-left">contact@hedystia.com</span>
+                                <span class="direct-chat-timestamp float-right">01/01/2022</span>
+                            </div>
+                            <div class="direct-chat-text">Second Message</div>
+                        </div>
+                        <hr />
+                    </div>
+                </div>
+                <div class="card">
+                    <form action="{{ route('api.client.ticket.update', ['id' => $id]) }}" method="PUT" data-callback="updateForm" id="updateForm">
+                        <div class="card-header">
+                            <h5 class="card-title m-0">Add Reply</h5>
+                        </div>
+                        <div class="card-body row">
+                            <div class="form-group col-12">
+                                <label for="messageInput">Message</label>
+                                <textarea
+                                    name="message"
+                                    class="form-control"
+                                    id="messageInput"
+                                    placeholder="50 characters required"
+                                    style="height:200px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer row justify-content-center">
+                            <button type="submit" class="btn btn-primary btn-sm col-lg-1 col-md-3">Reply</button>
+                            <button type="submit" name="solved" value="true" class="btn btn-success btn-sm col-lg-2 col-md-4 offset-1"
+                                >Mark Solved</button
+                            >
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script is:inline>
+            function updateForm(data) {
+                if (data.success) {
+                    toastr.success(data.success);
+                    waitRedirect(window.location.href);
+                } else if (data.error) {
+                    toastr.error(data.error);
+                } else if (data.errors) {
+                    data.errors.forEach((error) => {
+                        toastr.error(error);
+                    });
+                } else {
+                    wentWrong();
+                }
+            }
+        </script>
+    </div>
+</div>

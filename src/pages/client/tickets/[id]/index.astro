@@ -1,0 +1,19 @@
+---
+export const prerender = false;
+
+import Layout from "@/layouts/clients/Layout.astro";
+import View from "@/views/clients/tickets/View.astro";
+
+const { id } = Astro.params;
+---
+
+<Layout
+    title=`Ticket #${id}`
+    route="client.tickets.index"
+    items={[
+        { title: "Dashboard", url: "/client" },
+        { title: "Tickets", url: "/client/tickets" },
+    ]}
+>
+    <View />
+</Layout>
