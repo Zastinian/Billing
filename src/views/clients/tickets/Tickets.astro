@@ -1,0 +1,38 @@
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Support Tickets</h3>
+                <div class="card-tools">
+                    <a href="{{ route('client.ticket.create') }}" class="btn btn-success btn-sm float-right"
+                        >Create Ticket <i class="fas fa-plus"></i></a
+                    >
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Updated Date</th>
+                            <th>Created Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">1</a></td>
+                            <td>Billing Issue</td>
+                            <td>
+                                <span class="badge bg-info">Open</span>
+                            </td>
+                            <td>01/01/2022</td>
+                            <td>01/01/2022</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
