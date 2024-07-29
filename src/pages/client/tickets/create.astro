@@ -1,14 +1,19 @@
 ---
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/tickets/Create.astro";
+
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
 ---
 
 <Layout
     title="Create Ticket"
     route="client.tickets.index"
     items={[
-        { title: "Dashboard", url: "/client" },
-        { title: "Tickets", url: "/client/tickets" },
+        { title: "Dashboard", url: translatePath("/client") },
+        { title: "Tickets", url: translatePath("/client/tickets") },
     ]}
 >
     <View />

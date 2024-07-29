@@ -1,13 +1,21 @@
 ---
 interface Props {
-	route: string;
+    route: string;
 }
 
 const { route } = Astro.props;
+
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
+
+const panelUrl = "https://panel.pterodactyl.me";
+const phpmyadminUrl = "https://phpmyadmin.pterodactyl.me";
 ---
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="{{ route('client.dash') }}" class="brand-link">
+    <a href={translatePath("/client")} class="brand-link">
         <img src="/favicon.webp" alt="{{ config('app.company_name') }} Logo" class="brand-image" />
         <span class="brand-text font-weight-light">Company Name</span>
     </a>
@@ -25,25 +33,25 @@ const { route } = Astro.props;
         <nav class="mt-2" id="sidebar-menu">
             <ul class="nav nav-pills nav-sidebar flex-column nav-legacy nav-flat" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-item">
-                    <a href="{{ route('client.dash') }}" class={`nav-link ${route === 'client.dash' ? 'active' : ''}`}>
+                    <a href={translatePath("/client")} class={`nav-link ${route === "client.dash" ? "active" : ""}`}>
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('client.server.index') }}" class={`nav-link ${route === 'client.servers.index' ? 'active' : ''}`}>
+                    <a href={translatePath("/client/servers")} class={`nav-link ${route === "client.servers.index" ? "active" : ""}`}>
                         <i class="fas fa-server nav-icon"></i>
                         <p>My Servers</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ config('app.panel_url') }}" class="nav-link" target="_blank">
+                    <a href={panelUrl} class="nav-link" target="_blank">
                         <i class="fas fa-columns nav-icon"></i>
                         <p>Pterodactyl Panel</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ config('app.phpmyadmin_url') }}" class="nav-link" target="_blank">
+                    <a href={phpmyadminUrl} class="nav-link" target="_blank">
                         <i class="fas fa-tools nav-icon"></i>
                         <p>phpMyAdmin</p>
                     </a>
@@ -57,13 +65,13 @@ const { route } = Astro.props;
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('client.server.show', ['id' => $server->id]) }}" class="nav-link">
+                            <a href={translatePath(`/client/servers/1`)} class="nav-link">
                                 <i class="fas fa-info-circle nav-icon"></i>
                                 <p>Server Info</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('client.server.plan.show', ['id' => $server->id]) }}" class="nav-link">
+                            <a href={translatePath(`/client/servers/1/plan`)} class="nav-link">
                                 <i class="fas fa-scroll nav-icon"></i>
                                 <p>Manage Plan</p>
                             </a>
@@ -73,17 +81,17 @@ const { route } = Astro.props;
                 <li class="nav-item">
                     <a href="javascript:void(0);" class="nav-link">
                         <i class="fas fa-server nav-icon"></i>
-                        <p>Server Name 1<i class="right fas fa-angle-left"></i></p>
+                        <p>Server Name 2<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('client.server.show', ['id' => $server->id]) }}" class="nav-link">
+                            <a href={translatePath(`/client/servers/2`)} class="nav-link">
                                 <i class="fas fa-info-circle nav-icon"></i>
                                 <p>Server Info</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('client.server.plan.show', ['id' => $server->id]) }}" class="nav-link">
+                            <a href={translatePath(`/client/servers/2/plan`)} class="nav-link">
                                 <i class="fas fa-scroll nav-icon"></i>
                                 <p>Manage Plan</p>
                             </a>
@@ -93,14 +101,14 @@ const { route } = Astro.props;
                 <!-- End of Servers -->
                 <li class="nav-header">BILLING</li>
                 <li class="nav-item">
-                    <a href="{{ route('client.invoice.index') }}"  class={`nav-link ${route === 'client.invoices.index' ? 'active' : ''}`}>
+                    <a href={translatePath("/client/invoices")} class={`nav-link ${route === "client.invoices.index" ? "active" : ""}`}>
                         <i class="nav-icon fas fa-file-invoice-dollar"></i>
                         <p>Invoices</p>
                     </a>
                 </li>
                 <li class="nav-header">SUPPORT CENTER</li>
                 <li class="nav-item">
-                    <a href="{{ route('client.ticket.index') }}"  class={`nav-link ${route === 'client.tickets.index' ? 'active' : ''}`}>
+                    <a href={translatePath("/client/tickets")} class={`nav-link ${route === "client.tickets.index" ? "active" : ""}`}>
                         <i class="fas fa-ticket-alt nav-icon"></i>
                         <p>Support Tickets</p>
                     </a>

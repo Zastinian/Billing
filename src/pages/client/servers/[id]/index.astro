@@ -5,14 +5,19 @@ const { id } = Astro.params;
 
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/servers/View.astro";
+
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
 ---
 
 <Layout
     title=`Server #${id}`
     route="client.servers.index"
     items={[
-        { title: "Dashboard", url: "/client" },
-        { title: "Servers", url: "/client/servers" },
+        { title: "Dashboard", url: translatePath("/client") },
+        { title: "Servers", url: translatePath("/client/servers") },
     ]}
 >
     <View />
