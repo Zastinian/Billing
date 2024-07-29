@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/clients/Layout.astro";
+import View from "@/views/clients/tickets/Create.astro";
+---
+
+<Layout
+    title="Create Ticket"
+    route="client.tickets.index"
+    items={[
+        { title: "Dashboard", url: "/client" },
+        { title: "Tickets", url: "/client/tickets" },
+    ]}
+>
+    <View />
+</Layout>
