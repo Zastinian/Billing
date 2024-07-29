@@ -93,14 +93,14 @@ const { route } = Astro.props;
                 <!-- End of Servers -->
                 <li class="nav-header">BILLING</li>
                 <li class="nav-item">
-                    <a href="{{ route('client.invoice.index') }}" class="nav-link">
+                    <a href="{{ route('client.invoice.index') }}"  class={`nav-link ${route === 'client.invoices.index' ? 'active' : ''}`}>
                         <i class="nav-icon fas fa-file-invoice-dollar"></i>
                         <p>Invoices</p>
                     </a>
                 </li>
                 <li class="nav-header">SUPPORT CENTER</li>
                 <li class="nav-item">
-                    <a href="{{ route('client.ticket.index') }}" class="nav-link">
+                    <a href="{{ route('client.ticket.index') }}"  class={`nav-link ${route === 'client.tickets.index' ? 'active' : ''}`}>
                         <i class="fas fa-ticket-alt nav-icon"></i>
                         <p>Support Tickets</p>
                     </a>
