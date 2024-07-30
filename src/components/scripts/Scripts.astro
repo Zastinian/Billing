@@ -1,3 +1,15 @@
 <script src="/plugins/jquery/jquery.min.js" is:inline></script>
 <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js" is:inline></script>
 <script src="/js/adminlte.min.js" is:inline></script>
+
+<script is:inline>
+    function lazyLoadCss(href) {
+        let css = document.createElement("link");
+        css.href = href;
+        css.rel = "stylesheet";
+        document.getElementsByTagName("head")[0].appendChild(css);
+    }
+
+    lazyLoadCss("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback");
+    lazyLoadCss("/plugins/fontawesome-free/css/all.min.css");
+</script>
