@@ -1,0 +1,13 @@
+---
+import Layout from "@/layouts/clients/Layout.astro";
+import View from "@/views/clients/Settings.astro";
+
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
+---
+
+<Layout title="Account Settings" route="client.settings" items={[{ title: "Dashboard", url: translatePath("/client") }]}>
+    <View />
+</Layout>
