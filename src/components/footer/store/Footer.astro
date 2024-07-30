@@ -1,0 +1,20 @@
+---
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
+---
+
+<footer class="main-footer">
+    <div class="container">
+        <div class="float-right d-none d-sm-inline">
+            <a href={translatePath("/status")}>System Status</a> | <a href={translatePath("terms")}>Terms of Service</a> | <a
+                href={translatePath("privacy")}>Privacy Policy</a
+            >
+        </div>
+        <strong
+            >Copyright &copy; {new Date().getFullYear()}
+            <a href={translatePath("/")}>Company Name</a>. All Rights Reserved. Powered by <a href="https://docs.hedystia.com">Hedystia</a>.</strong
+        >
+    </div>
+</footer>

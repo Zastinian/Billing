@@ -1,0 +1,42 @@
+---
+import MainHeader from "@/components/header/Header.astro";
+import StoreHeader from "@/components/header/store/Header.astro";
+
+import MainScripts from "@/components/scripts/Scripts.astro";
+
+import Modals from "@/components/modals/Modals.astro";
+
+import NavClients from "@/components/nav/store/Nav.astro";
+
+import FooterClients from "@/components/footer/store/Footer.astro";
+
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <MainHeader title={`${title} - Company Name`} />
+    <body class="hold-transition layout-top-nav dark-mode">
+        <div class="wrapper">
+            <div class="preloader flex-column justify-content-center align-items-center">
+                <img class="animation__shake" src="/favicon.webp" alt="{{ config('app.company_name') }} Logo" height="100" width="100" />
+            </div>
+            <NavClients />
+            <div class="content-wrapper">
+                <div class="content">
+                    <StoreHeader title={title} />
+                    <div class="container" id="content-container">
+                        <slot />
+                    </div>
+                    <Modals />
+                </div>
+            </div>
+            <FooterClients />
+        </div>
+        <MainScripts />
+    </body>
+</html>
