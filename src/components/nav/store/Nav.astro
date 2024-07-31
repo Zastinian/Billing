@@ -3,6 +3,8 @@ import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
 const translatePath = useTranslatedPath(lang);
+
+const discordUrl = "https://discord.gg/";
 ---
 
 <nav class="main-header navbar navbar-expand-md navbar-dark">
@@ -41,7 +43,7 @@ const translatePath = useTranslatedPath(lang);
                         <li><a href={translatePath("/plans/2")} class="dropdown-item">Plan 2</a></li>
                     </ul>
                 </li>
-                <li class="nav-item"><a href={translatePath("/contact")} class="nav-link">Contact Us</a></li>
+                <li class="nav-item"><a href={discordUrl} class="nav-link">Discord</a></li>
                 <li class="nav-item"><a href={translatePath("/kb")} class="nav-link">Support</a></li>
             </ul>
         </div>
