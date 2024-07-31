@@ -1,0 +1,44 @@
+---
+interface Props {
+    page?: string;
+}
+
+const { page } = Astro.props;
+
+let Page;
+
+switch (page) {
+    case "privacy":
+        Page = `
+<h1>Welcome to your Privacy Policy page.</h1>
+<p>You may edit this page in the admin area.</p>
+`;
+        break;
+    case "terms":
+        Page = `
+<h1>Welcome to your Terms of Service page.</h1>
+<p>You may edit this page in the admin area.</p>
+`;
+        break;
+    case "status":
+        Page = `
+<h1>Welcome to your System Status page.</h1>
+<p>You may edit this page in the admin area.</p>
+`;
+        break;
+    default:
+        Page = `
+<h1>Welcome to your new store.</h1>
+<p>This is the home page. You may edit this page in the admin area.</p>
+`;
+        break;
+}
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body" set:html={Page} />
+        </div>
+    </div>
+</div>
