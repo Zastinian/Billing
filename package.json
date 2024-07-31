@@ -1,5 +1,5 @@
 {
-	"name": "vigorous-velocity",
+	"name": "billing",
 	"type": "module",
 	"version": "develop",
 	"scripts": {
@@ -11,13 +11,23 @@
 		"check": "astro check --minimumSeverity --minimumFailingSeverity && tsc --noEmit && biome ci ./src",
 		"lint": "biome lint --apply ./src",
 		"format": "biome format --write ./src",
-		"prepare:husky": "husky"
+		"prepare:husky": "husky",
+		"db:create": "typeorm migration:create src/database/migrations/<name>",
+		"db:entitie": "typeorm entity:create src/database/entities/<name>",
+		"db:migrate": "typeorm-ts-node-commonjs migration:run --dataSource src/database/data-source.ts",
+		"key:generate": "node -e \"const fs = require('fs'); const crypto = require('crypto'); const appKey = crypto.randomBytes(32).toString('base64'); const envFilePath = '.env'; let envFileContent = fs.readFileSync(envFilePath, 'utf-8'); envFileContent = envFileContent.includes('APP_KEY=') ? envFileContent.replace(/APP_KEY=.*/, `APP_KEY=base64:${appKey}`) : envFileContent + `\\nAPP_KEY=base64:${appKey}`; fs.writeFileSync(envFilePath, envFileContent, 'utf-8'); console.log('App Key Generated!');\""
 	},
 	"dependencies": {
 		"@astrojs/node": "^8.3.2",
 		"astro": "^4.12.3",
 		"jsonwebtoken": "^9.0.2",
+		"mongodb": "5.2.0",
+		"mssql": "^11.0.1",
 		"mysql2": "^3.11.0",
+		"pg": "^8.12.0",
+		"reflect-metadata": "^0.2.2",
+		"sqlite3": "^5.1.7",
+		"typeorm": "^0.3.20",
 		"typescript": "^5.5.4"
 	},
 	"devDependencies": {
