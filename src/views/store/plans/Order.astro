@@ -47,7 +47,26 @@ const translatePath = useTranslatedPath(lang);
             <hr />
             <div class="form-group row">
                 <label class="col-lg-2 col-form-label">Add-ons</label>
-                <div class="col-lg-9"><div id="addons"></div></div>
+                <div class="col-lg-9">
+                    <div class="form-group">
+                        <label for="addon-1-range">More Ram</label>
+                        <span class="float-right">$1 USD / Monthly [ Renew: $1 ] </span>
+                        <br />
+                        <input
+                            class="range"
+                            type="range"
+                            name="addon-1"
+                            value="0"
+                            id="addon-1-range"
+                            min="0"
+                            max="10"
+                            oninput="updateAmount(this.value)"
+                        />
+                        <br />
+                        <small>Aditional Ram: <span id="ram-amount">0</span> MB</small><br />
+                        <small>Add more RAM to your server to increase performance.</small>
+                    </div>
+                </div>
             </div>
             <hr />
             <div class="form-group row">
@@ -112,3 +131,31 @@ const translatePath = useTranslatedPath(lang);
         </div>
     </div>
 </div>
+
+<style>
+    .range {
+        width: 100%;
+        height: 3vh;
+        -webkit-appearance: none;
+        background: #343a40;
+        outline: none;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #6c757d;
+    }
+    .range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #fff7d9;
+        cursor: pointer;
+        border: 4px solid #333;
+    }
+</style>
+
+<script is:inline>
+    function updateAmount(value) {
+        document.getElementById("ram-amount").innerText = value * 1024;
+    }
+</script>
