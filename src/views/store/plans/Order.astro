@@ -1,0 +1,114 @@
+---
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
+---
+
+<div class="row">
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i>Programming: Bun</i></h5>
+                <p class="card-text">
+                    <ul>
+                        <li>1024 MB RAM</li>
+                        <li>100% CPU</li>
+                        <li>2048 MB Disk</li>
+                        <li>0 Databases</li>
+                        <li>0 Backups</li>
+                        <li>0 Extra Ports</li>
+                    </ul>
+                </p>
+                <a href={translatePath("/plans")} class="card-link"><i class="fas fa-arrow-left text-sm"></i> Choose another server plan</a>
+            </div>
+        </div>
+        <form action="{{ route('api.store.order', ['id' => $id]) }}" method="POST" id="order-form" data-callback="orderForm">
+            <div class="form-group row">
+                <label for="serverNameInput" class="col-lg-4 col-form-label">Server Name</label>
+                <div class="col-lg-6">
+                    <input
+                        type="text"
+                        name="server_name"
+                        class="form-control"
+                        id="serverNameInput"
+                        placeholder="This option can be changed later in the panel"
+                    />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-lg-4 col-form-label">Billing Cycle</label>
+                <div class="col-lg-6">
+                    <select class="form-control" name="cycle" id="billing-cycle">
+                        <option value="{{ $plan_cycle->id }}"> $1.00 USD / Month </option>
+                    </select>
+                </div>
+            </div>
+            <hr />
+            <div class="form-group row">
+                <label class="col-lg-2 col-form-label">Add-ons</label>
+                <div class="col-lg-9"><div id="addons"></div></div>
+            </div>
+            <hr />
+            <div class="form-group row">
+                <label class="col-lg-4 col-form-label">Server Nest / Egg</label>
+                <div class="col-lg-4">
+                    <select class="form-control" name="egg">
+                        <option value="" disabled>Programming</option>
+                        <option value="nest_id:egg_id">Bun</option>
+                        <option value="" disabled></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-lg-4 col-form-label">Server Location / Node</label>
+                <div class="col-lg-4">
+                    <select class="form-control" name="node">
+                        <option disabled>(Germany)</option>
+                        <option value="location_id:node_id">Node 1</option>
+                        <option value="" disabled></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="couponCodeInput" class="col-lg-4 col-form-label">Coupon Code</label>
+                <div class="col-lg-4 col-9">
+                    <input type="text" name="coupon" class="form-control" id="couponCodeInput" placeholder="Coupon Code" />
+                </div>
+                <div class="col-lg-3 col-3">
+                    <button type="button" class="btn btn-primary">Apply <i class="fas fa-arrow-circle-right"></i></button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-3">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h5 class="card-title m-0">Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <h6>Server <span class="float-right">Bun</span></h6>
+                <small>
+                    Monthly <span class="float-right">$1.00<span id="plan-init"></span> USD</span><br />
+                    Setup Fee <span class="float-right">$0.00<span id="plan-setup"></span> USD</span>
+                </small>
+                <hr />
+                <div id="addons-summary"></div>
+                <h6>Subtotal <span class="float-right">$1.00<span id="subtotal"></span> USD</span></h6>
+                <h6>Add-on <span class="float-right">$1.00<span id="subtotal"></span> USD</span></h6>
+                <div id="promotion-summary"></div>
+                <small>
+                    <div id="tax-summary"></div>
+                    <div id="credit-summary"></div>
+                </small>
+                <hr />
+                <h6>Due Today <span class="float-right">$1.00<span id="due-today"></span> USD</span></h6>
+                <small>Next Monthly <span class="float-right">$1.00<span id="next-monthly"></span> USD</span></small><br />
+                <small>Free Trial<span class="float-right">10<span id="next-monthly"></span> days</span></small><br />
+                <hr />
+                <button type="submit" form="order-form" class="btn btn-primary float-right">Continue <i class="fas fa-arrow-circle-right"></i></button
+                >
+            </div>
+        </div>
+    </div>
+</div>
