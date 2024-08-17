@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
 
-if (!import.meta.env.APP_KEY) {
+if (!process.env.APP_KEY) {
 	throw new Error("APP_KEY is not set, use `npm run key:generate` to generate a new key");
 }
 
@@ -75,7 +75,7 @@ const AppDataSource = new DataSource({
 	...getDatabaseConfig(),
 	synchronize: false,
 	logging: false,
-	entities: [],
+	entities: ["src/database/entities/*.ts"],
 	migrations: ["src/database/migrations/*.ts"],
 	subscribers: [],
 });
