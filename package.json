@@ -4,7 +4,7 @@
     "version": "develop",
     "scripts": {
         "dev": "astro dev",
-        "start": "astro dev",
+        "start": "bun run server.ts",
         "build": "astro build",
         "preview": "astro preview",
         "astro": "astro",
@@ -15,10 +15,10 @@
         "db:create": "typeorm migration:create src/database/migrations/<name>",
         "db:entitie": "typeorm entity:create src/database/entities/<name>",
         "db:migrate": "typeorm migration:run --dataSource src/database/data-source.ts",
-        "key:generate": "node -e \"const fs = require('fs'); const crypto = require('crypto'); const appKey = crypto.randomBytes(32).toString('base64'); const envFilePath = '.env'; let envFileContent = fs.readFileSync(envFilePath, 'utf-8'); envFileContent = envFileContent.includes('APP_KEY=') ? envFileContent.replace(/APP_KEY=.*/, `APP_KEY=base64:${appKey}`) : envFileContent + `\\nAPP_KEY=base64:${appKey}`; fs.writeFileSync(envFilePath, envFileContent, 'utf-8'); console.log('App Key Generated!');\""
+        "key:generate": "bun run ./src/scripts/key.ts"
     },
     "dependencies": {
-        "@astrojs/node": "^8.3.3",
+        "@nurodev/astro-bun": "^1.1.5",
         "astro": "^4.14.2",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "5.2.0",
