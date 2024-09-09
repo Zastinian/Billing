@@ -22,7 +22,7 @@ export class Jobs1725918762227 implements MigrationInterface {
                     },
                     {
                         name: "payload",
-                        type: "longtext",
+                        type: "text",
                         isNullable: false,
                     },
                     {
@@ -33,20 +33,17 @@ export class Jobs1725918762227 implements MigrationInterface {
                     },
                     {
                         name: "reserved_at",
-                        type: "int",
-                        unsigned: true,
-                        isNullable: true,
+                        type: "datetime",
+                        isNullable: false,
                     },
                     {
                         name: "available_at",
-                        type: "int",
-                        unsigned: true,
+                        type: "datetime",
                         isNullable: false,
                     },
                     {
                         name: "created_at",
-                        type: "int",
-                        unsigned: true,
+                        type: "datetime",
                         isNullable: false,
                     },
                 ],

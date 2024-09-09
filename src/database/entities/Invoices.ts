@@ -36,15 +36,15 @@ export class Invoices {
     @Column("text", { name: "payment_link", nullable: true })
     paymentLink: string | null;
 
-    @Column("timestamp", { name: "due_date", nullable: true })
-    dueDate: NonNullable<unknown> | null;
+    @Column("datetime", { name: "due_date", nullable: true })
+    dueDate: Date | null;
 
     @Column("tinyint", { name: "paid", default: () => "0" })
     paid: number;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "updated_at", nullable: true })
-    updatedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "updated_at", nullable: true })
+    updatedAt: Date | null;
 }

@@ -12,9 +12,9 @@ export class PasswordResets {
     @Column("varchar", { name: "token", length: 255 })
     token: string;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "expires_at", nullable: true })
-    expiresAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "expires_at", nullable: true })
+    expiresAt: Date | null;
 }

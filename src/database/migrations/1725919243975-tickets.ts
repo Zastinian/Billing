@@ -61,12 +61,12 @@ export class Tickets1725919243975 implements MigrationInterface {
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "updated_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

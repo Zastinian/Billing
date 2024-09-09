@@ -53,17 +53,17 @@ export class Coupons1725918310779 implements MigrationInterface {
                     },
                     {
                         name: "end_date",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "updated_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

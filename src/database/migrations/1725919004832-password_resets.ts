@@ -28,12 +28,12 @@ export class PasswordResets1725919004832 implements MigrationInterface {
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "expires_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

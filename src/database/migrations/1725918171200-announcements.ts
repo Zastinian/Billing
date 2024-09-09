@@ -38,12 +38,12 @@ export class Announcements1725918171200 implements MigrationInterface {
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "updated_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

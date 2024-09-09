@@ -23,7 +23,7 @@ export class Clients1725918291066 implements MigrationInterface {
                     },
                     {
                         name: "email_verified_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
@@ -95,12 +95,12 @@ export class Clients1725918291066 implements MigrationInterface {
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "updated_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

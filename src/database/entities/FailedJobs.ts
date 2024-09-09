@@ -14,15 +14,15 @@ export class FailedJobs {
     @Column("text", { name: "queue" })
     queue: string;
 
-    @Column("longtext", { name: "payload" })
-    payload: NonNullable<unknown>;
+    @Column("text", { name: "payload" })
+    payload: string;
 
-    @Column("longtext", { name: "exception" })
-    exception: NonNullable<unknown>;
+    @Column("text", { name: "exception" })
+    exception: string;
 
-    @Column("timestamp", {
+    @Column("datetime", {
         name: "failed_at",
         default: () => "CURRENT_TIMESTAMP",
     })
-    failedAt: NonNullable<unknown>;
+    failedAt: Date;
 }

@@ -23,12 +23,12 @@ export class Coupons {
     @Column("tinyint", { name: "is_global", default: () => "0" })
     isGlobal: number;
 
-    @Column("timestamp", { name: "end_date", nullable: true })
-    endDate: NonNullable<unknown> | null;
+    @Column("datetime", { name: "end_date", nullable: true })
+    endDate: Date | null;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "updated_at", nullable: true })
-    updatedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "updated_at", nullable: true })
+    updatedAt: Date | null;
 }

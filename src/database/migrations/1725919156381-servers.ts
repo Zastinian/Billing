@@ -48,7 +48,7 @@ export class Servers1725919156381 implements MigrationInterface {
                     },
                     {
                         name: "due_date",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
@@ -101,17 +101,17 @@ export class Servers1725919156381 implements MigrationInterface {
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "updated_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "last_notif",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

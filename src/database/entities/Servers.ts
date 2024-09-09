@@ -25,8 +25,8 @@ export class Servers {
     @Column("int", { name: "plan_cycle" })
     planCycle: number;
 
-    @Column("timestamp", { name: "due_date", nullable: true })
-    dueDate: NonNullable<unknown> | null;
+    @Column("datetime", { name: "due_date", nullable: true })
+    dueDate: Date | null;
 
     @Column("varchar", { name: "payment_method", length: 255 })
     paymentMethod: string;
@@ -52,12 +52,12 @@ export class Servers {
     @Column("tinyint", { name: "status", default: () => "1" })
     status: number;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "updated_at", nullable: true })
-    updatedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "updated_at", nullable: true })
+    updatedAt: Date | null;
 
-    @Column("timestamp", { name: "last_notif", nullable: true })
-    lastNotif: NonNullable<unknown> | null;
+    @Column("datetime", { name: "last_notif", nullable: true })
+    lastNotif: Date | null;
 }

@@ -38,9 +38,9 @@ export class Emails {
     @Column("varchar", { name: "notice", length: 255 })
     notice: string;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "updated_at", nullable: true })
-    updatedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "updated_at", nullable: true })
+    updatedAt: Date | null;
 }

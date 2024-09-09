@@ -33,18 +33,18 @@ export class FailedJobs1725918466111 implements MigrationInterface {
                     },
                     {
                         name: "payload",
-                        type: "longtext",
+                        type: "text",
                         isNullable: false,
                     },
                     {
                         name: "exception",
-                        type: "longtext",
+                        type: "text",
                         isNullable: false,
                     },
                     {
                         name: "failed_at",
-                        type: "timestamp",
-                        default: "CURRENT_TIMESTAMP",
+                        type: "datetime",
+                        isNullable: false,
                     },
                 ],
             }),

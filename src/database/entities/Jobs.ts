@@ -9,8 +9,8 @@ export class Jobs {
     @Column("varchar", { name: "queue", length: 255 })
     queue: string;
 
-    @Column("longtext", { name: "payload" })
-    payload: NonNullable<unknown>;
+    @Column("text", { name: "payload" })
+    payload: string;
 
     @Column("tinyint", { name: "attempts" })
     attempts: number;

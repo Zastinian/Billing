@@ -63,7 +63,7 @@ export class Invoices1725918553654 implements MigrationInterface {
                     },
                     {
                         name: "due_date",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
@@ -73,12 +73,12 @@ export class Invoices1725918553654 implements MigrationInterface {
                     },
                     {
                         name: "created_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                     {
                         name: "updated_at",
-                        type: "timestamp",
+                        type: "datetime",
                         isNullable: true,
                     },
                 ],

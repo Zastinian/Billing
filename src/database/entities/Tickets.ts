@@ -29,9 +29,9 @@ export class Tickets {
     @Column("tinyint", { name: "priority", nullable: true })
     priority: number | null;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "updated_at", nullable: true })
-    updatedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "updated_at", nullable: true })
+    updatedAt: Date | null;
 }

@@ -9,8 +9,8 @@ export class Clients {
     @Column("varchar", { name: "email", length: 255, unique: true })
     email: string;
 
-    @Column("timestamp", { name: "email_verified_at", nullable: true })
-    emailVerifiedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "email_verified_at", nullable: true })
+    emailVerifiedAt: Date | null;
 
     @Column("varchar", { name: "recent_ip", nullable: true, length: 255 })
     recentIp: string | null;
@@ -54,11 +54,11 @@ export class Clients {
     @Column("tinyint", { name: "is_admin", default: () => "0" })
     isAdmin: number;
 
-    @Column("timestamp", { name: "created_at", nullable: true })
-    createdAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "created_at", nullable: true })
+    createdAt: Date | null;
 
-    @Column("timestamp", { name: "updated_at", nullable: true })
-    updatedAt: NonNullable<unknown> | null;
+    @Column("datetime", { name: "updated_at", nullable: true })
+    updatedAt: Date | null;
 
     async setPassword(password: string): Promise<void> {
         this.password = createHmac("sha256", String(process.env.APP_KEY))
