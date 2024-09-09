@@ -1,8 +1,10 @@
 import { DataSource } from "typeorm";
 
 if (!process.env.APP_KEY) {
-    throw new Error("APP_KEY is not set, use `npm run key:generate` to generate a new key");
+    throw new Error("APP_KEY is not set, use `bun run --bun key:generate` to generate a new key");
 }
+
+import entities from "./entities";
 
 const getDatabaseConfig = () => {
     switch (process.env.DB_CONNECTION) {
@@ -75,14 +77,14 @@ const AppDataSource = new DataSource({
     ...getDatabaseConfig(),
     synchronize: false,
     logging: false,
-    entities: ["src/database/entities/*.ts"],
+    entities: entities,
     migrations: ["src/database/migrations/*.ts"],
     subscribers: [],
 });
 
-AppDataSource.initialize().catch(() => {
+await AppDataSource.initialize().catch(() => {
     console.error("Unable to connect to the database, please check your configuration.");
-    console.error("Try using `npm run db:migrate` to create the database tables.");
+    console.error("Try using `bun run --bun db:migrate` to create the database tables.");
     process.exit(1);
 });
 
