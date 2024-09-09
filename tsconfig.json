@@ -19,6 +19,7 @@
         "paths": {
             "@/*": ["./*"],
             "@/components/*": ["./src/components/*"],
+            "@/database/*": ["./src/database/*"],
             "@/i18n/*": ["./src/i18n/*"],
             "@/layouts/*": ["./src/layouts/*"],
             "@/types/*": ["./src/types/*"],
