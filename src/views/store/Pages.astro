@@ -1,4 +1,6 @@
 ---
+import { pages } from "@/database/index";
+
 interface Props {
     page?: string;
 }
@@ -27,10 +29,7 @@ switch (page) {
 `;
         break;
     default:
-        Page = `
-<h1>Welcome to your new store.</h1>
-<p>This is the home page. You may edit this page in the admin area.</p>
-`;
+        Page = (await pages.findOneBy({ name: "home" }).then((page) => page))?.content;
         break;
 }
 ---
