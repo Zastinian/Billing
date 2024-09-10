@@ -1,23 +1,46 @@
+---
+import { clients, currencies, taxes } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId }).then((client) => client);
+}
+
+const allCurrencies = await currencies.find().then((currencies) => currencies);
+const allTaxes = await taxes.find().then((taxes) => taxes);
+---
+
 <div class="row">
     <div class="col-lg-4">
         <div class="card card-primary">
             <div class="card-header">
                 <h3 class="card-title">Basic Settings</h3>
             </div>
-            <form action="{{ route('api.client.account.basic') }}" method="PUT" data-callback="changeSetting">
-
+            <form action="/api/client/basic" method="POST" data-callback="changeSetting">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="currencyInput">Currency</label>
                         <select class="form-control" name="currency">
-                            <option value="{{ $currency->id }}" selected>USD</option>
-                            <option value="{{ $currency->id }}">MXN</option>
+                            {
+                                allCurrencies.map((currency) => (
+                                    <option value={currency.id} selected={currency.id === client?.currency}>{currency.name}</option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="countryInput">Country</label>
                         <select class="form-control" name="country">
-                            <option value="{{ $tax->id }}" selected> Global </option>
+                            {
+                                allTaxes.map((tax) => (
+                                    <option value={tax.id} selected={tax.id === client?.country}>{tax.country}</option>
+                                ))
+                            }
                         </select>
                     </div>
                 </div>
@@ -32,7 +55,7 @@
             <div class="card-header">
                 <h3 class="card-title">Change Email Address</h3>
             </div>
-            <form action="{{ route('api.client.account.email') }}" method="PUT" data-callback="changeEmail">
+            <form action="/api/client/email" method="POST" data-callback="changeEmail">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="emailInput">Email Address</label>
