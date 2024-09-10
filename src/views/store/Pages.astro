@@ -2,7 +2,7 @@
 import { pages } from "@/database/index";
 
 interface Props {
-    page?: string;
+  page?: string;
 }
 
 const { page } = Astro.props;
@@ -10,18 +10,18 @@ const { page } = Astro.props;
 let Page;
 
 switch (page) {
-    case "privacy":
-        Page = (await pages.findOneBy({ name: "privacy" }).then((page) => page))?.content || "";
-        break;
-    case "terms":
-        Page = (await pages.findOneBy({ name: "terms" }).then((page) => page))?.content || "";
-        break;
-    case "status":
-        Page = (await pages.findOneBy({ name: "status" }).then((page) => page))?.content || "";
-        break;
-    default:
-        Page = (await pages.findOneBy({ name: "home" }).then((page) => page))?.content || "";
-        break;
+  case "privacy":
+    Page = (await pages.findOneBy({ name: "privacy" }).then((page) => page))?.content || "";
+    break;
+  case "terms":
+    Page = (await pages.findOneBy({ name: "terms" }).then((page) => page))?.content || "";
+    break;
+  case "status":
+    Page = (await pages.findOneBy({ name: "status" }).then((page) => page))?.content || "";
+    break;
+  default:
+    Page = (await pages.findOneBy({ name: "home" }).then((page) => page))?.content || "";
+    break;
 }
 ---
 

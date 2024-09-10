@@ -2,30 +2,30 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("categories")
 export class Categories {
-    @PrimaryGeneratedColumn({ type: "integer", name: "id" })
-    id: number;
+  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
+  id: number;
 
-    @Column("varchar", { name: "name", length: 255 })
-    name: string;
+  @Column("varchar", { name: "name", length: 255 })
+  name: string;
 
-    @Column("text", { name: "description", nullable: true })
-    description: string | null;
+  @Column("text", { name: "description", nullable: true })
+  description: string | null;
 
-    @Column("int", { name: "global_limit", nullable: true })
-    globalLimit: number | null;
+  @Column("int", { name: "global_limit", nullable: true })
+  globalLimit: number | null;
 
-    @Column("int", { name: "per_client_limit", nullable: true })
-    perClientLimit: number | null;
+  @Column("int", { name: "per_client_limit", nullable: true })
+  perClientLimit: number | null;
 
-    @Column("int", { name: "per_client_trial_limit", nullable: true })
-    perClientTrialLimit: number | null;
+  @Column("int", { name: "per_client_trial_limit", nullable: true })
+  perClientTrialLimit: number | null;
 
-    @Column("int", { name: "order", default: () => "1000" })
-    order: number;
+  @Column("int", { name: "order", default: () => "1000" })
+  order: number;
 
-    @Column("datetime", { name: "created_at", nullable: true })
-    createdAt: Date | null;
+  @Column("datetime", { name: "created_at", nullable: true })
+  createdAt: Date | null;
 
-    @Column("datetime", { name: "updated_at", nullable: true })
-    updatedAt: Date | null;
+  @Column("datetime", { name: "updated_at", nullable: true })
+  updatedAt: Date | null;
 }
