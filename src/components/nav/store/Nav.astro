@@ -1,10 +1,33 @@
 ---
 import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { clients, settings } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
 
 const lang = getLangFromUrl(Astro.url);
 const translatePath = useTranslatedPath(lang);
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
 
-const discordUrl = "https://discord.gg/";
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId }).then((client) => client);
+  if (client?.email !== c.email) {
+    client = null;
+  }
+}
+
+const discordUrl = await settings
+  .findOneBy({ key: "discord_url" })
+  .then((setting) => setting?.value);
+
+let language;
+
+switch (lang) {
+  case "en":
+    language = "English";
+    break;
+}
 ---
 
 <nav class="main-header navbar navbar-expand-md navbar-dark">
@@ -43,7 +66,11 @@ const discordUrl = "https://discord.gg/";
                         <li><a href={translatePath("/plans/2")} class="dropdown-item">Plan 2</a></li>
                     </ul>
                 </li>
-                <li class="nav-item"><a href={discordUrl} class="nav-link">Discord</a></li>
+                {
+                    discordUrl && (
+                        <li class="nav-item"><a href={discordUrl} class="nav-link">Discord</a></li>
+                    )
+                }
                 <li class="nav-item"><a href={translatePath("/kb")} class="nav-link">Support</a></li>
             </ul>
         </div>
@@ -57,51 +84,58 @@ const discordUrl = "https://discord.gg/";
                     aria-haspopup="true"
                     aria-expanded="false"
                     class="nav-link dropdown-toggle"
-                    >English<a>
+                    >{language}<a>
                         <ul aria-labelledby="countryMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
-                            <li><a href="{{ route('lang', ['id' => 'EN']) }}" class="dropdown-item">English</a></li>
+                            <li><a href={translatePath(Astro.url.pathname)} class="dropdown-item">English</a></li>
                         </ul>
                     </a>
                 </a>
             </li>
             <li class="nav-item dropdown">
-                <!--
-                <a id="accountMenu" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">contact@zastinian.com</a>
-                <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
-                    <li><a href="{{ route('client.dash') }}" class="dropdown-item">Client Area</a></li>
-                    <li><a href="{{ route('client.credit.show') }}" class="dropdown-item">Account Credit</a></li>
-                    <li><a href="{{ route('client.account.show') }}" class="dropdown-item">Account Settings</a></li>
-                    <li><a href="{{ route('admin.dash') }}" class="dropdown-item">Admin Area</a></li>
-                    <div class="dropdown-divider"></div>
-                    <li><a href="{{ route('client.logout') }}" class="dropdown-item">Logout</a></li>
-                </ul>
-                -->
-                <a
-                    id="accountMenu"
-                    href="javascript:void(0);"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    class="nav-link dropdown-toggle">Account</a
-                >
-                <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
-                    <li>
-                        <a href="javascript:void(0);" data-toggle="modal" data-target="#login-modal" class="dropdown-item"
-                            >Login</a
-                        >
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" data-toggle="modal" data-target="#register-modal" class="dropdown-item"
-                            >Register</a
-                        >
-                    </li>
-                    <div class="dropdown-divider"></div>
-                    <li>
-                        <a href="javascript:void(0);" data-toggle="modal" data-target="#forgot-modal" class="dropdown-item"
-                            >Forgot Password?</a
-                        >
-                    </li>
-                </ul>
+                {
+                    c.success === true && client
+                        ? (
+                            <a id="accountMenu" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">{client?.email}</a>
+                            <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
+                                <li><a href={translatePath("/client")} class="dropdown-item">Client Area</a></li>
+                                <li><a href={translatePath("/client/credits")} class="dropdown-item">Account Credit</a></li>
+                                <li><a href={translatePath("/client/settings")} class="dropdown-item">Account Settings</a></li>
+                                {
+                                    client?.isAdmin === 1 && (
+                                        <li><a href="{{ route('admin.dash') }}" class="dropdown-item">Admin Area</a></li>
+                                    )
+                                }
+                                <div class="dropdown-divider"></div>
+                                <li><a href="/api/auth/logout" class="dropdown-item">Logout</a></li>
+                            </ul>
+                        ) : (
+                            <a
+                                href="javascript:void(0);"
+                                data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                class="nav-link dropdown-toggle">Account</a
+                            >
+                            <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
+                                <li>
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#login-modal" class="dropdown-item"
+                                        >Login</a
+                                    >
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#register-modal" class="dropdown-item"
+                                        >Register</a
+                                    >
+                                </li>
+                                <div class="dropdown-divider"></div>
+                                <li>
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#forgot-modal" class="dropdown-item"
+                                        >Forgot Password?</a
+                                    >
+                                </li>
+                            </ul>
+                        )
+                }
             </li>
         </ul>
     </div>

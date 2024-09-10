@@ -1,10 +1,33 @@
 ---
 import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { clients, settings } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
 
 const lang = getLangFromUrl(Astro.url);
 const translatePath = useTranslatedPath(lang);
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
 
-const discordUrl = "https://discord.gg/";
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId }).then((client) => client);
+  if (client?.email !== c.email) {
+    client = null;
+  }
+}
+
+const discordUrl = await settings
+  .findOneBy({ key: "discord_url" })
+  .then((setting) => setting?.value);
+
+let language;
+
+switch (lang) {
+  case "en":
+    language = "English";
+    break;
+}
 ---
 
 <nav class="main-header navbar navbar-expand navbar-dark">
@@ -41,7 +64,11 @@ const discordUrl = "https://discord.gg/";
                         <li><a href={translatePath("/plans/2")} class="dropdown-item">Plan 2</a></li>
                     </ul>
                 </li>
-                <li><a href={discordUrl} class="dropdown-item">Discord</a></li>
+                {
+                    discordUrl && (
+                        <li><a href={discordUrl} class="dropdown-item">Discord</a></li>
+                    )
+                }
                 <li><a href={translatePath("/kb")} class="dropdown-item">Knowledge Base</a></li>
                 <li><a href={translatePath("/status")} class="dropdown-item">System Status</a></li>
             </ul>
@@ -50,12 +77,27 @@ const discordUrl = "https://discord.gg/";
     <ul class="navbar-nav ml-auto">
         <li class="nav-item dropdown">
             <a
+                id="countryMenu"
+                href="javascript:void(0);"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                class="nav-link dropdown-toggle"
+                >{language}<a>
+                    <ul aria-labelledby="countryMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
+                        <li><a href={translatePath(Astro.url.pathname)} class="dropdown-item">English</a></li>
+                    </ul>
+                </a>
+            </a>
+        </li>
+        <li class="nav-item dropdown">
+            <a
                 id="accountMenu"
                 href="javascript:void(0);"
                 data-toggle="dropdown"
                 aria-haspopup="true"
                 aria-expanded="false"
-                class="nav-link dropdown-toggle">contact@zastinian.com</a
+                class="nav-link dropdown-toggle">{client?.email}</a
             >
             <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
                 <li><a href={translatePath("/client/credits")} class="dropdown-item">Account Credit</a></li>
@@ -67,3 +109,7 @@ const discordUrl = "https://discord.gg/";
         </li>
     </ul>
 </nav>
+
+<script is:inline>
+
+</script>
