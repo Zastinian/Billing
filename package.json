@@ -13,13 +13,13 @@
     "format": "biome format --write ./src",
     "prepare:husky": "husky",
     "db:create": "typeorm migration:create src/database/migrations/<name>",
-    "db:entitie": "typeorm entity:create src/database/entities/<name>",
+    "db:entity": "typeorm entity:create src/database/entities/<name>",
     "db:migrate": "typeorm migration:run --dataSource src/database/data-source.ts",
     "key:generate": "bun run ./src/scripts/key.ts"
   },
   "dependencies": {
-    "@nurodev/astro-bun": "^1.1.5",
-    "astro": "^4.14.2",
+    "@astrojs/node": "^8.3.3",
+    "astro": "^4.15.4",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "5.2.0",
     "mssql": "^11.0.1",
