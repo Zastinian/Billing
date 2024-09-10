@@ -44,7 +44,7 @@ export class FailedJobs1725918466111 implements MigrationInterface {
           {
             name: "failed_at",
             type: "datetime",
-            isNullable: false,
+            default: "CURRENT_TIMESTAMP",
           },
         ],
       }),

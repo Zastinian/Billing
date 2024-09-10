@@ -29,15 +29,15 @@ export class Clients {
   })
   credit: number;
 
-  @Column("varchar", { name: "currency", length: 255, default: () => "0" })
-  currency: string;
+  @Column("varchar", { name: "currency", length: 255, default: () => "1" })
+  currency: number;
 
   @Column("varchar", {
     name: "country",
     length: 255,
-    default: () => "'Global'",
+    default: () => "1",
   })
-  country: string;
+  country: number;
 
   @Column("varchar", { name: "timezone", length: 255, default: () => "'UTC'" })
   timezone: string;
@@ -54,11 +54,11 @@ export class Clients {
   @Column("tinyint", { name: "is_admin", default: () => "0" })
   isAdmin: number;
 
-  @Column("datetime", { name: "created_at", nullable: true })
-  createdAt: Date | null;
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
+  createdAt: Date;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
-  updatedAt: Date | null;
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
+  updatedAt: Date;
 
   async setPassword(password: string): Promise<void> {
     this.password = createHmac("sha256", String(import.meta.env.APP_KEY))

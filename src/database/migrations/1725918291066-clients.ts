@@ -58,13 +58,13 @@ export class Clients1725918291066 implements MigrationInterface {
             name: "currency",
             type: "varchar",
             length: "255",
-            default: "0",
+            default: "1",
           },
           {
             name: "country",
             type: "varchar",
             length: "255",
-            default: "'Global'",
+            default: "1",
           },
           {
             name: "timezone",
@@ -96,12 +96,12 @@ export class Clients1725918291066 implements MigrationInterface {
           {
             name: "created_at",
             type: "datetime",
-            isNullable: true,
+            default: "CURRENT_TIMESTAMP",
           },
           {
             name: "updated_at",
             type: "datetime",
-            isNullable: true,
+            default: "CURRENT_TIMESTAMP",
           },
         ],
       }),

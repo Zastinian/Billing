@@ -12,15 +12,6 @@ export class Jobs {
   @Column("text", { name: "payload" })
   payload: string;
 
-  @Column("tinyint", { name: "attempts" })
-  attempts: number;
-
-  @Column("int", { name: "reserved_at", nullable: true })
-  reservedAt: number | null;
-
-  @Column("int", { name: "available_at" })
-  availableAt: number;
-
-  @Column("int", { name: "created_at" })
-  createdAt: number;
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
+  createdAt: Date;
 }

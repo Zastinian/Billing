@@ -96,6 +96,12 @@ export class Settings1725919183938 implements MigrationInterface {
         updated_at: new Date(),
       },
       {
+        key: "discord_url",
+        value: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
         key: "phpmyadmin_url",
         value: null,
         created_at: new Date(),

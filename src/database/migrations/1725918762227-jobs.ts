@@ -26,25 +26,9 @@ export class Jobs1725918762227 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: "attempts",
-            type: "tinyint",
-            unsigned: true,
-            isNullable: false,
-          },
-          {
-            name: "reserved_at",
-            type: "datetime",
-            isNullable: false,
-          },
-          {
-            name: "available_at",
-            type: "datetime",
-            isNullable: false,
-          },
-          {
             name: "created_at",
             type: "datetime",
-            isNullable: false,
+            default: "CURRENT_TIMESTAMP",
           },
         ],
         indices: [
