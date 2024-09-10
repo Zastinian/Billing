@@ -61,14 +61,14 @@ export class Clients {
     updatedAt: Date | null;
 
     async setPassword(password: string): Promise<void> {
-        this.password = createHmac("sha256", String(process.env.APP_KEY))
+        this.password = createHmac("sha256", String(import.meta.env.APP_KEY))
             .update(password)
             .digest("base64");
     }
 
     async verifyPassword(password: string): Promise<boolean> {
         return (
-            createHmac("sha256", String(process.env.APP_KEY)).update(password).digest("base64") ===
+            createHmac("sha256", String(import.meta.env.APP_KEY)).update(password).digest("base64") ===
             this.password
         );
     }
