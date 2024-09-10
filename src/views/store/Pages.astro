@@ -11,25 +11,16 @@ let Page;
 
 switch (page) {
     case "privacy":
-        Page = `
-<h1>Welcome to your Privacy Policy page.</h1>
-<p>You may edit this page in the admin area.</p>
-`;
+        Page = (await pages.findOneBy({ name: "privacy" }).then((page) => page))?.content || "";
         break;
     case "terms":
-        Page = `
-<h1>Welcome to your Terms of Service page.</h1>
-<p>You may edit this page in the admin area.</p>
-`;
+        Page = (await pages.findOneBy({ name: "terms" }).then((page) => page))?.content || "";
         break;
     case "status":
-        Page = `
-<h1>Welcome to your System Status page.</h1>
-<p>You may edit this page in the admin area.</p>
-`;
+        Page = (await pages.findOneBy({ name: "status" }).then((page) => page))?.content || "";
         break;
     default:
-        Page = (await pages.findOneBy({ name: "home" }).then((page) => page))?.content;
+        Page = (await pages.findOneBy({ name: "home" }).then((page) => page))?.content || "";
         break;
 }
 ---
