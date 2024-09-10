@@ -14,7 +14,7 @@ const translatePath = useTranslatedPath(lang);
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route('api.store.login') }}" method="POST" data-callback="loginForm">
+            <form action="/api/auth/login" method="POST" data-callback="loginForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="emailInput">Email Address</label>
@@ -56,7 +56,7 @@ const translatePath = useTranslatedPath(lang);
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route('api.store.register') }}" method="POST" data-callback="registerForm">
+            <form action="/api/auth/register" method="POST" data-callback="registerForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="emailInput">Email Address</label>
@@ -109,7 +109,7 @@ const translatePath = useTranslatedPath(lang);
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route('api.store.forgot') }}" method="POST" data-callback="forgotForm">
+            <form action="/api/auth/forgot" method="POST" data-callback="forgotForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="emailInput">Email Address</label>
