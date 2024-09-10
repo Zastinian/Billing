@@ -1,0 +1,59 @@
+---
+const type = new URL(Astro.request.url).searchParams.get("type");
+const msg = new URL(Astro.request.url).searchParams.get("msg");
+
+let message = "";
+
+switch (msg) {
+  case "error":
+    message = "An error occurred contact the administrator";
+    break;
+  case "auth.invalid":
+    message = "Invalid credentials";
+    break;
+  case "auth.register.already":
+    message = "This email is already registered";
+    break;
+  case "auth.register.password":
+    message = "Passwords do not match";
+    break;
+  case "auth.register.pterodactyl":
+    message = "The user already exists in the panel";
+    break;
+  case "client.settings.basic.error":
+    message = "Please select a country and currency";
+    break;
+  case "client.settings.email.error":
+    message = "Please enter a valid email address or password are incorrect";
+    break;
+  case "client.settings.success":
+    message = "Settings saved successfully";
+    break;
+}
+---
+
+{
+    type === "danger"
+    ?
+        <div class="alert alert-danger">
+            {message}
+        </div>
+    :
+    type === "warning"
+    ?
+        <div class="alert alert-warning">
+            {message}
+        </div>
+    :
+    type === "info"
+    ?
+        <div class="alert alert-info">
+            {message}
+        </div>
+    :
+    type === "success"
+    &&
+        <div class="alert alert-success">
+            {message}
+        </div>
+}
