@@ -23,7 +23,8 @@
       "@/i18n/*": ["./src/i18n/*"],
       "@/layouts/*": ["./src/layouts/*"],
       "@/types/*": ["./src/types/*"],
-      "@/views/*": ["./src/views/*"]
+      "@/views/*": ["./src/views/*"],
+      "@/utils/*": ["./src/utils/*"]
     }
   },
   "exclude": ["node_modules", "public", ".astro", ".vscode", "dist", ".git", ".husky"]
