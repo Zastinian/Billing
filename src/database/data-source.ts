@@ -4,6 +4,14 @@ if (!import.meta.env.APP_KEY) {
   throw new Error("APP_KEY is not set, use `bun run --bun key:generate` to generate a new key");
 }
 
+if (!import.meta.env.COMPANY_NAME) {
+  throw new Error("COMPANY_NAME is not set in .env");
+}
+
+if (!import.meta.env.STORE_URL) {
+  throw new Error("STORE_URL is not set in .env");
+}
+
 import entities from "./entities";
 import migrations from "./migrations";
 

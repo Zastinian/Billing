@@ -43,13 +43,13 @@ export class Settings1725919183938 implements MigrationInterface {
     await queryRunner.manager.insert("settings", [
       {
         key: "company_name",
-        value: "Company Name",
+        value: import.meta.env.COMPANY_NAME,
         created_at: new Date(),
         updated_at: new Date(),
       },
       {
         key: "store_url",
-        value: "https://example.com",
+        value: import.meta.env.STORE_URL,
         created_at: new Date(),
         updated_at: new Date(),
       },
