@@ -6,9 +6,13 @@ import MainScripts from "@/components/scripts/Scripts.astro";
 
 import Modals from "@/components/modals/Modals.astro";
 
-import NavClients from "@/components/nav/store/Nav.astro";
+import NavStore from "@/components/nav/store/Nav.astro";
 
-import FooterClients from "@/components/footer/store/Footer.astro";
+import FooterStore from "@/components/footer/store/Footer.astro";
+
+import Alerts from "@/components/alerts/index.astro";
+
+import Messages from "@/components/messages/index.astro";
 
 interface Props {
   title: string;
@@ -25,17 +29,19 @@ const { title } = Astro.props;
             <div class="preloader flex-column justify-content-center align-items-center">
                 <img class="animation__shake" src="/favicon.webp" alt="{{ config('app.company_name') }} Logo" height="100" width="100" />
             </div>
-            <NavClients />
+            <NavStore />
             <div class="content-wrapper">
                 <div class="content">
                     <StoreHeader title={title} />
                     <div class="container" id="content-container">
+                        <Alerts />
+                        <Messages />
                         <slot />
                     </div>
                     <Modals />
                 </div>
             </div>
-            <FooterClients />
+            <FooterStore />
         </div>
         <MainScripts />
     </body>

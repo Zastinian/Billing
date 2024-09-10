@@ -8,9 +8,13 @@ import MainScripts from "@/components/scripts/Scripts.astro";
 
 import NavClients from "@/components/nav/clients/Nav.astro";
 
-import SidebarClients from "@/components/sidebar/clients/Siderbar.astro";
+import SidebarClients from "@/components/sidebar/clients/Sidebar.astro";
 
 import FooterClients from "@/components/footer/clients/Footer.astro";
+
+import Alerts from "@/components/alerts/index.astro";
+
+import Messages from "@/components/messages/index.astro";
 
 interface Props {
   title: string;
@@ -35,6 +39,8 @@ const { title, route, items } = Astro.props;
 				<ClientsHeader title={title} items={items} />
 				<div class="content">
 					<div class="container-fluid" id="content-container">
+                        <Alerts />
+                        <Messages />
 						<slot />
 					</div>
 				</div>
