@@ -1,14 +1,18 @@
 ---
 import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { settings } from "@/database/index";
 
 const lang = getLangFromUrl(Astro.url);
 const translatePath = useTranslatedPath(lang);
+const companyName = await settings
+  .findOneBy({ key: "company_name" })
+  .then((setting) => setting?.value);
 ---
 
 <footer class="main-footer">
     <strong
         >Copyright &copy; {new Date().getFullYear()}
-        <a href={translatePath("/")}>Company Name</a>. All Rights Reserved. Powered by <a href="https://docs.hedystia.com">Hedystia</a>.</strong
+        <a href={translatePath("/")}>{companyName ?? "Company Name"}</a>. All Rights Reserved. Powered by <a href="https://docs.hedystia.com" translate="no">Hedystia</a>.</strong
     >
     <div class="float-right d-none d-sm-inline-block">
         <a href={translatePath("/terms")}>Terms of Service</a> | <a href={translatePath("/privacy")}>Privacy Policy</a>
