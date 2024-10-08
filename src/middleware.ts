@@ -39,10 +39,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  const referrer = context.request.headers.get("referer") || "";
-  const allowedReferrers = [import.meta.env.STORE_URL];
-  if (!allowedReferrers.some((allowedRef) => referrer.startsWith(allowedRef))) {
-    return new Response("Blocked: Are you a bot?", { status: 403 });
+  const referrer = context.request.headers.get("referer");
+  const allowedReferrers = [new URL(import.meta.env.STORE_URL ?? "").origin];
+
+  if (referrer) {
+    const referrerOrigin = new URL(referrer).origin;
+    if (!allowedReferrers.some((allowedRef) => referrerOrigin.startsWith(allowedRef))) {
+      return new Response("Blocked: Are you a bot?", { status: 403 });
+    }
   }
 
   const connectSidId = context.cookies.get("connect.sid.id");
