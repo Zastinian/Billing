@@ -1,0 +1,111 @@
+---
+import { settings } from "@/database/index";
+
+const setting_model = await settings.findOneBy({ key: "company_name" });
+const logo_path = await settings.findOneBy({ key: "logo_path" });
+const favicon_path = await settings.findOneBy({ key: "favicon_path" });
+const open_registration = await settings.findOneBy({ key: "open_registration" });
+const panel_url = await settings.findOneBy({ key: "panel_url" });
+const panel_client_api_key = await settings.findOneBy({ key: "panel_client_api_key" });
+const panel_app_api_key = await settings.findOneBy({ key: "panel_app_api_key" });
+const discord_url = await settings.findOneBy({ key: "discord_url" });
+const phpmyadmin_url = await settings.findOneBy({ key: "phpmyadmin_url" });
+const hcaptcha_site_key = await settings.findOneBy({ key: "hcaptcha_site_key" });
+const hcaptcha_secret_key = await settings.findOneBy({ key: "hcaptcha_secret_key" });
+const google_analytics_id = await settings.findOneBy({ key: "google_analytics_id" });
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <form action="/api/admin/settings" method="POST">
+                <div class="card-body row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="companyNameInput">Company Name</label>
+                            <input type="text" name="company_name"
+                                value={setting_model?.value ?? ""}
+                                class="form-control" id="companyNameInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="logoPathInput">Logo File Path (Must be inside the 'public' folder)</label>
+                            <input type="text" name="logo_path"
+                                value={logo_path?.value ?? ""}
+                                class="form-control" id="logoPathInput" placeholder="e.g. /img/icon.webp" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="faviconPathInput">Favicon File Path (Must be inside the 'public' folder)</label>
+                            <input type="text" name="favicon_path"
+                                value={favicon_path?.value ?? ""}
+                                class="form-control" id="faviconPathInput" placeholder="e.g. /img/favicon.webp"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="openRegistrationInput">Open Registration</label>
+                            <select class="form-control" name="open_registration">
+                                <option value="1" selected={open_registration?.value === "true"}>Yes</option>
+                                <option value="0" selected={open_registration?.value === "false"}>No</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="panelUrlInput">Panel URL (Must include 'https://')</label>
+                            <input type="text" name="panel_url"
+                                value={panel_url?.value ?? ""}
+                                class="form-control" id="panelUrlInput" placeholder="e.g. https://panel.example.com"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="panelClientApiKeyInput">Panel Client API Key (Must be an administrator)</label>
+                            <input type="text" name="panel_client_api_key"
+                                value={panel_client_api_key?.value ?? ""}
+                                class="form-control" id="panelClientApiKeyInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="panelAppApiKeyInput">Panel Application API Key (Must given enough
+                                permissions)</label>
+                            <input type="text" name="panel_app_api_key"
+                                value={panel_app_api_key?.value ?? ""}
+                                class="form-control" id="panelAppApiKeyInput" required>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 offset-lg-1">
+                        <h5>Optional Settings</h5>
+                        <div class="form-group">
+                            <label for="discordUrlInput">Discord URL</label>
+                            <input type="text" name="discord_url"
+                                value={discord_url?.value ?? ""}
+                                class="form-control" id="discordUrlInput" placeholder="e.g. https://discord.gg/example">
+                        </div>
+                        <div class="form-group">
+                            <label for="phpMyAdminUrlInput">phpMyAdmin URL</label>
+                            <input type="text" name="phpmyadmin_url"
+                                value={phpmyadmin_url?.value ?? ""}
+                                class="form-control" id="phpMyAdminUrlInput" placeholder="e.g. https://pma.example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="hCaptchaSiteKeyInput">hCaptcha Site Key</label>
+                            <input type="text" name="hcaptcha_site_key"
+                                value={hcaptcha_site_key?.value ?? ""}
+                                class="form-control" id="hCaptchaSiteKeyInput">
+                        </div>
+                        <div class="form-group">
+                            <label for="hCaptchaSecretKeyInput">hCaptcha Secret Key</label>
+                            <input type="text" name="hcaptcha_secret_key"
+                                value={hcaptcha_secret_key?.value ?? ""}
+                                class="form-control" id="hCaptchaSecretKeyInput">
+                        </div>
+                        <div class="form-group">
+                            <label for="analyticsIdInput">Google Analytics</label>
+                            <input type="text" name="google_analytics_id"
+                                value={google_analytics_id?.value ?? ""}
+                                class="form-control" id="analyticsIdInput" placeholder="UA-XXXXXX or G-XXXXXX">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,299 @@
+---
+import { clients, currencies, invoices, servers, tickets } from "@/database/index";
+import { invoiceStatus, serverStatus, ticketStatus } from "@/utils/status";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import type { Currencies } from "@/database/entities/Currencies";
+import convertCurrency from "@/utils/convertCurrency";
+import pkg from "@/package.json";
+import { MoreThan, In } from "typeorm";
+import type { Invoices } from "@/database/entities/Invoices";
+import type { Servers } from "@/database/entities/Servers";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const [clientCurrency, defaultCurrency] = await Promise.all([
+  currencies.findOne({ where: { id: client?.currency } }),
+  currencies.findOne({ where: { id: 1 } }),
+]);
+
+const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+const [
+  last30DaysIncomes,
+  activeServersCount,
+  unPaidInvoicesCount,
+  activeTicketsCount,
+  last30DaysOrders,
+  last30DaysClientsRegistered,
+] = await Promise.all([
+  invoices.find({
+    where: {
+      paid: invoiceStatus.paid,
+      createdAt: MoreThan(thirtyDaysAgo),
+    },
+    select: ["total", "createdAt"],
+  }),
+  servers.count({ where: { status: serverStatus.active } }),
+  invoices.count({ where: { paid: invoiceStatus.pending } }),
+  tickets.count({ where: { status: In([ticketStatus.open, ticketStatus.pending]) } }),
+  invoices.find({
+    where: { createdAt: MoreThan(thirtyDaysAgo) },
+    select: ["createdAt"],
+  }),
+  clients.find({
+    where: { createdAt: MoreThan(thirtyDaysAgo) },
+    select: ["createdAt"],
+  }),
+]);
+
+const last30DaysIncomesSum = last30DaysIncomes.reduce(
+  (sum, invoice) => sum + Number(invoice.total),
+  0,
+);
+
+function aggregateDataByDate(
+  totalData: Invoices[] | Servers[] | Clients[],
+): Record<string, number> {
+  const data: Record<string, number> = {};
+  for (const item of totalData) {
+    const date = new Date(Number(item.createdAt)).toISOString().split("T")[0];
+    data[date] = (data[date] || 0) + ("total" in item ? Number(item.total) : 1);
+  }
+  return data;
+}
+
+const last30DaysIncomesSecure = aggregateDataByDate(last30DaysIncomes);
+const last30DaysOrdersSecure = aggregateDataByDate(last30DaysOrders);
+const last30DaysClientsRegisteredSecure = aggregateDataByDate(last30DaysClientsRegistered);
+---
+
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(last30DaysIncomesSum, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Income (Last 30 Days)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <a href="/admin/income" class="small-box-footer">
+                More details <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{activeServersCount}</h3>
+                <p>Active Servers</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <a href="/admin/servers/active" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{unPaidInvoicesCount}</h3>
+                <p>Unpaid Invoices</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <a href="/admin/invoices" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{activeTicketsCount}</h3>
+                <p>Open Tickets</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <a href="/admin/tickets" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="version-info" class="callout">
+    <p>Currently running <b>{pkg.version}</b> and the latest 'stable' version <span id="latest-version">(loading...)</span>.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Income in the last 30 days</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart">
+                    <canvas id="incomeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Orders in the last 30 days</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart">
+                    <canvas id="orderChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Clients registered in the last 30 days</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart">
+                    <canvas id="clientChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/plugins/chart.js/Chart.min.js" is:inline></script>
+<script is:inline define:vars={{
+    last30DaysIncomesSecure,
+    last30DaysOrdersSecure,
+    last30DaysClientsRegisteredSecure,
+    currentVersion: pkg.version,
+}}>
+    $.ajax({'url': 'https://api.github.com/repos/Zastinian/Billing/releases/latest', 'success': function (data) {
+        const latestVersion = data.tag_name;
+        const versionInfoElement = document.getElementById('version-info');
+        if (currentVersion.includes('develop')) {
+            versionInfoElement.classList.add('callout-warning');
+            $('#latest-version').html(`is in development <b>${currentVersion}</b>`);
+        } else if (currentVersion === latestVersion) {
+            versionInfoElement.classList.add('callout-success');
+            $('#latest-version').html(`is the latest <b>${latestVersion}</b>`);
+        } else {
+            versionInfoElement.classList.add('callout-danger');
+            $('#latest-version').html(`is <b>${latestVersion}</b>`);
+        }
+    }, 'error': function () {
+        $('#latest-version').html(`is unknown`)
+    }})
+
+    $(function() {
+        const chartOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: { display: false },
+            scales: {
+                xAxes: [{
+                    ticks: { fontColor: "white" },
+                    gridLines: { color: "rgb(80,80,80)" },
+                    scaleLabel: {
+                        display: true,
+                        fontColor: "white",
+                        labelString: 'Days'
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                        beginAtZero: true
+                    },
+                    gridLines: { color: "rgb(80,80,80)" }
+                }]
+            }
+        };
+        const today = new Date();
+        const last30Days = [];
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            last30Days.push(date.toISOString().split('T')[0]);
+        }
+
+        function fillDataWithZeros(data) {
+            const filledData = new Array(30).fill(0).map((_, index) => {
+                const dateKey = last30Days[index];
+                return data[dateKey] || 0; // Cambiado para acceder al objeto
+            });
+            return filledData;
+        }
+
+        const incomeData = fillDataWithZeros(last30DaysIncomesSecure);
+        const orderData = fillDataWithZeros(last30DaysOrdersSecure);
+        const clientsData = fillDataWithZeros(last30DaysClientsRegisteredSecure);
+        const incomeChartCanvas = $('#incomeChart').get(0).getContext('2d');
+        const incomeChartData = {
+            labels: last30Days,
+            datasets: [{
+                backgroundColor: 'rgba(60,141,188,0.8)',
+                data: incomeData,
+            }]
+        };
+        new Chart(incomeChartCanvas, {
+            type: 'line',
+            data: incomeChartData,
+            options: chartOptions
+        });
+
+        const orderChartCanvas = $('#orderChart').get(0).getContext('2d');
+        const orderChartData = {
+            labels: last30Days,
+            datasets: [{
+                backgroundColor: 'rgba(60,141,188,0.8)',
+                data: orderData,
+            }]
+        };
+        new Chart(orderChartCanvas, {
+            type: 'line',
+            data: orderChartData,
+            options: chartOptions
+        });
+
+        const clientChartCanvas = $('#clientChart').get(0).getContext('2d');
+        const clientChartData = {
+            labels: last30Days,
+            datasets: [{
+                backgroundColor: 'rgba(60,141,188,0.8)',
+                data: clientsData,
+            }]
+        };
+        new Chart(clientChartCanvas, {
+            type: 'line',
+            data: clientChartData,
+            options: chartOptions
+        });
+    });
+</script>

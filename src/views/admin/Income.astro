@@ -1,0 +1,153 @@
+---
+import { clients, currencies, invoices, servers } from "@/database/index";
+import { invoiceStatus } from "@/utils/status";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const clientCurrency = await currencies
+  .findOneBy({ id: client?.currency });
+
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+
+const incomes = await invoices.findBy({ paid: invoiceStatus.paid });
+const last7DaysIncomes = incomes.filter(
+  (income) => new Date(Number(income.createdAt)).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
+);
+const last30DaysIncomes = incomes.filter(
+  (income) => new Date(Number(income.createdAt)).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000,
+);
+const last90DaysIncomes = incomes.filter(
+  (income) => new Date(Number(income.createdAt)).getTime() > Date.now() - 90 * 24 * 60 * 60 * 1000,
+);
+const lastYearIncomes = incomes.filter(
+  (income) => new Date(Number(income.createdAt)).getTime() > Date.now() - 365 * 24 * 60 * 60 * 1000,
+);
+const last7DaysIncomesSum = last7DaysIncomes.reduce((sum, income) => sum + Number(income.total), 0);
+const last30DaysIncomesSum = last30DaysIncomes.reduce(
+  (sum, income) => sum + Number(income.total),
+  0,
+);
+const last90DaysIncomesSum = last90DaysIncomes.reduce(
+  (sum, income) => sum + Number(income.total),
+  0,
+);
+const lastYearIncomesSum = lastYearIncomes.reduce((sum, income) => sum + Number(income.total), 0);
+---
+
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(last7DaysIncomesSum, defaultCurrency as Currencies,
+                    clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Income (Last 7 Days)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(last30DaysIncomesSum, defaultCurrency as Currencies,
+                    clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Income (Last 30 Days)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(last90DaysIncomesSum, defaultCurrency as Currencies,
+                    clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Income (Last 90 Days)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-default">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(lastYearIncomesSum, defaultCurrency as Currencies,
+                    clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Income (This Year)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="card col-12">
+        <div class="card-header">
+            <h3 class="card-title">Income in the last 90 days</h3>
+        </div>
+        <div class="card-body table-responsive">
+            <table id="income-table" class="table table-hover text-nowrap">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                    incomes.sort((a, b) => new Date(Number(b.createdAt)).getTime() - new
+                    Date(Number(a.createdAt)).getTime()).map(async (income) => {
+                    const client = income.clientId ? await clients.findOneBy({ id: income.clientId }) : undefined;
+                    const server = income.serverId ? await servers.findOneBy({ id: income.serverId }) : undefined;
+                    return (
+                    <tr>
+                        <td>{income.id}</td>
+                        <td>{client?.email}</td>
+                        <td>{server?.serverName ?? "Credits"}</td>
+                        <td>{clientCurrency?.symbol}{convertCurrency(income.total, defaultCurrency as Currencies,
+                            clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                        <td>{income.createdAt?.toLocaleDateString()} - {income.createdAt?.toLocaleTimeString(undefined,
+                            { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                    </tr>
+                    )
+                    })
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Date</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script is:inline>lazyLoadCss('/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css')</script>
+
+<script src="/plugins/datatables/jquery.dataTables.min.js" is:inline></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" is:inline></script>
+
+<script
+    is:inline>$(function () { $("#income-table").DataTable({ "responsive": false, "lengthChange": false, "autoWidth": false }) })</script>

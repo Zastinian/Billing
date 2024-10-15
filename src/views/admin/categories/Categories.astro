@@ -1,0 +1,55 @@
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Server Categories</h3>
+                <div class="card-tools">
+                    <a href="{{ route('admin.category.create') }}" class="btn btn-success btn-sm float-right">Create
+                        Category <i class="fas fa-plus"></i></a>
+                </div>
+            </div>
+            <div class="card-body table-responsive">
+                <table id="categories-table" class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Global Limit</th>
+                            <th>Per Client Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>100</td>
+                            <td><a href="{{ route('admin.category.show', ['id' => $category->id]) }}">1</a></td>
+                            <td>Free</td>
+                            <td>No limit</td>
+                            <td>No limit</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Order</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Global Limit</th>
+                            <th>Per Client Limit</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script is:inline>lazyLoadCss('/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css');</script>
+
+<script src="/plugins/datatables/jquery.dataTables.min.js" is:inline></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" is:inline></script>
+
+<script is:inline>
+    $(function () {
+        $("#categories-table").DataTable({ "responsive": false, "lengthChange": false, "autoWidth": false });
+    });
+</script>

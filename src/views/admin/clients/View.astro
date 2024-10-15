@@ -1,0 +1,262 @@
+---
+import type { Clients } from "@/database/entities/Clients";
+import { currencies } from "@/database/index";
+
+interface Props {
+  client: Clients;
+}
+
+const { client } = Astro.props;
+
+const currenciesArray = await currencies.find();
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex p-0">
+                <ul class="nav ml-auto p-2">
+                    <li class="nav-item"><a class="nav-link active"
+                            href="#">Settings</a></li>
+                    <li class="nav-item"><a class="nav-link"
+                            href={`/admin/clients/${client?.id}/credits`}>Credits</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Basic Settings</h3>
+            </div>
+            <form action={`/api/admin/client/${client?.id}/basic`} method="POST">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="currencyInput">Currency</label>
+                        <select class="form-control" name="currency">
+                            {
+                                currenciesArray.map((currency) => (
+                                    <option value={currency.id} selected={client ? client.currency === currency.id : false}>
+                                        {currency.name}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="autoRenewInput">Enable Automatic Renewal</label>
+                        <select class="form-control" name="auto_renew">
+                            <option value="1" selected={client ? client.autoRenew === 1 : false}>Yes</option>
+                            <option value="0" selected={client ? client.autoRenew === 0 : false}>No</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Change Email Address</h3>
+            </div>
+            <form action={`/api/admin/client/${client.id}/email`} method="POST"
+                data-callback="refreshAfterChange">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="emailInput">Email Address</label>
+                        <input type="email" name="email" class="form-control" id="emailInput"
+                            placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="alert alert-info">
+                            Changing the account email will also change the panel email.
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Change Password</h3>
+            </div>
+            <form action={`/api/admin/client/${client.id}/password`} method="POST"
+                data-callback="changePassword">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="newPasswordInput">New Password</label>
+                        <input type="password" name="password" class="form-control" id="newPasswordInput"
+                            placeholder="New Password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPasswordInput">Confirm Password</label>
+                        <input type="password" name="password_confirmation" class="form-control"
+                            id="confirmPasswordInput" placeholder="Confirm Password" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="alert alert-info">
+                            Changing the account password will also change the panel password.
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Account Verification</h3>
+            </div>
+            {
+                client?.isVerified === 1 ? (
+                    <form action={`/api/admin/client/${client?.id}/verify?type=no`} method="POST"
+                        data-callback="refreshAfterChange">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                This user are verified.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">Revoke Verification</button>
+                        </div>
+                    </form>
+                ) : (
+                    <form action={`/api/admin/client/${client?.id}/verify?type=yes`} method="POST"
+                        data-callback="refreshAfterChange">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                This user are't verified.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-danger">Verify Account</button>
+                        </div>
+                    </form>
+                )
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Administration</h3>
+            </div>
+            {
+                client?.isAdmin === 1 ? (
+                    <form action={`/api/admin/client/${client?.id}/rank?type=demote`} method="POST"
+                        data-callback="refreshAfterChange">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                This user is an administrator.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">Demote Client</button>
+                        </div>
+                    </form>
+                ) : (
+                    <form action={`/api/admin/client/${client?.id}/rank?type=promote`} method="POST"
+                        data-callback="refreshAfterChange">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="alert alert-warning">
+                                    Only promote the user you trust to an administrator, who can access everything
+                                    inside the admin area!
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-danger">Promote Client to Admin</button>
+                        </div>
+                    </form>
+                )
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Reset Session Token</h3>
+            </div>
+            <form action={`/api/admin/client/${client?.id}/token`} method="POST"
+                data-callback="refreshAfterChange">
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        This will reset the session token for this client. This will also revoke all active sessions.
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-danger">Reset Token</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Account Suspension</h3>
+            </div>
+            {
+                client?.isActive === 1 ? (
+                    <form action={`/api/admin/client/${client?.id}/suspend?type=yes`} method="POST"
+                        data-callback="refreshAfterChange">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                This will also suspend all servers owned created in the billing system by this client.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-danger">Suspend Client</button>
+                        </div>
+                    </form>
+                ) : (
+                    <form action={`/api/admin/client/${client?.id}/suspend?type=no`} method="POST"
+                        data-callback="refreshAfterChange">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                This will NOT unsuspend any servers owned created in the billing system by this client .
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">Unsuspend Client</button>
+                        </div>
+                    </form>
+                )
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Account Deletion</h3>
+            </div>
+            <form action="{{ route('api.admin.client.delete', ['id' => $id]) }}" method="DELETE"
+                data-callback="deleteForm">
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="alert alert-warning">
+                            This action cannot be undone!
+                        </div>
+                        <div class="alert alert-danger">
+                            Deleting a client may produce errors if he/she has active server(s).
+                            Please consider suspending the account instead.
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-danger">Delete Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
