@@ -28,7 +28,6 @@ export class Jobs1725918762227 implements MigrationInterface {
           {
             name: "created_at",
             type: "datetime",
-            default: "CURRENT_TIMESTAMP",
           },
         ],
         indices: [

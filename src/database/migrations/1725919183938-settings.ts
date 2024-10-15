@@ -48,26 +48,14 @@ export class Settings1725919183938 implements MigrationInterface {
         updated_at: new Date(),
       },
       {
-        key: "store_url",
-        value: import.meta.env.STORE_URL,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      {
         key: "logo_path",
-        value: "/img/icon.webp",
+        value: "/favicon.webp",
         created_at: new Date(),
         updated_at: new Date(),
       },
       {
         key: "favicon_path",
-        value: "/img/favicon.webp",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      {
-        key: "dark_mode",
-        value: "true",
+        value: "/favicon.webp",
         created_at: new Date(),
         updated_at: new Date(),
       },

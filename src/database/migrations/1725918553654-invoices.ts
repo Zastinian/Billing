@@ -1,4 +1,5 @@
 import { type MigrationInterface, type QueryRunner, Table } from "typeorm";
+import { invoiceStatus } from "@/utils/status";
 
 export class Invoices1725918553654 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -69,7 +70,7 @@ export class Invoices1725918553654 implements MigrationInterface {
           {
             name: "paid",
             type: "tinyint",
-            default: 0,
+            default: invoiceStatus.pending,
           },
           {
             name: "created_at",

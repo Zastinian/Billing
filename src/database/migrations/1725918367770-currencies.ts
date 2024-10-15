@@ -42,6 +42,11 @@ export class Currencies1725918367770 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: "tax",
+            type: "int",
+            default: 1,
+          },
+          {
             name: "default",
             type: "tinyint",
             default: 0,
@@ -62,9 +67,10 @@ export class Currencies1725918367770 implements MigrationInterface {
     await queryRunner.manager.insert("currencies", [
       {
         name: "USD",
-        symbol: "&#36;",
+        symbol: "$",
         rate: 1.0,
         precision: 2,
+        tax: 1,
         default: 1,
         created_at: new Date(),
         updated_at: new Date(),

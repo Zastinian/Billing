@@ -1,4 +1,5 @@
 import { type MigrationInterface, type QueryRunner, Table } from "typeorm";
+import { ticketStatus } from "@/utils/status";
 
 export class Tickets1725919243975 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -27,37 +28,9 @@ export class Tickets1725919243975 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: "server_id",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "department_id",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "category_id",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
             name: "status",
             type: "tinyint",
-            default: 1,
-          },
-          {
-            name: "is_locked",
-            type: "tinyint",
-            default: 0,
-          },
-          {
-            name: "priority",
-            type: "tinyint",
-            isNullable: true,
+            default: ticketStatus.pending,
           },
           {
             name: "created_at",

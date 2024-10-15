@@ -27,12 +27,6 @@ export class Clients1725918291066 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: "recent_ip",
-            type: "varchar",
-            length: "255",
-            isNullable: true,
-          },
-          {
             name: "user_id",
             type: "int",
             unsigned: true,
@@ -55,28 +49,15 @@ export class Clients1725918291066 implements MigrationInterface {
             default: 0.0,
           },
           {
+            name: "session_token",
+            type: "varchar",
+            length: "24",
+            isNullable: true,
+          },
+          {
             name: "currency",
-            type: "varchar",
-            length: "255",
-            default: "1",
-          },
-          {
-            name: "country",
-            type: "varchar",
-            length: "255",
-            default: "1",
-          },
-          {
-            name: "timezone",
-            type: "varchar",
-            length: "255",
-            default: "'UTC'",
-          },
-          {
-            name: "language",
-            type: "varchar",
-            length: "255",
-            default: "'EN'",
+            type: "tinyint",
+            default: 1,
           },
           {
             name: "auto_renew",
@@ -94,14 +75,17 @@ export class Clients1725918291066 implements MigrationInterface {
             default: 0,
           },
           {
+            name: "is_verified",
+            type: "tinyint",
+            default: 0,
+          },
+          {
             name: "created_at",
             type: "datetime",
-            default: "CURRENT_TIMESTAMP",
           },
           {
             name: "updated_at",
             type: "datetime",
-            default: "CURRENT_TIMESTAMP",
           },
         ],
       }),

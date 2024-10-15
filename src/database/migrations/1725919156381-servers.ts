@@ -1,4 +1,5 @@
 import { type MigrationInterface, type QueryRunner, Table } from "typeorm";
+import { serverStatus } from "@/utils/status";
 
 export class Servers1725919156381 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -97,7 +98,7 @@ export class Servers1725919156381 implements MigrationInterface {
             name: "status",
             type: "tinyint",
             unsigned: true,
-            default: 1,
+            default: serverStatus.pending,
           },
           {
             name: "created_at",

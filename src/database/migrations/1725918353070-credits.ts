@@ -46,11 +46,6 @@ export class Credits1725918353070 implements MigrationInterface {
             type: "datetime",
             isNullable: true,
           },
-          {
-            name: "updated_at",
-            type: "datetime",
-            isNullable: true,
-          },
         ],
       }),
     );

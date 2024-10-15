@@ -32,12 +32,6 @@ export class TicketContents1725919218693 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: "attachment",
-            type: "varchar",
-            length: "255",
-            isNullable: true,
-          },
-          {
             name: "created_at",
             type: "datetime",
             isNullable: true,
