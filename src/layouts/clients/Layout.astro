@@ -23,15 +23,23 @@ interface Props {
 }
 
 const { title, route, items } = Astro.props;
+
+import { settings } from "@/database/index";
+
+const logoPath = await settings.findOneBy({ key: "logo_path" }).then((setting) => setting?.value);
+const companyName = await settings
+  .findOneBy({ key: "company_name" })
+  .then((setting) => setting?.value);
 ---
 
 <!doctype html>
 <html lang="en">
-	<MainHeader title={`${title} - Company Name`} />
+    <MainHeader title={title} />
 	<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed dark-mode">
+		<MainScripts />
 		<div class="wrapper">
 			<div class="preloader flex-column justify-content-center align-items-center">
-				<img class="animation__shake" src="/favicon.webp" alt="{{ config('app.company_name') }} Logo" height="100" width="100" />
+				<img class="animation__shake" src={logoPath} alt={`${companyName} Logo`} height="100" width="100" />
 			</div>
 			<NavClients />
 			<SidebarClients route={route} />
@@ -47,6 +55,5 @@ const { title, route, items } = Astro.props;
 			</div>
 			<FooterClients />
 		</div>
-		<MainScripts />
 	</body>
 </html>
