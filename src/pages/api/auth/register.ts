@@ -4,15 +4,19 @@ import jwt from "jsonwebtoken";
 import type { APIRoute } from "astro";
 
 export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) => {
-  const storeUrl = new URL(
-    (await settings.findOneBy({ key: "store_url" }).then((storeUrl) => storeUrl?.value)) ?? "",
-  );
+  const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");
   }
+  const openRegistration = await settings
+    .findOneBy({ key: "open_registration" })
+    ;
+  if (openRegistration?.value !== "true") {
+    return redirect("/?type=danger&msg=auth.register.closed");
+  }
   const data = Object.fromEntries(new URLSearchParams(await request.text()));
-  const checkClient = await clients.findOneBy({ email: data.email }).then((client) => client);
+  const checkClient = await clients.findOneBy({ email: data.email });
   if (checkClient) {
     return redirect("/?type=danger&msg=auth.register.already");
   }
@@ -69,7 +73,7 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
       last_name: "Last",
     }),
   });
-  if (pterodactyl.status !== 200) {
+  if (pterodactyl.status !== 201) {
     return redirect("/?type=danger&msg=error");
   }
   if (!pterodactyl.ok) {
@@ -80,8 +84,9 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
   newClient.email = data.email;
   newClient.userId = dataPterodactyl.attributes.id;
   newClient.setPassword(data.password);
+  newClient.setSessionToken();
   await clients.save(newClient);
-  const client = await clients.findOneBy({ email: data.email }).then((client) => client);
+  const client = await clients.findOneBy({ email: data.email });
   if (!client) {
     return redirect("/?type=danger&msg=auth.invalid");
   }
@@ -92,6 +97,7 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
       exp: expire,
       clientId: client.id,
       email: client.email,
+      sessionToken: client.sessionToken,
     },
     import.meta.env.APP_KEY,
   );
@@ -100,5 +106,5 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
     sameSite: "strict",
     secure: true,
   });
-  return redirect("/");
+  return redirect("/?type=success&msg=auth.register.success");
 };

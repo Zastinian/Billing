@@ -1,10 +1,7 @@
-import { settings } from "@/database/index";
 import type { APIRoute } from "astro";
 
 export const GET: APIRoute = async ({ cookies, redirect, request, rewrite }) => {
-  const storeUrl = new URL(
-    (await settings.findOneBy({ key: "store_url" }).then((storeUrl) => storeUrl?.value)) ?? "",
-  );
+  const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");

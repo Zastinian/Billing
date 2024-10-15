@@ -1,17 +1,15 @@
-import { settings, clients } from "@/database/index";
+import { clients } from "@/database/index";
 import jwt from "jsonwebtoken";
 import type { APIRoute } from "astro";
 
 export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) => {
-  const storeUrl = new URL(
-    (await settings.findOneBy({ key: "store_url" }).then((storeUrl) => storeUrl?.value)) ?? "",
-  );
+  const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");
   }
   const data = Object.fromEntries(new URLSearchParams(await request.text()));
-  const client = await clients.findOneBy({ email: data.email }).then((client) => client);
+  const client = await clients.findOneBy({ email: data.email });
   if (!client) {
     return redirect("/?type=danger&msg=auth.invalid");
   }
@@ -25,6 +23,7 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
       exp: expire,
       clientId: client.id,
       email: client.email,
+      sessionToken: client.sessionToken,
     },
     import.meta.env.APP_KEY,
   );
