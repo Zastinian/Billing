@@ -1,11 +1,13 @@
 import { defineMiddleware } from "astro:middleware";
+import profile from "@/utils/profile";
+import { clients } from "@/database/index";
 
 // Rate limit and time frame settings
 const PAGE_RATE_LIMIT = 75; // Maximum number of requests allowed for pages
 const PAGE_TIME_FRAME = 60 * 1000; // Time window for page routes (1 minute)
 const PAGE_BAN_TIME = 10 * 60 * 1000; // Ban time for pages in milliseconds (10 minutes)
 
-const API_RATE_LIMIT = 5; // Maximum number of requests allowed for API routes
+const API_RATE_LIMIT = 1000; // Maximum number of requests allowed for API routes
 const API_TIME_FRAME = 5 * 60 * 1000; // Time window for API routes (5 minutes)
 const API_BAN_TIME = 5 * 60 * 1000; // Ban time for API in milliseconds (5 minutes)
 
@@ -104,6 +106,135 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Update the session data with the current request count and time
   sessionRequestsMap.set(sessionID, sessionData);
+
+  const cookie = context.request.headers.get("cookie");
+  if (cookie) {
+    const getSessionToken = (cookieString: string): string | null => {
+      const match = cookieString.match(/_SECURE_SESSION_TOKEN_=([^;]+)/);
+      return match ? match[1] : null;
+    };
+    const sessionToken = getSessionToken(cookie);
+    if (sessionToken) {
+      const c = profile(sessionToken);
+      if (c.success === true && c.clientId !== null) {
+        if (!c.sessionToken) {
+          context.cookies.set("_SECURE_SESSION_TOKEN_", sessionToken, {
+            path: "/",
+            maxAge: 0,
+            sameSite: "strict",
+            secure: true,
+          });
+          return next();
+        }
+        const client = await clients
+          .findOneBy({ id: c.clientId })
+          .then((client) => {
+            if (client?.email === c.email) {
+              return client;
+            }
+          });
+        if (!client) {
+          context.cookies.set("_SECURE_SESSION_TOKEN_", sessionToken, {
+            path: "/",
+            maxAge: 0,
+            sameSite: "strict",
+            secure: true,
+          });
+          return next();
+        }
+        if (client.sessionToken !== c.sessionToken) {
+          context.cookies.set("_SECURE_SESSION_TOKEN_", sessionToken, {
+            path: "/",
+            maxAge: 0,
+            sameSite: "strict",
+            secure: true,
+          });
+          return next();
+        }
+      }
+    }
+  }
+
+  const isAdminRoute = requestUrl.pathname.startsWith("/admin");
+  const isClientRoute = requestUrl.pathname.startsWith("/client");
+  const isOrderRoute = requestUrl.pathname.startsWith("/order");
+  const isAdminApiRoute = requestUrl.pathname.startsWith("/api/admin");
+  const isLoginRoute = requestUrl.pathname.startsWith("/api/auth/login");
+  const isRegisterRoute = requestUrl.pathname.startsWith("/api/auth/register");
+  if (
+    isAdminRoute ||
+    isClientRoute ||
+    isOrderRoute ||
+    (isApiRoute && !isLoginRoute && !isRegisterRoute)
+  ) {
+    if (!cookie) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    const getSessionToken = (cookieString: string): string | null => {
+      const match = cookieString.match(/_SECURE_SESSION_TOKEN_=([^;]+)/);
+      return match ? match[1] : null;
+    };
+    const sessionToken = getSessionToken(cookie);
+    if (!sessionToken) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    const c = profile(sessionToken);
+    if (c.success !== true || !c.clientId) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    if (!c.sessionToken) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    const client = await clients
+      .findOneBy({ id: c.clientId })
+      .then((client) => {
+        if (client?.email === c.email) {
+          return client;
+        }
+      });
+    if (!client) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    if (client.sessionToken !== c.sessionToken) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    if (client.email !== c.email) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/404");
+    }
+    if (client.isAdmin !== 1) {
+      if (isOrderRoute) {
+        return next("/?type=danger&msg=order.needs_login");
+      }
+      return next("/?type=danger&msg=client.suspended");
+    }
+    if (isAdminRoute && client.isAdmin !== 1) {
+      return next("/404");
+    }
+    if (isAdminApiRoute && client.isAdmin !== 1) {
+      return next("/404");
+    }
+  }
 
   return next();
 });
