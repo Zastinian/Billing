@@ -1,10 +1,32 @@
+---
+import { clients, servers, plans, settings } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import { serverStatus, serverStatusName } from "@/utils/status";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const serversData = await servers.find({
+  where: { clientId: client?.id },
+  order: { updatedAt: "DESC" },
+});
+
+const panelUrl = await settings.findOneBy({ key: "panel_url" });
+---
+
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Active Servers</h3>
                 <div class="card-tools">
-                    <a href="{{ config('app.panel_url') }}" class="btn btn-default btn-sm" target="_blank"
+                    <a href={new URL(String(panelUrl)).toString()} class="btn btn-default btn-sm" target="_blank"
                         >View in Panel <i class="fas fa-arrow-circle-right"></i></a
                     >
                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
@@ -24,26 +46,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Start of Servers -->
-                        <tr>
-                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">1</a></td>
-                            <td>Plan 1</td>
-                            <td>Server Name 1</td>
-                            <td><span id="memory_usage_{{ $server->identifier }}">1024</span></td>
-                            <td><span id="cpu_usage_{{ $server->identifier }}">100</span></td>
-                            <td><span id="disk_usage_{{ $server->identifier }}">2048</span></td>
-                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Active</span></span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">2</a></td>
-                            <td>Plan 2</td>
-                            <td>Server Name 2</td>
-                            <td><span id="memory_usage_{{ $server->identifier }}">1024</span></td>
-                            <td><span id="cpu_usage_{{ $server->identifier }}">100</span></td>
-                            <td><span id="disk_usage_{{ $server->identifier }}">2048</span></td>
-                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Active</span></span></td>
-                        </tr>
-                        <!-- End of Servers -->
+                        {
+                            serversData.filter((server) => server.status === serverStatus.active).map(async (server) => {
+                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
+                                        <td>{serverPlan?.name}</td>
+                                        <td>{server.serverName}</td>
+                                        <td>{serverPlan?.ram}</td>
+                                        <td>{serverPlan?.cpu}</td>
+                                        <td>{serverPlan?.disk}</td>
+                                        <td><span><span class={`badge ${server.status === serverStatus.active ? "bg-success" : server.status === serverStatus.suspended ? "bg-warning" : "bg-danger"}`}>{serverStatusName[server.status]}</span></span></td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>
@@ -68,14 +86,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Start of Pending Servers -->
-                        <tr>
-                            <td>3</td>
-                            <td>Plan 1</td>
-                            <td>Server Name 3</td>
-                            <td>01/01/2022</td>
-                        </tr>
-                        <!-- End of Pending Servers -->
+                        {
+                            serversData.filter((server) => server.status === serverStatus.pending).map(async (server) => {
+                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
+                                        <td>{serverPlan?.name}</td>
+                                        <td>{server.serverName}</td>
+                                        <td>{server.createdAt?.toLocaleDateString()} - {server.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>
@@ -98,14 +121,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Start of Canceled Servers -->
-                        <tr>
-                            <td>4</td>
-                            <td>Plan 1</td>
-                            <td>Server Name 4</td>
-                            <td>01/01/2022</td>
-                        </tr>
-                        <!-- End of Canceled Servers -->
+                        {
+                            serversData.filter((server) => server.status === serverStatus.cancelled).map(async (server) => {
+                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
+                                        <td>{serverPlan?.name}</td>
+                                        <td>{server.serverName}</td>
+                                        <td>{server.updatedAt?.toLocaleDateString()} - {server.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>
@@ -130,14 +158,54 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Start of Suspended Servers -->
+                        {
+                            serversData.filter((server) => server.status === serverStatus.suspended).map(async (server) => {
+                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
+                                        <td>{serverPlan?.name}</td>
+                                        <td>{server.serverName}</td>
+                                        <td>{server.updatedAt?.toLocaleDateString()} - {server.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Terminated Servers</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
                         <tr>
-                            <td>5</td>
-                            <td>Plan 1</td>
-                            <td>Server Name 5</td>
-                            <td>01/01/2022</td>
+                            <th>ID</th>
+                            <th>Plan</th>
+                            <th>Server Name</th>
+                            <th>Termination Date</th>
                         </tr>
-                        <!-- End of Suspended Servers -->
+                    </thead>
+                    <tbody>
+                        {
+                            serversData.filter((server) => server.status === serverStatus.terminated).map(async (server) => {
+                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
+                                        <td>{serverPlan?.name}</td>
+                                        <td>{server.serverName}</td>
+                                        <td>{server.updatedAt?.toLocaleDateString()} - {server.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>

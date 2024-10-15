@@ -1,8 +1,34 @@
+---
+import { clients, currencies, credits } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const clientCredit = client?.credit;
+const clientCurrency = await currencies.findOneBy({ id: client?.currency });
+
+const clientCreditsHistory = await credits.find({
+  where: { clientId: client?.id },
+  order: { createdAt: "DESC" },
+});
+
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+---
+
 <div class="row">
     <div class="col-lg-6 col-md-6">
         <div class="small-box bg-success">
             <div class="inner">
-                <h3>$0.00 USD</h3>
+                <h3>{clientCurrency?.symbol}{convertCurrency(clientCredit ?? 0, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</h3>
                 <p>Account Credit</p>
             </div>
             <div class="icon">
@@ -15,11 +41,11 @@
             <div class="card-header">
                 <h3 class="card-title">Add Fund</h3>
             </div>
-            <form action="{{ route('api.client.credit.add') }}" method="POST" data-callback="addForm">
+            <form action="#" method="POST">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="creditInput">Credit Amount</label>
-                        <input type="text" name="credit" class="form-control" id="creditInput" placeholder="Credit Amount" required />
+                        <input type="number" name="credit" class="form-control" id="creditInput" placeholder="Credit Amount" min="0" max="999999.99" step="0.01" required />
                     </div>
                     <div class="form-group">
                         <label class="form-check-label">Payment Method</label>
@@ -54,47 +80,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>3</td>
-                            <td>Edited by an administrator</td>
-                            <td>-$0.00 USD </td>
-                            <td>$0.00 USD</td>
-                            <td>01/01/2022</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Edited by an administrator</td>
-                            <td>+$0.00 USD </td>
-                            <td>$0.00 USD</td>
-                            <td>01/01/2022</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>Invoice #1</td>
-                            <td>+$0.00 USD </td>
-                            <td>$0.00 USD</td>
-                            <td>01/01/2022</td>
-                        </tr>
+                        {clientCreditsHistory.map((credit) => (
+                            <tr>
+                                <td>{credit.id}</td>
+                                <td>{credit.details}</td>
+                                <td>{credit.change > 0 ? "+" : "-"}{clientCurrency?.symbol}{`${convertCurrency(credit.change, defaultCurrency as Currencies,
+                                clientCurrency as Currencies)}`.replace("-", "")} {clientCurrency?.name}</td>
+                                <td>{clientCurrency?.symbol}{convertCurrency(credit.balance, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                <td>{credit.createdAt?.toLocaleDateString()} - {credit.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
-
-<script is:inline>
-    function addForm(data) {
-        if (data.info) {
-            toastr.info(data.info);
-            waitRedirect(data.url);
-        } else if (data.error) {
-            toastr.error(data.error);
-        } else if (data.errors) {
-            data.errors.forEach((error) => {
-                toastr.error(error);
-            });
-        } else {
-            wentWrong();
-        }
-    }
-</script>

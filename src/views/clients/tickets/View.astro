@@ -1,3 +1,27 @@
+---
+import { clients } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import type { Tickets } from "@/database/entities/Tickets";
+import type { TicketContents } from "@/database/entities/TicketContents";
+import { ticketStatus, ticketStatusName } from "@/utils/status";
+
+interface Props {
+  ticket: Tickets;
+  ticketContents: TicketContents[];
+}
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const { ticket, ticketContents } = Astro.props;
+---
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -7,24 +31,24 @@
             <div class="card-body row">
                 <div class="col-lg-4 col-md-8 mb-1">
                     <h6 class="card-title">Subject</h6>
-                    <p class="card-text">Billing Issue</p>
+                    <p class="card-text">{ticket?.subject}</p>
                 </div>
                 <div class="col-lg-2 col-md-4 mb-1">
                     <h6 class="card-title">Status</h6>
                     <p class="card-text">
-                        <span class="badge bg-info">Open</span>
+                        <span class={`badge ${ticket.status === ticketStatus.open ? "bg-info" : ticket.status === ticketStatus.closed ? "bg-danger" : ticket.status === ticketStatus.resolved ? "bg-success" : "bg-warning"}`}>{ticketStatusName[ticket.status]}</span>
                     </p>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-1">
                     <h6 class="card-title">Created Date</h6>
-                    <p class="card-text">01/01/2022</p>
+                    <p class="card-text">{ticket?.createdAt?.toLocaleDateString()} - {ticket?.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-1">
                     <h6 class="card-title">Updated Date</h6>
-                    <p class="card-text">01/01/2022</p>
+                    <p class="card-text">{ticket?.updatedAt?.toLocaleDateString()} - {ticket?.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-1">
-                    <a href="{{ route('client.ticket.index') }}" class="card-link"><i class="fas fa-arrow-left text-sm"></i> View All Tickets</a>
+                    <a href={`/client/tickets`} class="card-link"><i class="fas fa-arrow-left text-sm"></i> View All Tickets</a>
                 </div>
             </div>
         </div>
@@ -32,26 +56,37 @@
             <div class="card-body">
                 <div class="direct-chat-messages">
                     <div class="direct-chat-infos clearfix">
-                        <div class="direct-chat-msg right">
-                            <div class="direct-chat-infos clearfix">
-                                <span class="direct-chat-name float-right">contact@zastinian.com</span>
-                                <span class="direct-chat-timestamp float-left">01/01/2022</span>
-                            </div>
-                            <div class="direct-chat-text">First Message</div>
-                        </div>
-                        <hr />
-                        <div class="direct-chat-msg">
-                            <div class="direct-chat-infos clearfix">
-                                <span class="direct-chat-name float-left">contact@hedystia.com</span>
-                                <span class="direct-chat-timestamp float-right">01/01/2022</span>
-                            </div>
-                            <div class="direct-chat-text">Second Message</div>
-                        </div>
-                        <hr />
+                        {
+                            ticketContents.map(async (ticketContent) => {
+                                if (ticketContent.replierId === client?.id) {
+                                    return (
+                                        <div class="direct-chat-msg right">
+                                            <div class="direct-chat-infos clearfix">
+                                                <span class="direct-chat-name float-right">{client?.email}</span>
+                                                <span class="direct-chat-timestamp float-left">{ticketContent.createdAt?.toLocaleDateString()} - {ticketContent.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                                            </div>
+                                            <div class="direct-chat-text">{ticketContent.message}</div>
+                                        </div>
+                                        <hr />
+                                    )
+                                }
+                                const ticketReplierUser = await clients.findOneBy({ id: ticketContent.replierId });
+                                return (
+                                    <div class="direct-chat-msg">
+                                        <div class="direct-chat-infos clearfix">
+                                            <span class="direct-chat-name float-left">{ticketReplierUser?.email}</span>
+                                            <span class="direct-chat-timestamp float-right">{ticketContent.createdAt?.toLocaleDateString()} - {ticketContent.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                                        </div>
+                                        <div class="direct-chat-text">{ticketContent.message}</div>
+                                    </div>
+                                    <hr />
+                                )
+                            })
+                        }
                     </div>
                 </div>
                 <div class="card">
-                    <form action="{{ route('api.client.ticket.update', ['id' => $id]) }}" method="PUT" data-callback="updateForm" id="updateForm">
+                    <form action={`/api/client/tickets/update?id=${ticket.id}`} method="POST">
                         <div class="card-header">
                             <h5 class="card-title m-0">Add Reply</h5>
                         </div>
@@ -62,36 +97,27 @@
                                     name="message"
                                     class="form-control"
                                     id="messageInput"
-                                    placeholder="50 characters required"
-                                    style="height:200px;"></textarea>
+                                    placeholder="5 characters required"
+                                    minlength="5"
+                                    maxlength="500"
+                                    disabled={ticket?.status === ticketStatus.resolved || ticket?.status === ticketStatus.closed}
+                                    style={{ height: "200px" }}
+                                ></textarea>
                             </div>
                         </div>
                         <div class="card-footer row justify-content-center">
-                            <button type="submit" class="btn btn-primary btn-sm col-lg-1 col-md-3">Reply</button>
-                            <button type="submit" name="solved" value="true" class="btn btn-success btn-sm col-lg-2 col-md-4 offset-1"
-                                >Mark Solved</button
-                            >
+                            <button type="submit" class="btn btn-primary btn-sm col-lg-1 col-md-3" disabled={ticket?.status === ticketStatus.resolved || ticket?.status === ticketStatus.closed}>Reply</button>
+                            {
+                                ticket?.status === ticketStatus.open || ticket?.status === ticketStatus.pending && (
+                                    <button type="submit" name="solved" value="true" class="btn btn-success btn-sm col-lg-2 col-md-4 offset-1">
+                                        Mark Solved
+                                    </button>
+                                )
+                            }
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-
-        <script is:inline>
-            function updateForm(data) {
-                if (data.success) {
-                    toastr.success(data.success);
-                    waitRedirect(window.location.href);
-                } else if (data.error) {
-                    toastr.error(data.error);
-                } else if (data.errors) {
-                    data.errors.forEach((error) => {
-                        toastr.error(error);
-                    });
-                } else {
-                    wentWrong();
-                }
-            }
-        </script>
     </div>
 </div>

@@ -1,3 +1,28 @@
+---
+import { clients, currencies, invoices, servers, plans } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import { invoiceStatus } from "@/utils/status";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const clientInvoices = await invoices.find({
+  where: { clientId: client?.id },
+  order: { createdAt: "DESC" },
+});
+const clientCurrency = await currencies.findOneBy({ id: client?.currency });
+
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+---
+
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
@@ -20,14 +45,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><a href="{{ route('client.invoice.show', ['id' => $invoice->id]) }}">1</a></td>
-                            <td> Credits </td>
-                            <td> </td>
-                            <td>$0 USD</td>
-                            <td>Paypal</td>
-                            <td>01/01/2022</td>
-                        </tr>
+                        {
+                            clientInvoices.filter((invoice) => invoice.paid === invoiceStatus.pending).map(async (invoice) => {
+                                const server = invoice.serverId ? await servers.findOneBy({ id: invoice.serverId }) : undefined;
+                                const serverPlan = server ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/invoices/${invoice.id}`}>1</a></td>
+                                        <td>{serverPlan ? serverPlan.name : "Credits"}</td>
+                                        <td>{server ? server.serverName : ""}</td>
+                                        <td>{clientCurrency?.symbol}{convertCurrency(invoice.total, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                        <td>{invoice.paymentMethod}</td>
+                                        <td>{invoice.createdAt?.toLocaleDateString()} - {invoice.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>
@@ -53,15 +86,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><a href="{{ route('client.invoice.show', ['id' => $invoice->id]) }}">2</a></td>
-                            <td> Plan 1 </td>
-                            <td> Server Name 1 </td>
-                            <td>$0 USD</td>
-                            <td>Paypal</td>
-                            <td>01/01/2022</td>
-                            <td>01/01/2022</td>
-                        </tr>
+                        {
+                            clientInvoices.filter((invoice) => invoice.paid === invoiceStatus.paid).map(async (invoice) => {
+                                const server = invoice.serverId ? await servers.findOneBy({ id: invoice.serverId }) : undefined;
+                                const serverPlan = server ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/invoices/${invoice.id}`}>1</a></td>
+                                        <td>{serverPlan ? serverPlan.name : "Credits"}</td>
+                                        <td>{server ? server.serverName : ""}</td>
+                                        <td>{clientCurrency?.symbol}{convertCurrency(invoice.total, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                        <td>{invoice.paymentMethod}</td>
+                                        <td>{invoice.createdAt?.toLocaleDateString()} - {invoice.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>

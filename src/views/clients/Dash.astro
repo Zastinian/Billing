@@ -1,14 +1,63 @@
+---
+import { clients, currencies, servers, tickets, invoices, credits } from "@/database/index";
+import { serverStatus, ticketStatus, invoiceStatus } from "@/utils/status";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import type { Currencies } from "@/database/entities/Currencies";
+import convertCurrency from "@/utils/convertCurrency";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const clientCredit = client?.credit;
+const clientCurrency = await currencies.findOneBy({ id: client?.currency });
+const totalActiveServers = await servers.count({
+  where: { clientId: client?.id, status: serverStatus.active },
+});
+const clientServers = await servers.find({
+  where: { clientId: client?.id, status: serverStatus.active },
+  order: { updatedAt: "DESC" },
+  take: 5,
+});
+const totalPendingTickets = await tickets.count({
+  where: { clientId: client?.id, status: ticketStatus.pending },
+});
+const clientTickets = await tickets.find({
+  where: { clientId: client?.id },
+  order: { updatedAt: "DESC" },
+  take: 5,
+});
+const totalPendingInvoices = await invoices.count({
+  where: { clientId: client?.id, paid: invoiceStatus.pending },
+});
+const clientCredits = await credits.find({
+  where: {
+    clientId: client?.id,
+  },
+  take: 5,
+  order: {
+    createdAt: "DESC",
+  },
+});
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+---
+
 <div class="row">
     <div class="col-lg-3 col-md-6">
         <div class="small-box bg-success">
             <div class="inner">
-                <h3>$0 USD</h3>
+                <h3>{clientCurrency?.symbol}{convertCurrency(clientCredit ?? 0, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</h3>
                 <p>Account Credit</p>
             </div>
             <div class="icon">
                 <i class="fas fa-money-bill-wave"></i>
             </div>
-            <a href="{{ route('client.credit.show') }}" class="small-box-footer">
+            <a href="/client/credits" class="small-box-footer">
                 Add Fund <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
@@ -16,13 +65,13 @@
     <div class="col-lg-3 col-md-6">
         <div class="small-box bg-info">
             <div class="inner">
-                <h3>2</h3>
+                <h3>{totalActiveServers}</h3>
                 <p>Active Servers</p>
             </div>
             <div class="icon">
                 <i class="fas fa-server"></i>
             </div>
-            <a href="{{ route('client.server.index') }}" class="small-box-footer">
+            <a href="/client/servers" class="small-box-footer">
                 View All <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
@@ -30,13 +79,13 @@
     <div class="col-lg-3 col-md-6">
         <div class="small-box bg-danger">
             <div class="inner">
-                <h3>0</h3>
+                <h3>{totalPendingInvoices}</h3>
                 <p>Unpaid Invoices</p>
             </div>
             <div class="icon">
                 <i class="fas fa-file-invoice-dollar"></i>
             </div>
-            <a href="{{ route('client.invoice.index') }}" class="small-box-footer">
+            <a href="/client/invoices" class="small-box-footer">
                 View All <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
@@ -44,13 +93,13 @@
     <div class="col-lg-3 col-md-6">
         <div class="small-box bg-warning">
             <div class="inner">
-                <h3>0</h3>
+                <h3>{totalPendingTickets}</h3>
                 <p>Pending Tickets</p>
             </div>
             <div class="icon">
                 <i class="fas fa-ticket-alt"></i>
             </div>
-            <a href="{{ route('client.ticket.index') }}" class="small-box-footer">
+            <a href="/client/tickets" class="small-box-footer">
                 View All <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
@@ -62,7 +111,7 @@
             <div class="card-header">
                 <h3 class="card-title">Active Servers</h3>
                 <div class="card-tools">
-                    <a href="{{ route('client.server.index') }}" class="btn btn-default btn-sm"
+                    <a href="/client/servers" class="btn btn-default btn-sm"
                         >View All Servers <i class="fas fa-arrow-circle-right"></i></a
                     >
                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
@@ -75,23 +124,17 @@
                             <th>ID</th>
                             <th>Plan</th>
                             <th>Server Name</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- Start of Servers -->
-                        <tr>
-                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">1</a></td>
-                            <td>Plan 1</td>
-                            <td>Server Name 1</td>
-                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Loading</span></span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="{{ route('client.server.show', ['id' => $server->id]) }}">2</a></td>
-                            <td>Plan 2</td>
-                            <td>Server Name 2</td>
-                            <td><span id="server_status_{{ $server->identifier }}"><span class="badge bg-warning">Loading</span></span></td>
-                        </tr>
+                        {clientServers.map((server) => (
+                            <tr>
+                                <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
+                                <td>{server.planId}</td>
+                                <td>{server.serverName}</td>
+                            </tr>
+                        ))}
                         <!-- End of Servers -->
                     </tbody>
                 </table>
@@ -101,7 +144,7 @@
             <div class="card-header">
                 <h3 class="card-title">Recent Support Tickets</h3>
                 <div class="card-tools">
-                    <a href="{{ route('client.ticket.index') }}" class="btn btn-default btn-sm"
+                    <a href="/client/tickets" class="btn btn-default btn-sm"
                         >View All Support Tickets <i class="fas fa-arrow-circle-right"></i></a
                     >
                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
@@ -118,34 +161,13 @@
                     </thead>
                     <tbody>
                         <!-- Start of Tickets -->
-                        <tr>
-                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">1</a></td>
-                            <td>Billing Issue</td>
-                            <td>
-                                <span class="badge bg-success">Resolved</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">2</a></td>
-                            <td>Billing Issue</td>
-                            <td>
-                                <span class="badge bg-info">Open</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">3</a></td>
-                            <td>Billing Issue</td>
-                            <td>
-                                <span class="badge bg-warning">Pending</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">4</a></td>
-                            <td>Billing Issue</td>
-                            <td>
-                                <span class="badge bg-danger">Closed</span>
-                            </td>
-                        </tr>
+                        {clientTickets.map((ticket) => (
+                            <tr>
+                                <td><a href={`/client/tickets/${ticket.id}`}>{ticket.id}</a></td>
+                                <td>{ticket.subject}</td>
+                                <td><span class={"badge bg-" + (ticket.status === ticketStatus.pending ? 'warning' : ticket.status === ticketStatus.open ? 'info' : ticket.status === ticketStatus.closed ? 'danger' : 'success')}>{ticket.status === ticketStatus.pending ? 'Pending' : ticket.status === ticketStatus.open ? 'Open' : ticket.status === ticketStatus.closed ? 'Closed' : 'Resolved'}</span></td>
+                            </tr>
+                        ))}
                         <!-- End of Tickets -->
                     </tbody>
                 </table>
@@ -155,49 +177,10 @@
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Unpaid Invoices</h3>
-                <div class="card-tools">
-                    <a href="{{ route('client.invoice.index') }}" class="btn btn-default btn-sm"
-                        >View All Invoices <i class="fas fa-arrow-circle-right"></i></a
-                    >
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-                </div>
-            </div>
-            <div class="card-body table-responsive p-0">
-                <table class="table table-hover text-nowrap">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Item</th>
-                            <th>Amount</th>
-                            <th>Due Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Start of Invoices -->
-                        <tr>
-                            <td><a href="{{ route('client.invoice.index', ['id' => $invoice->id]) }}">1</a></td>
-                            <td> Server #1 </td>
-                            <td>$0 USD</td>
-                            <td>01/01/2022</td>
-                        </tr>
-                        <tr>
-                            <td><a href="{{ route('client.invoice.index', ['id' => $invoice->id]) }}">1</a></td>
-                            <td> 1 Credit </td>
-                            <td>$0 USD</td>
-                            <td>01/01/2022</td>
-                        </tr>
-                        <!-- End of Invoices -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">
                 <h3 class="card-title">Credit Transactions</h3>
                 <div class="card-tools">
-                    <a href="{{ route('client.credit.show') }}" class="btn btn-default btn-sm"
-                        >More details <i class="fas fa-arrow-circle-right"></i></a
+                    <a href="/client/credits" class="btn btn-default btn-sm"
+                        >View All Credit Transactions <i class="fas fa-arrow-circle-right"></i></a
                     >
                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
                 </div>
@@ -215,13 +198,16 @@
                     </thead>
                     <tbody>
                         <!-- Start of Credit Transactions -->
-                        <tr>
-                            <td>1</td>
-                            <td>Refund for Server #1</td>
-                            <td> +$0 USD </td>
-                            <td>$0 USD</td>
-                            <td>01/01/2022</td>
-                        </tr>
+                        {clientCredits.map((credit) => (
+                            <tr>
+                                <td>{credit.id}</td>
+                                <td>{credit.details}</td>
+                                <td>{credit.change > 0 ? "+" : "-"}{clientCurrency?.symbol}{`${convertCurrency(credit.change, defaultCurrency as Currencies,
+                                clientCurrency as Currencies)}`.replace("-", "")} {clientCurrency?.name}</td>
+                                <td>{clientCurrency?.symbol}{convertCurrency(credit.balance, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                <td>{credit.createdAt?.toLocaleDateString()} - {credit.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                            </tr>
+                        ))}
                         <!-- End of Credit Transactions -->
                     </tbody>
                 </table>

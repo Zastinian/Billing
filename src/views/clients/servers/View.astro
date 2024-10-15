@@ -1,3 +1,38 @@
+---
+import { clients, currencies, plans, planCycles, settings } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import type { Currencies } from "@/database/entities/Currencies";
+import type { Servers } from "@/database/entities/Servers";
+import convertCurrency from "@/utils/convertCurrency";
+import { cycleTypeName, serverStatus, serverStatusName } from "@/utils/status";
+
+interface Props {
+  server: Servers;
+}
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const { server } = Astro.props;
+
+const serverPlan = server?.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+const clientCurrency = await currencies
+  .findOneBy({ id: client?.currency });
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+const planCycle = await planCycles
+  .findOneBy({ planId: serverPlan?.id });
+const panelUrl = await settings.findOneBy({ key: "panel_url" }).then((setting) => setting?.value);
+const phpMyAdminUrl = await settings
+  .findOneBy({ key: "phpmyadmin_url" })
+  .then((setting) => setting?.value);
+---
+
 <div class="row">
     <div class="col-lg-6">
         <div class="card">
@@ -11,12 +46,11 @@
                     <b>Server Status</b>
                 </p>
                 <p class="card-text col-7">
-                    Plan 1<br />
-                    Server Name 1
-                    <br />
-                    <span id="server_status"><span class="badge bg-warning">Active</span></span>
+                    {serverPlan?.name}<br />
+                    {server?.serverName}<br />
+                    <span><span class={`badge ${server?.status === serverStatus.active ? "bg-success" : server?.status === serverStatus.suspended ? "bg-warning" : "bg-danger"}`}>{serverStatusName[server?.status]}</span></span>
                 </p>
-                <a href="{{ route('client.server.plan.show', ['id'=>$id]) }}" class="btn btn-primary btn-sm col-12"
+                <a href={`/client/servers/${server?.id}/plan`} class="btn btn-primary btn-sm col-12"
                     >Plan <i class="fas fa-arrow-circle-right"></i></a
                 >
             </div>
@@ -37,11 +71,11 @@
                     <b>Backup Payment Method</b>
                 </p>
                 <p class="card-text col-5">
-                    $0 USD<br />
-                    Monthly<br />
-                    01/01/2022<br />
-                    01/01/2022<br />
-                    Paypal<br />
+                    {clientCurrency?.symbol}{convertCurrency(Number(planCycle?.renewPrice ?? 0), defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}<br />
+                    {cycleTypeName[Number(planCycle?.cycleType)]}<br />
+                    {server?.createdAt?.toLocaleDateString()} - {server?.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br />
+                    {server?.dueDate?.toLocaleDateString()} - {server?.dueDate?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br />
+                    {server?.paymentMethod}<br />
                     Account Credit
                 </p>
             </div>
@@ -64,12 +98,12 @@
                     <b>Extra Ports</b>
                 </p>
                 <p class="card-text col-7">
-                    <span id="memory_usage"></span>1024 MB<br />
-                    <span id="cpu_usage"></span>100%<br />
-                    <span id="disk_usage"></span>2048 MB<br />
-                    <span id="database_usage"></span>0<br />
-                    <span id="backup_usage"></span>0<br />
-                    <span id="extra_port_usage"></span>0
+                    <span id="memory_usage"></span>{serverPlan?.ram} MB<br />
+                    <span id="cpu_usage"></span>{serverPlan?.cpu}%<br />
+                    <span id="disk_usage"></span>{serverPlan?.disk} MB<br />
+                    <span id="database_usage"></span>{serverPlan?.databases}<br />
+                    <span id="backup_usage"></span>{serverPlan?.backups}<br />
+                    <span id="extra_port_usage"></span>{serverPlan?.extraPorts}
                 </p>
             </div>
         </div>
@@ -81,23 +115,25 @@
             </div>
             <div class="card-body text-nowrap row">
                 <p class="card-text col-lg-4 col-6">
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}"><i class="fas fa-terminal"></i> Console</a><br />
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/files"><i class="fas fa-folder-open"></i> Files</a><br />
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/databases"><i class="fas fa-database"></i> Databases</a
+                    <a href={new URL(`/server/${server?.identifier}`, String(panelUrl)).toString()}><i class="fas fa-terminal"></i> Console</a><br />
+                    <a href={new URL(`/server/${server?.identifier}/files`, String(panelUrl)).toString()}><i class="fas fa-folder-open"></i> Files</a><br />
+                    <a href={new URL(`/server/${server?.identifier}/databases`, String(panelUrl)).toString()}><i class="fas fa-database"></i> Databases</a
                     ><br />
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/schedules"><i class="fas fa-table"></i> Schedules</a>
+                    <a href={new URL(`/server/${server?.identifier}/schedules`, String(panelUrl)).toString()}><i class="fas fa-table"></i> Schedules</a>
                 </p>
                 <p class="card-text col-lg-4 col-6">
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/users"><i class="fas fa-users"></i> Users</a><br />
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/backups"><i class="fas fa-file-archive"></i> Backups</a
+                    <a href={new URL(`/server/${server?.identifier}/users`, String(panelUrl)).toString()}><i class="fas fa-users"></i> Users</a><br />
+                    <a href={new URL(`/server/${server?.identifier}/backups`, String(panelUrl)).toString()}><i class="fas fa-file-archive"></i> Backups</a
                     ><br />
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/network"><i class="fas fa-network-wired"></i> Network</a
+                    <a href={new URL(`/server/${server?.identifier}/network`, String(panelUrl)).toString()}><i class="fas fa-network-wired"></i> Network</a
                     ><br />
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/startup"><i class="fas fa-play"></i> Startup</a>
+                    <a href={new URL(`/server/${server?.identifier}/startup`, String(panelUrl)).toString()}><i class="fas fa-play"></i> Startup</a>
                 </p>
                 <p class="card-text col-lg-4 col-6">
-                    <a href="{{ config('app.panel_url') }}/server/{{ $server->identifier }}/settings"><i class="fas fa-cogs"></i> Settings</a><br />
-                    <a href="{{ config('app.phpmyadmin_url') }}"><i class="fas fa-tools"></i> phpMyAdmin</a>
+                    <a href={new URL(`/server/${server?.identifier}/settings`, String(panelUrl)).toString()}><i class="fas fa-cogs"></i> Settings</a><br />
+                    {phpMyAdminUrl && (
+                        <a href={new URL(phpMyAdminUrl).toString()}><i class="fas fa-tools"></i> phpMyAdmin</a>
+                    )}
                 </p>
             </div>
         </div>

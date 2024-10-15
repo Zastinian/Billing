@@ -1,5 +1,5 @@
 ---
-import { clients, currencies, taxes } from "@/database/index";
+import { clients, currencies } from "@/database/index";
 import profile from "@/utils/profile";
 import type { Clients } from "@/database/entities/Clients";
 
@@ -8,11 +8,10 @@ const c = profile(cookie);
 
 let client: Clients | null = null;
 if (c.success === true && c.clientId !== null) {
-  client = await clients.findOneBy({ id: c.clientId }).then((client) => client);
+  client = await clients.findOneBy({ id: c.clientId });
 }
 
-const allCurrencies = await currencies.find().then((currencies) => currencies);
-const allTaxes = await taxes.find().then((taxes) => taxes);
+const allCurrencies = await currencies.find();
 ---
 
 <div class="row">
@@ -34,13 +33,10 @@ const allTaxes = await taxes.find().then((taxes) => taxes);
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="countryInput">Country</label>
-                        <select class="form-control" name="country">
-                            {
-                                allTaxes.map((tax) => (
-                                    <option value={tax.id} selected={tax.id === client?.country}>{tax.country}</option>
-                                ))
-                            }
+                        <label for="autoRenewInput">Enable Automatic Renewal</label>
+                        <select class="form-control" name="auto_renew">
+                            <option value="1" selected={client ? client.autoRenew === 1 : false}>Yes</option>
+                            <option value="0" selected={client ? client.autoRenew === 0 : false}>No</option>
                         </select>
                     </div>
                 </div>
@@ -80,8 +76,7 @@ const allTaxes = await taxes.find().then((taxes) => taxes);
             <div class="card-header">
                 <h3 class="card-title">Change Password</h3>
             </div>
-            <form action="{{ route('api.client.account.password') }}" method="PUT">
-
+            <form action="/api/client/password" method="POST">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="passwordInput">Current Password</label>
@@ -103,7 +98,7 @@ const allTaxes = await taxes.find().then((taxes) => taxes);
                         />
                     </div>
                     <div class="form-group">
-                        <div class="alert alert-info">Changing the account password will NOT change the panel password.</div>
+                        <div class="alert alert-info">Changing the account password will also change the panel password.</div>
                     </div>
                 </div>
                 <div class="card-footer">

@@ -1,10 +1,30 @@
+---
+import { clients, tickets } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import { ticketStatus, ticketStatusName } from "@/utils/status";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const ticketsData = await tickets.find({
+  where: { clientId: client?.id },
+  order: { updatedAt: "DESC" },
+});
+---
+
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Support Tickets</h3>
                 <div class="card-tools">
-                    <a href="{{ route('client.ticket.create') }}" class="btn btn-success btn-sm float-right"
+                    <a href="/client/tickets/create" class="btn btn-success btn-sm float-right"
                         >Create Ticket <i class="fas fa-plus"></i></a
                     >
                 </div>
@@ -21,15 +41,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><a href="{{ route('client.ticket.show', ['id' => $ticket->id]) }}">1</a></td>
-                            <td>Billing Issue</td>
-                            <td>
-                                <span class="badge bg-info">Open</span>
-                            </td>
-                            <td>01/01/2022</td>
-                            <td>01/01/2022</td>
-                        </tr>
+                        {
+                            ticketsData.map(async (ticket) => {
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/tickets/${ticket.id}`}>{ticket.id}</a></td>
+                                        <td>{ticket.subject}</td>
+                                        <td><span class={`badge ${ticket.status === ticketStatus.open ? "bg-info" : ticket.status === ticketStatus.closed ? "bg-danger" : ticket.status === ticketStatus.resolved ? "bg-success" : "bg-warning"}`}>{ticketStatusName[ticket.status]}</span></td>
+                                        <td>{ticket.updatedAt?.toLocaleDateString()} - {ticket.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                        <td>{ticket.createdAt?.toLocaleDateString()} - {ticket.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
                     </tbody>
                 </table>
             </div>
