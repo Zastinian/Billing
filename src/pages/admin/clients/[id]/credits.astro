@@ -1,0 +1,17 @@
+---
+const { id } = Astro.params;
+
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/clients/Credits.astro";
+import { clients } from "@/database/index";
+
+const client = await clients.findOneBy({ id: Number(id) });
+
+if (!client) {
+  return Astro.redirect("/admin");
+}
+---
+
+<Layout title="Credits" route="admin.clients" items={[{ title: "Dashboard", url: "/admin" }, { title: "Clients", url: "/admin/clients" }, { title: client.email, url: `/admin/clients/${client.id}` }]}>
+    <View client={client} />
+</Layout>

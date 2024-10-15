@@ -1,0 +1,17 @@
+---
+const { name } = Astro.params;
+
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/Pages.astro";
+import { pages } from "@/database/index";
+
+const page = await pages.findOneBy({ name: name });
+
+if (!page) {
+  return Astro.redirect("/admin");
+}
+---
+
+<Layout title={`Edit ${name} page`} route={`admin.pages.${name}`}>
+    <View page={page} />
+</Layout>
