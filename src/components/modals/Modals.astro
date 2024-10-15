@@ -1,8 +1,4 @@
 ---
-import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
-
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
 ---
 
 <div class="modal fade" id="login-modal">
@@ -82,7 +78,7 @@ const translatePath = useTranslatedPath(lang);
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" name="terms" value="yes" class="custom-control-input" id="checkboxInput" checked required />
                             <label class="custom-control-label" for="checkboxInput"
-                                >I agree to the <a href={translatePath("/terms")}>terms of service</a> and the <a href={translatePath("/privacy")}
+                                >I agree to the <a href="/terms">terms of service</a> and the <a href="/privacy"
                                     >privacy policy</a
                                 >.</label
                             >

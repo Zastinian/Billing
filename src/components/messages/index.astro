@@ -1,12 +1,19 @@
 ---
 const type = new URL(Astro.request.url).searchParams.get("type");
 const msg = new URL(Astro.request.url).searchParams.get("msg");
+const error = new URL(Astro.request.url).searchParams.get("error");
 
 let message = "";
 
 switch (msg) {
   case "error":
     message = "An error occurred contact the administrator";
+    break;
+  case "admin.error":
+    message = `An error occurred: ${error}`;
+    break;
+  case "coming.soon":
+    message = "This section will be available soon";
     break;
   case "auth.invalid":
     message = "Invalid credentials";
@@ -17,17 +24,113 @@ switch (msg) {
   case "auth.register.password":
     message = "Passwords do not match";
     break;
+  case "auth.register.success":
+    message = "Registration successful";
+    break;
   case "auth.register.pterodactyl":
     message = "The user already exists in the panel";
     break;
+  case "auth.register.closed":
+    message = "Registration is currently closed";
+    break;
+  case "client.suspended":
+    message = "Your account has been suspended contact an administrator";
+    break;
   case "client.settings.basic.error":
-    message = "Please select a country and currency";
+    message = "Please select a currency and auto renew";
     break;
   case "client.settings.email.error":
     message = "Please enter a valid email address or password are incorrect";
     break;
+  case "client.settings.email.already":
+    message = "The email address is already in use";
+    break;
+  case "client.settings.password.error":
+    message = "Please enter a valid current password, and make sure the passwords match";
+    break;
   case "client.settings.success":
     message = "Settings saved successfully";
+    break;
+  case "client.tickets.create.error.general":
+    message = "Please enter a valid subject and message";
+    break;
+  case "client.tickets.create.error.subject":
+    message = "Please enter a valid subject (min 5 characters) and (max 255 characters)";
+    break;
+  case "client.tickets.create.error.message":
+    message = "Please enter a valid message (min 5 characters) and (max 500 characters)";
+    break;
+  case "client.tickets.error":
+    message = "The specified ticket are not valid";
+    break;
+  case "client.tickets.success.solved":
+    message = "The ticket has been updated successfully";
+    break;
+  case "admin.settings.error":
+    message = "Some settings are missing or invalid";
+    break;
+  case "admin.settings.success":
+    message = "Settings saved successfully";
+    break;
+  case "admin.page.success":
+    message = "Page saved successfully";
+    break;
+  case "admin.page.error":
+    message = "Some page data is missing or invalid";
+    break;
+  case "admin.client.password.error":
+    message = "Please enter a valid current password, and make sure the passwords match";
+    break;
+  case "admin.client.password.success":
+    message = "Password changed successfully";
+    break;
+  case "admin.client.not_found":
+    message = "The specified client is not valid";
+    break;
+  case "admin.client.basic.error":
+    message = "Please select a currency and auto renew";
+    break;
+  case "admin.client.basic.success":
+    message = "Basic settings saved successfully";
+    break;
+  case "admin.client.email.error":
+    message = "Please enter a valid email address";
+    break;
+  case "admin.client.email.already":
+    message = "The email address is already in use";
+    break;
+  case "admin.client.email.success":
+    message = "Email address saved successfully";
+    break;
+  case "admin.client.rank.error":
+    message = "Please select a valid rank";
+    break;
+  case "admin.client.rank.success":
+    message = "Rank saved successfully";
+    break;
+  case "admin.client.verify.error":
+    message = "Please select a valid verification type";
+    break;
+  case "admin.client.verify.success":
+    message = "Verification saved successfully";
+    break;
+  case "admin.client.token":
+    message = "Session token reset successfully";
+    break;
+  case "admin.client.suspend.error":
+    message = "Please select a valid suspension type";
+    break;
+  case "admin.client.suspend.success":
+    message = "Client suspended/unsuspend successfully";
+    break;
+  case "admin.client.credits.error":
+    message = "Please enter a valid credit amount (min 0.00, max 999999.99)";
+    break;
+  case "admin.client.credits.success":
+    message = "Credit amount edited successfully";
+    break;
+  case "order.needs_login":
+    message = "Please login to be able to purchase a product";
     break;
 }
 ---

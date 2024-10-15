@@ -4,14 +4,23 @@ interface Props {
 }
 
 const { title } = Astro.props;
+
+import { settings } from "@/database/index";
+
+const faviconPath = await settings
+  .findOneBy({ key: "favicon_path" })
+  .then((setting) => setting?.value);
+const companyName = await settings
+  .findOneBy({ key: "company_name" })
+  .then((setting) => setting?.value);
 ---
 
 <head>
     <meta charset="UTF-8" />
     <meta name="description" content="Astro description" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/webp+xml" href="/favicon.webp" />
-    <title>{title}</title>
+    <link rel="icon" type="image/webp+xml" href={faviconPath} />
+    <title>{title} - {companyName}</title>
     <link rel="stylesheet" href="/css/adminlte.min.css" />
     <noscript>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback" />

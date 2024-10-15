@@ -1,18 +1,18 @@
 ---
-import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 import { clients, settings } from "@/database/index";
 import profile from "@/utils/profile";
 import type { Clients } from "@/database/entities/Clients";
 
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
 
 let client: Clients | null = null;
 if (c.success === true && c.clientId !== null) {
-  client = await clients.findOneBy({ id: c.clientId }).then((client) => client);
+  client = await clients.findOneBy({ id: c.clientId });
   if (client?.email !== c.email) {
+    client = null;
+  }
+  if (client?.sessionToken !== c.sessionToken) {
     client = null;
   }
 }
@@ -20,10 +20,17 @@ if (c.success === true && c.clientId !== null) {
 const discordUrl = await settings
   .findOneBy({ key: "discord_url" })
   .then((setting) => setting?.value);
+const companyName = await settings
+  .findOneBy({ key: "company_name" })
+  .then((setting) => setting?.value);
+const logoPath = await settings.findOneBy({ key: "logo_path" }).then((setting) => setting?.value);
+const openRegistration = await settings
+  .findOneBy({ key: "open_registration" })
+  .then((setting) => setting?.value);
 
-let language;
-
-switch (lang) {
+const lang = Astro.cookies.get("lang")?.value ?? "en";
+let language = "English";
+switch (lang ?? "en") {
   case "en":
     language = "English";
     break;
@@ -32,9 +39,9 @@ switch (lang) {
 
 <nav class="main-header navbar navbar-expand-md navbar-dark">
     <div class="container">
-        <a href={translatePath("/")} class="navbar-brand">
-            <img src="/favicon.webp" alt="Company Name Logo" height="50px" />
-            <span class="brand-text font-weight-light">Company Name</span>
+        <a href="/" class="navbar-brand">
+            <img src={logoPath} alt={`${companyName} Logo`} height="50px" />
+            <span class="brand-text font-weight-light">{companyName}</span>
         </a>
         <button
             class="navbar-toggler order-1"
@@ -60,10 +67,10 @@ switch (lang) {
                         class="nav-link dropdown-toggle">Plans</a
                     >
                     <ul aria-labelledby="plansMenu" class="dropdown-menu border-0 shadow">
-                        <li><a href={translatePath("/plans")} class="dropdown-item">All Plans</a></li>
+                        <li><a href="/plans" class="dropdown-item">All Plans</a></li>
                         <div class="dropdown-divider"></div>
-                        <li><a href={translatePath("/plans/1")} class="dropdown-item">Plan 1</a></li>
-                        <li><a href={translatePath("/plans/2")} class="dropdown-item">Plan 2</a></li>
+                        <li><a href="/plans/1" class="dropdown-item">Plan 1</a></li>
+                        <li><a href="/plans/2" class="dropdown-item">Plan 2</a></li>
                     </ul>
                 </li>
                 {
@@ -71,7 +78,7 @@ switch (lang) {
                         <li class="nav-item"><a href={discordUrl} class="nav-link">Discord</a></li>
                     )
                 }
-                <li class="nav-item"><a href={translatePath("/kb")} class="nav-link">Support</a></li>
+                <li class="nav-item"><a href="/kb" class="nav-link">Knowledge Base</a></li>
             </ul>
         </div>
         <!-- Right navbar links -->
@@ -86,7 +93,7 @@ switch (lang) {
                     class="nav-link dropdown-toggle"
                     >{language}<a>
                         <ul aria-labelledby="countryMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
-                            <li><a href={translatePath(Astro.url.pathname)} class="dropdown-item">English</a></li>
+                            <li><a href="/api/lang?set=en" class="dropdown-item">English</a></li>
                         </ul>
                     </a>
                 </a>
@@ -97,12 +104,12 @@ switch (lang) {
                         ? (
                             <a id="accountMenu" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">{client?.email}</a>
                             <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
-                                <li><a href={translatePath("/client")} class="dropdown-item">Client Area</a></li>
-                                <li><a href={translatePath("/client/credits")} class="dropdown-item">Account Credit</a></li>
-                                <li><a href={translatePath("/client/settings")} class="dropdown-item">Account Settings</a></li>
+                                <li><a href="/client" class="dropdown-item">Client Area</a></li>
+                                <li><a href="/client/credits" class="dropdown-item">Account Credit</a></li>
+                                <li><a href="/client/settings" class="dropdown-item">Account Settings</a></li>
                                 {
                                     client?.isAdmin === 1 && (
-                                        <li><a href="{{ route('admin.dash') }}" class="dropdown-item">Admin Area</a></li>
+                                        <li><a href="/admin" class="dropdown-item">Admin Area</a></li>
                                     )
                                 }
                                 <div class="dropdown-divider"></div>
@@ -114,24 +121,24 @@ switch (lang) {
                                 data-toggle="dropdown"
                                 aria-haspopup="true"
                                 aria-expanded="false"
-                                class="nav-link dropdown-toggle">Account</a
-                            >
+                                class="nav-link dropdown-toggle">Account</a>
                             <ul aria-labelledby="accountMenu" class="dropdown-menu dropdown-menu-right border-0 shadow">
                                 <li>
                                     <a href="javascript:void(0);" data-toggle="modal" data-target="#login-modal" class="dropdown-item"
-                                        >Login</a
-                                    >
+                                        >Login</a>
                                 </li>
-                                <li>
-                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#register-modal" class="dropdown-item"
-                                        >Register</a
-                                    >
-                                </li>
+                                {
+                                    openRegistration === "true" && (
+                                        <li>
+                                            <a href="javascript:void(0);" data-toggle="modal" data-target="#register-modal" class="dropdown-item"
+                                                >Register</a>
+                                        </li>
+                                    )
+                                }
                                 <div class="dropdown-divider"></div>
                                 <li>
                                     <a href="javascript:void(0);" data-toggle="modal" data-target="#forgot-modal" class="dropdown-item"
-                                        >Forgot Password?</a
-                                    >
+                                        >Forgot Password?</a>
                                 </li>
                             </ul>
                         )
