@@ -11,16 +11,16 @@ let Page;
 
 switch (page) {
   case "privacy":
-    Page = (await pages.findOneBy({ name: "privacy" }).then((page) => page))?.content || "";
+    Page = (await pages.findOneBy({ name: "privacy" }))?.content || "";
     break;
   case "terms":
-    Page = (await pages.findOneBy({ name: "terms" }).then((page) => page))?.content || "";
+    Page = (await pages.findOneBy({ name: "terms" }))?.content || "";
     break;
   case "status":
-    Page = (await pages.findOneBy({ name: "status" }).then((page) => page))?.content || "";
+    Page = (await pages.findOneBy({ name: "status" }))?.content || "";
     break;
   default:
-    Page = (await pages.findOneBy({ name: "home" }).then((page) => page))?.content || "";
+    Page = (await pages.findOneBy({ name: "home" }))?.content || "";
     break;
 }
 ---
