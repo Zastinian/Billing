@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-
+import { serverStatus } from "@/utils/status";
 @Entity("servers")
 export class Servers {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
@@ -49,13 +49,13 @@ export class Servers {
   @Column("varchar", { name: "ip_address", nullable: true, length: 255 })
   ipAddress: string | null;
 
-  @Column("tinyint", { name: "status", default: () => "1" })
+  @Column("tinyint", { name: "status", default: serverStatus.pending })
   status: number;
 
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 
   @Column("datetime", { name: "last_notif", nullable: true })

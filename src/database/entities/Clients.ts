@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHmac, randomBytes } from "crypto";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("clients")
@@ -12,9 +12,6 @@ export class Clients {
   @Column("datetime", { name: "email_verified_at", nullable: true })
   emailVerifiedAt: Date | null;
 
-  @Column("varchar", { name: "recent_ip", nullable: true, length: 255 })
-  recentIp: string | null;
-
   @Column("int", { name: "user_id", nullable: true, unique: true })
   userId: number | null;
 
@@ -25,34 +22,27 @@ export class Clients {
     name: "credit",
     precision: 16,
     scale: 6,
-    default: () => "0",
+    default: 0,
   })
   credit: number;
 
-  @Column("varchar", { name: "currency", length: 255, default: () => "1" })
+  @Column("varchar", { name: "session_token", length: 24, nullable: true })
+  sessionToken: string | null;
+
+  @Column("tinyint", { name: "currency", default: 1 })
   currency: number;
 
-  @Column("varchar", {
-    name: "country",
-    length: 255,
-    default: () => "1",
-  })
-  country: number;
-
-  @Column("varchar", { name: "timezone", length: 255, default: () => "'UTC'" })
-  timezone: string;
-
-  @Column("varchar", { name: "language", length: 255, default: () => "'EN'" })
-  language: string;
-
-  @Column("tinyint", { name: "auto_renew", default: () => "1" })
+  @Column("tinyint", { name: "auto_renew", default: 1 })
   autoRenew: number;
 
-  @Column("tinyint", { name: "is_active", default: () => "1" })
+  @Column("tinyint", { name: "is_active", default: 1 })
   isActive: number;
 
-  @Column("tinyint", { name: "is_admin", default: () => "0" })
+  @Column("tinyint", { name: "is_admin", default: 0 })
   isAdmin: number;
+
+  @Column("tinyint", { name: "is_verified", default: 0 })
+  isVerified: number;
 
   @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
@@ -72,5 +62,9 @@ export class Clients {
         .update(password)
         .digest("base64") === this.password
     );
+  }
+
+  setSessionToken(): void {
+    this.sessionToken = randomBytes(24).toString("hex");
   }
 }

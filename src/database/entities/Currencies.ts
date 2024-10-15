@@ -17,12 +17,15 @@ export class Currencies {
   @Column("int", { name: "precision" })
   precision: number;
 
-  @Column("tinyint", { name: "default", default: () => "0" })
+  @Column("int", { name: "tax", default: 1 })
+  tax: number;
+
+  @Column("tinyint", { name: "default", default: 0 })
   default: number;
 
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 }

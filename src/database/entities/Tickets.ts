@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { ticketStatus } from "@/utils/status";
 
 @Entity("tickets")
 export class Tickets {
@@ -11,27 +12,12 @@ export class Tickets {
   @Column("varchar", { name: "subject", length: 255 })
   subject: string;
 
-  @Column("int", { name: "server_id", nullable: true })
-  serverId: number | null;
-
-  @Column("int", { name: "department_id", nullable: true })
-  departmentId: number | null;
-
-  @Column("int", { name: "category_id", nullable: true })
-  categoryId: number | null;
-
-  @Column("tinyint", { name: "status", default: () => "1" })
+  @Column("tinyint", { name: "status", default: ticketStatus.pending })
   status: number;
 
-  @Column("tinyint", { name: "is_locked", default: () => "0" })
-  isLocked: number;
-
-  @Column("tinyint", { name: "priority", nullable: true })
-  priority: number | null;
-
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 }

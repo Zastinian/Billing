@@ -12,7 +12,7 @@ export class PasswordResets {
   @Column("varchar", { name: "token", length: 255 })
   token: string;
 
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
   @Column("datetime", { name: "expires_at", nullable: true })

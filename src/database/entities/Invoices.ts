@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { invoiceStatus } from "@/utils/status";
 
 @Entity("invoices")
 export class Invoices {
@@ -18,7 +19,7 @@ export class Invoices {
     name: "credit",
     precision: 16,
     scale: 6,
-    default: () => "0",
+    default: 0,
   })
   credit: number;
 
@@ -26,7 +27,7 @@ export class Invoices {
     name: "late_fee",
     precision: 16,
     scale: 6,
-    default: () => "0",
+    default: 0,
   })
   lateFee: number;
 
@@ -39,12 +40,12 @@ export class Invoices {
   @Column("datetime", { name: "due_date", nullable: true })
   dueDate: Date | null;
 
-  @Column("tinyint", { name: "paid", default: () => "0" })
+  @Column("tinyint", { name: "paid", default: invoiceStatus.pending })
   paid: number;
 
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 }

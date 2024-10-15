@@ -14,12 +14,9 @@ export class TicketContents {
   @Column("text", { name: "message" })
   message: string;
 
-  @Column("varchar", { name: "attachment", nullable: true, length: 255 })
-  attachment: string | null;
-
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 }

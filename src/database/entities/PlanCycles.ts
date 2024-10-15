@@ -24,7 +24,7 @@ export class PlanCycles {
     name: "setup_fee",
     precision: 16,
     scale: 6,
-    default: () => "0",
+    default: 0,
   })
   setupFee: number;
 
@@ -32,7 +32,7 @@ export class PlanCycles {
     name: "late_fee",
     precision: 16,
     scale: 6,
-    default: () => "0",
+    default: 0,
   })
   lateFee: number;
 
@@ -42,9 +42,9 @@ export class PlanCycles {
   @Column("tinyint", { name: "trial_type", nullable: true })
   trialType: number | null;
 
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 }

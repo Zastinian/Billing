@@ -12,7 +12,7 @@ export class Taxes {
     name: "percent",
     precision: 5,
     scale: 3,
-    default: () => "0",
+    default: 0,
   })
   percent: number;
 
@@ -20,13 +20,13 @@ export class Taxes {
     name: "amount",
     precision: 16,
     scale: 6,
-    default: () => "0",
+    default: 0,
   })
   amount: number;
 
-  @Column("datetime", { name: "created_at", nullable: true })
+  @Column("datetime", { name: "created_at", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date | null;
 
-  @Column("datetime", { name: "updated_at", nullable: true })
+  @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 }
