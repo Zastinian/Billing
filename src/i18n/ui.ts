@@ -1,8 +1,6 @@
 import en from "./language/en-US/billing.json";
 import es from "./language/es-ES/billing.json";
 
-export const showDefaultLang = false;
-
 export const languages = {
   en: "English",
   es: "Español",
