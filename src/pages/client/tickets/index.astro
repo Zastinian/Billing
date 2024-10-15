@@ -1,26 +1,8 @@
 ---
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/tickets/Tickets.astro";
-import { clients } from "@/database/index";
-import profile from "@/utils/profile";
-
-import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
-
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
-const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
-const c = profile(cookie);
-
-if (c.success === true && c.clientId !== null) {
-  const client = await clients
-    .findOneBy({ id: c.clientId })
-    .then((client) => client?.email === c.email);
-  if (!client) {
-    return Astro.redirect("/");
-  }
-}
 ---
 
-<Layout title="Tickets" route="client.tickets.index" items={[{ title: "Dashboard", url: translatePath("/client") }]}>
+<Layout title="Tickets" route="client.tickets" items={[{ title: "Dashboard", url: "/client" }]}>
     <View />
 </Layout>

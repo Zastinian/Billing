@@ -3,32 +3,44 @@ const { id } = Astro.params;
 
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/servers/View.astro";
-import { clients } from "@/database/index";
+import { clients, servers } from "@/database/index";
 import profile from "@/utils/profile";
-import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
 
-if (c.success === true && c.clientId !== null) {
-  const client = await clients
-    .findOneBy({ id: c.clientId })
-    .then((client) => client?.email === c.email);
-  if (!client) {
-    return Astro.redirect("/");
-  }
+if (c.success === false || c.clientId === null) {
+  return Astro.redirect("/");
+}
+
+const client = await clients
+  .findOneBy({ id: c.clientId })
+  .then((client) => {
+    if (client?.email === c.email) {
+      return client;
+    }
+  });
+
+const server = await servers
+  .findOneBy({ id: Number(id) })
+  .then((server) => {
+    if (server?.clientId === client?.id) {
+      return server;
+    }
+  });
+
+if (!server) {
+  return Astro.redirect("/client/servers");
 }
 ---
 
 <Layout
     title=`Server #${id}`
-    route="client.servers.index"
+    route="client.servers"
     items={[
-        { title: "Dashboard", url: translatePath("/client") },
-        { title: "Servers", url: translatePath("/client/servers") },
+        { title: "Dashboard", url: "/client" },
+        { title: "Servers", url: "/client/servers" },
     ]}
 >
-    <View />
+    <View server={server} />
 </Layout>

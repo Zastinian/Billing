@@ -3,36 +3,47 @@ const { id } = Astro.params;
 
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/tickets/View.astro";
-import { clients } from "@/database/index";
+import { clients, tickets, ticketContents } from "@/database/index";
 import profile from "@/utils/profile";
-import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
 
-if (c.success === true && c.clientId !== null) {
-  const client = await clients
-    .findOneBy({ id: c.clientId })
-    .then((client) => client?.email === c.email);
-  if (!client) {
-    return Astro.redirect("/");
-  }
+if (c.success === false || c.clientId === null) {
+  return Astro.redirect("/");
 }
 
-if (id === "2") {
-  return Astro.rewrite("/404");
+const client = await clients
+  .findOneBy({ id: c.clientId })
+  .then((client) => {
+    if (client?.email === c.email) {
+      return client;
+    }
+  });
+
+const ticket = await tickets
+  .findOneBy({ id: Number(id) })
+  .then((ticket) => {
+    if (ticket?.clientId === client?.id) {
+      return ticket;
+    }
+  });
+
+if (!ticket) {
+  return Astro.redirect("/client/tickets");
 }
+
+const ticketContentsData = await ticketContents
+  .findBy({ ticketId: ticket?.id });
 ---
 
 <Layout
     title=`Ticket #${id}`
-    route="client.tickets.index"
+    route="client.tickets"
     items={[
-        { title: "Dashboard", url: translatePath("/client") },
-        { title: "Tickets", url: translatePath("/client/tickets") },
+        { title: "Dashboard", url: "/client" },
+        { title: "Tickets", url: "/client/tickets" },
     ]}
 >
-    <View />
+    <View ticket={ticket} ticketContents={ticketContentsData} />
 </Layout>

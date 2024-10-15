@@ -1,22 +1,8 @@
 ---
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/Dash.astro";
-import { clients } from "@/database/index";
-import profile from "@/utils/profile";
-
-const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
-const c = profile(cookie);
-
-if (c.success === true && c.clientId !== null) {
-  const client = await clients
-    .findOneBy({ id: c.clientId })
-    .then((client) => client?.email === c.email);
-  if (!client) {
-    return Astro.redirect("/");
-  }
-}
 ---
 
 <Layout title="Dashboard" route="client.dash">
-	<View />
+    <View />
 </Layout>

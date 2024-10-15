@@ -3,33 +3,52 @@ const { id } = Astro.params;
 
 import Layout from "@/layouts/clients/Layout.astro";
 import View from "@/views/clients/servers/Plan.astro";
-import { clients } from "@/database/index";
+import { clients, servers, plans } from "@/database/index";
 import profile from "@/utils/profile";
-import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
 
-if (c.success === true && c.clientId !== null) {
-  const client = await clients
-    .findOneBy({ id: c.clientId })
-    .then((client) => client?.email === c.email);
-  if (!client) {
-    return Astro.redirect("/");
-  }
+if (c.success === false || c.clientId === null) {
+  return Astro.redirect("/");
+}
+
+const client = await clients
+  .findOneBy({ id: c.clientId })
+  .then((client) => {
+    if (client?.email === c.email) {
+      return client;
+    }
+  });
+
+const server = await servers
+  .findOneBy({ id: Number(id) })
+  .then((server) => {
+    if (server?.clientId === client?.id) {
+      return server;
+    }
+  });
+
+if (!server) {
+  return Astro.redirect("/client/servers");
+}
+
+const plan = await plans
+  .findOneBy({ id: server?.planId });
+
+if (!plan) {
+  return Astro.redirect("/client/servers");
 }
 ---
 
 <Layout
     title="Plan"
-    route="client.servers.index"
+    route="client.servers"
     items={[
-        { title: "Dashboard", url: translatePath("/client") },
-        { title: "Servers", url: translatePath("/client/servers") },
-        { title: `Server #${id}`, url: translatePath(`/client/servers/${id}`) },
+        { title: "Dashboard", url: "/client" },
+        { title: "Servers", url: "/client/servers" },
+        { title: `Server #${id}`, url: `/client/servers/${id}` },
     ]}
 >
-    <View />
+    <View plan={plan} server={server} />
 </Layout>
