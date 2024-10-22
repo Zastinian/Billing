@@ -27,7 +27,9 @@ const allCurrencies = await currencies.find();
                         <select class="form-control" name="currency">
                             {
                                 allCurrencies.map((currency) => (
-                                    <option value={currency.id} selected={currency.id === client?.currency}>{currency.name}</option>
+                                    <option value={currency.id} selected={currency.id === client?.currency}>
+                                        {currency.name}
+                                    </option>
                                 ))
                             }
                         </select>
