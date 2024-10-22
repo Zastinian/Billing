@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^8.3.4",
-    "astro": "^4.16.3",
+    "astro": "^4.16.6",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "5.2.0",
     "mssql": "^11.0.1",
@@ -31,9 +31,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@biomejs/biome": "^1.9.3",
+    "@biomejs/biome": "^1.9.4",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.7.5",
+    "@types/node": "^22.7.6",
     "husky": "^9.1.6",
     "typescript": "^5.6.3"
   }
