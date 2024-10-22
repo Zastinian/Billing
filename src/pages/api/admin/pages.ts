@@ -27,7 +27,6 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (!data.name) {
       return redirect("/admin?type=danger&msg=admin.page.error");
     }
-    console.log(data);
     const page = await pages.findOneBy({ name: data.name });
     if (!page) {
         return redirect("/admin?type=danger&msg=admin.page.error");
