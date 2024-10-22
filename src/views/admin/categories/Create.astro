@@ -1,0 +1,26 @@
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <form action="/api/admin/category/create" method="POST" data-callback="createForm">
+                <div class="card-body row">
+                    <div class="form-group col-lg-4">
+                        <label for="nameInput">Category Name</label>
+                        <input type="text" name="name" class="form-control" id="nameInput" placeholder="Category Name" required minlength="3" maxlength="255" />
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="descriptionInput">Description (Optional)</label>
+                        <textarea name="description" class="form-control" id="descriptionInput"></textarea>
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="orderInput">Order (smaller = higher display priority)</label>
+                        <input type="number" name="order" value="1000" class="form-control" id="orderInput" placeholder="Order" min="0" max="1000" required />
+                    </div>
+                </div>
+                <div class="card-footer row justify-content-center">
+                    <a href="/admin/categories" class="btn btn-default btn-sm col-lg-2 col-3">Cancel</a>
+                    <button type="submit" class="btn btn-success btn-sm col-lg-2 col-3 offset-lg-1 offset-2">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+---
+const { id } = Astro.params;
+
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/categories/View.astro";
+import { categories } from "@/database/index";
+
+const category = await categories.findOneBy({ id: Number(id) });
+
+if (!category) {
+  return Astro.redirect("/admin/categories");
+}
+---
+
+<Layout
+    title={`Category #${id}`}
+    route="admin.categories"
+    items={[
+        { title: "Dashboard", url: "/admin" },
+        { title: "Server Categories", url: "/admin/categories" },
+    ]}
+>
+    <View category={category} />
+</Layout>
