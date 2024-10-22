@@ -29,7 +29,7 @@ const currenciesArray = await currencies.find();
             <div class="card-header">
                 <h3 class="card-title">Basic Settings</h3>
             </div>
-            <form action={`/api/admin/client/${client?.id}/basic`} method="POST">
+            <form action={`/api/admin/client/${client?.id}`} method="POST">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="currencyInput">Currency</label>
