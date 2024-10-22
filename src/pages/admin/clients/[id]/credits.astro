@@ -8,7 +8,7 @@ import { clients } from "@/database/index";
 const client = await clients.findOneBy({ id: Number(id) });
 
 if (!client) {
-  return Astro.redirect("/admin");
+  return Astro.redirect("/admin/clients");
 }
 ---
 
