@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/plans/Create.astro";
+---
+
+<Layout
+    title="Create Server Plan"
+    route="admin.plans"
+    items={[
+        { title: "Dashboard", url: "/admin" },
+        { title: "Server Plans", url: "/admin/plans" },
+    ]}
+>
+    <View />
+</Layout>
