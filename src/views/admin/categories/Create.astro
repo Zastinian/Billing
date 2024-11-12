@@ -5,15 +5,73 @@
                 <div class="card-body row">
                     <div class="form-group col-lg-4">
                         <label for="nameInput">Category Name</label>
-                        <input type="text" name="name" class="form-control" id="nameInput" placeholder="Category Name" required minlength="3" maxlength="255" />
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            id="nameInput"
+                            placeholder="Category Name"
+                            required
+                            minlength="3"
+                            maxlength="255"
+                        />
                     </div>
                     <div class="form-group col-lg-4">
                         <label for="descriptionInput">Description (Optional)</label>
-                        <textarea name="description" class="form-control" id="descriptionInput"></textarea>
+                        <textarea name="description" placeholder="Category Description" class="form-control" id="descriptionInput"></textarea>
                     </div>
                     <div class="form-group col-lg-4">
                         <label for="orderInput">Order (smaller = higher display priority)</label>
-                        <input type="number" name="order" value="1000" class="form-control" id="orderInput" placeholder="Order" min="0" max="1000" required />
+                        <input
+                            type="number"
+                            name="order"
+                            value="1000"
+                            class="form-control"
+                            id="orderInput"
+                            placeholder="Order"
+                            min="0"
+                            max="1000"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="orderInput">Global Limit (Optional)</label>
+                        <input
+                            type="number"
+                            name="globalLimit"
+                            value=""
+                            class="form-control"
+                            id="globalLimitInput"
+                            placeholder="Global Limit"
+                            min="0"
+                            max="1000"
+                        />
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="orderInput">Per Client Limit (Optional)</label>
+                        <input
+                            type="number"
+                            name="perClientLimit"
+                            value=""
+                            class="form-control"
+                            id="perClientLimitInput"
+                            placeholder="Per Client Limit"
+                            min="0"
+                            max="1000"
+                        />
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="orderInput">Per Client Trial Limit (Optional)</label>
+                        <input
+                            type="number"
+                            name="perClientTrialLimit"
+                            value=""
+                            class="form-control"
+                            id="perClientTrialLimitInput"
+                            placeholder="Per Client Trial Limit"
+                            min="0"
+                            max="1000"
+                        />
                     </div>
                 </div>
                 <div class="card-footer row justify-content-center">

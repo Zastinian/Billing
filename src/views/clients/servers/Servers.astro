@@ -17,7 +17,7 @@ const serversData = await servers.find({
   order: { updatedAt: "DESC" },
 });
 
-const panelUrl = await settings.findOneBy({ key: "panel_url" });
+const panelUrl = await settings.findOneBy({ key: "panel_url" }).then((setting) => setting?.value);
 ---
 
 <div class="row">
@@ -47,20 +47,32 @@ const panelUrl = await settings.findOneBy({ key: "panel_url" });
                     </thead>
                     <tbody>
                         {
-                            serversData.filter((server) => server.status === serverStatus.active).map(async (server) => {
-                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
-                                return (
-                                    <tr>
-                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
-                                        <td>{serverPlan?.name}</td>
-                                        <td>{server.serverName}</td>
-                                        <td>{serverPlan?.ram}</td>
-                                        <td>{serverPlan?.cpu}</td>
-                                        <td>{serverPlan?.disk}</td>
-                                        <td><span><span class={`badge ${server.status === serverStatus.active ? "bg-success" : server.status === serverStatus.suspended ? "bg-warning" : "bg-danger"}`}>{serverStatusName[server.status]}</span></span></td>
-                                    </tr>
-                                )
-                            })
+                            serversData
+                                .filter((server) => server.status === serverStatus.active)
+                                .map(async (server) => {
+                                    const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                    return (
+                                        <tr>
+                                            <td>
+                                                <a href={`/client/servers/${server.id}`}>{server.id}</a>
+                                            </td>
+                                            <td>{serverPlan?.name}</td>
+                                            <td>{server.serverName}</td>
+                                            <td>{serverPlan?.ram}</td>
+                                            <td>{serverPlan?.cpu}</td>
+                                            <td>{serverPlan?.disk}</td>
+                                            <td>
+                                                <span>
+                                                    <span
+                                                        class={`badge ${server.status === serverStatus.active ? "bg-success" : server.status === serverStatus.suspended ? "bg-warning" : "bg-danger"}`}
+                                                    >
+                                                        {serverStatusName[server.status]}
+                                                    </span>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                         }
                     </tbody>
                 </table>
@@ -87,17 +99,28 @@ const panelUrl = await settings.findOneBy({ key: "panel_url" });
                     </thead>
                     <tbody>
                         {
-                            serversData.filter((server) => server.status === serverStatus.pending).map(async (server) => {
-                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
-                                return (
-                                    <tr>
-                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
-                                        <td>{serverPlan?.name}</td>
-                                        <td>{server.serverName}</td>
-                                        <td>{server.createdAt?.toLocaleDateString()} - {server.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-                                    </tr>
-                                )
-                            })
+                            serversData
+                                .filter((server) => server.status === serverStatus.pending)
+                                .map(async (server) => {
+                                    const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                    return (
+                                        <tr>
+                                            <td>
+                                                <a href={`/client/servers/${server.id}`}>{server.id}</a>
+                                            </td>
+                                            <td>{serverPlan?.name}</td>
+                                            <td>{server.serverName}</td>
+                                            <td>
+                                                {server.createdAt?.toLocaleDateString()} -{" "}
+                                                {server.createdAt?.toLocaleTimeString(undefined, {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: false,
+                                                })}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                         }
                     </tbody>
                 </table>
@@ -122,17 +145,28 @@ const panelUrl = await settings.findOneBy({ key: "panel_url" });
                     </thead>
                     <tbody>
                         {
-                            serversData.filter((server) => server.status === serverStatus.cancelled).map(async (server) => {
-                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
-                                return (
-                                    <tr>
-                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
-                                        <td>{serverPlan?.name}</td>
-                                        <td>{server.serverName}</td>
-                                        <td>{server.updatedAt?.toLocaleDateString()} - {server.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-                                    </tr>
-                                )
-                            })
+                            serversData
+                                .filter((server) => server.status === serverStatus.cancelled)
+                                .map(async (server) => {
+                                    const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                    return (
+                                        <tr>
+                                            <td>
+                                                <a href={`/client/servers/${server.id}`}>{server.id}</a>
+                                            </td>
+                                            <td>{serverPlan?.name}</td>
+                                            <td>{server.serverName}</td>
+                                            <td>
+                                                {server.updatedAt?.toLocaleDateString()} -{" "}
+                                                {server.updatedAt?.toLocaleTimeString(undefined, {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: false,
+                                                })}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                         }
                     </tbody>
                 </table>
@@ -159,17 +193,28 @@ const panelUrl = await settings.findOneBy({ key: "panel_url" });
                     </thead>
                     <tbody>
                         {
-                            serversData.filter((server) => server.status === serverStatus.suspended).map(async (server) => {
-                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
-                                return (
-                                    <tr>
-                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
-                                        <td>{serverPlan?.name}</td>
-                                        <td>{server.serverName}</td>
-                                        <td>{server.updatedAt?.toLocaleDateString()} - {server.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-                                    </tr>
-                                )
-                            })
+                            serversData
+                                .filter((server) => server.status === serverStatus.suspended)
+                                .map(async (server) => {
+                                    const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                    return (
+                                        <tr>
+                                            <td>
+                                                <a href={`/client/servers/${server.id}`}>{server.id}</a>
+                                            </td>
+                                            <td>{serverPlan?.name}</td>
+                                            <td>{server.serverName}</td>
+                                            <td>
+                                                {server.updatedAt?.toLocaleDateString()} -{" "}
+                                                {server.updatedAt?.toLocaleTimeString(undefined, {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: false,
+                                                })}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                         }
                     </tbody>
                 </table>
@@ -194,17 +239,28 @@ const panelUrl = await settings.findOneBy({ key: "panel_url" });
                     </thead>
                     <tbody>
                         {
-                            serversData.filter((server) => server.status === serverStatus.terminated).map(async (server) => {
-                                const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
-                                return (
-                                    <tr>
-                                        <td><a href={`/client/servers/${server.id}`}>{server.id}</a></td>
-                                        <td>{serverPlan?.name}</td>
-                                        <td>{server.serverName}</td>
-                                        <td>{server.updatedAt?.toLocaleDateString()} - {server.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-                                    </tr>
-                                )
-                            })
+                            serversData
+                                .filter((server) => server.status === serverStatus.terminated)
+                                .map(async (server) => {
+                                    const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                    return (
+                                        <tr>
+                                            <td>
+                                                <a href={`/client/servers/${server.id}`}>{server.id}</a>
+                                            </td>
+                                            <td>{serverPlan?.name}</td>
+                                            <td>{server.serverName}</td>
+                                            <td>
+                                                {server.updatedAt?.toLocaleDateString()} -{" "}
+                                                {server.updatedAt?.toLocaleTimeString(undefined, {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: false,
+                                                })}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                         }
                     </tbody>
                 </table>
