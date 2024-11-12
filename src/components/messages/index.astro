@@ -129,6 +129,25 @@ switch (msg) {
   case "admin.client.credits.success":
     message = "Credit amount edited successfully";
     break;
+  case "admin.category.create.success":
+    message = "Category created successfully";
+    break;
+  case "admin.category.update.success":
+    message = "Category updated successfully";
+    break;
+  case "admin.category.not_found":
+    message = "The specified category is not valid";
+    break;
+  case "admin.category.update.error":
+    message = "Please enter a valid category name, and make sure the category name is unique";
+    break;
+  case "admin.category.delete.error":
+    message =
+      "Please delete all the plans that are assigned to this category before deleting the category";
+    break;
+  case "admin.category.delete.success":
+    message = "Category deleted successfully";
+    break;
   case "order.needs_login":
     message = "Please login to be able to purchase a product";
     break;
