@@ -39,10 +39,13 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     category.name = data.name;
     category.description = data.description ?? null;
     category.order = Number(data.order);
+    category.globalLimit = data.globalLimit ? Number(data.globalLimit) : null;
+    category.perClientLimit = data.perClientLimit ? Number(data.perClientLimit) : null;
+    category.perClientTrialLimit = data.perClientTrialLimit ? Number(data.perClientTrialLimit) : null;
     category.createdAt = new Date();
     category.updatedAt = new Date();
     await categories.save(category);
-    return redirect(`/admin/categories/${category.id}`);
+    return redirect(`/admin/categories?type=success&msg=admin.category.create.success`);
   }
   return redirect("/");
 };
