@@ -5,10 +5,10 @@ import Layout from "@/layouts/admin/Layout.astro";
 import View from "@/views/admin/categories/View.astro";
 import { categories } from "@/database/index";
 
-const category = await categories.findOneBy({ id: Number(id) });
+const category = await categories.findOneBy({ id: Number(id) }).catch(() => null);
 
 if (!category) {
-  return Astro.redirect("/admin/categories");
+  return Astro.redirect("/admin/categories?type=danger&msg=admin.category.not_found");
 }
 ---
 
