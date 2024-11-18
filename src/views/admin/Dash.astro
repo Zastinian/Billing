@@ -246,7 +246,7 @@ const last30DaysClientsRegisteredSecure = aggregateDataByDate(last30DaysClientsR
         function fillDataWithZeros(data) {
             const filledData = new Array(30).fill(0).map((_, index) => {
                 const dateKey = last30Days[index];
-                return data[dateKey] || 0; // Cambiado para acceder al objeto
+                return data[dateKey] || 0;
             });
             return filledData;
         }
