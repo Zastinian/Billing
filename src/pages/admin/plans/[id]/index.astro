@@ -1,0 +1,110 @@
+---
+const { id } = Astro.params;
+
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/plans/View.astro";
+import type Nests from "@/types/nests";
+import type Locations from "@/types/locations";
+import { categories, plans, planCycles, settings } from "@/database/index";
+
+const plan = await plans.findOneBy({ id: Number(id) }).catch(() => null);
+
+if (!plan) {
+  return Astro.redirect("/admin/plans?type=danger&msg=admin.plan.not_found");
+}
+
+const category = await categories.findOneBy({ id: plan.categoryId });
+
+if (!category) {
+  return Astro.redirect("/admin/plans?type=danger&msg=admin.plan.not_found");
+}
+
+const cycles = await planCycles.find({ where: { planId: plan.id } });
+
+if (!cycles.length) {
+  return Astro.redirect("/admin/plans?type=danger&msg=admin.plan.not_found");
+}
+
+const panelUrl = await settings
+  .findOneBy({ key: "panel_url" })
+  .then((panelUrl) => panelUrl?.value)
+  .catch(() => null);
+const panelAppApiKey = await settings
+  .findOneBy({ key: "panel_app_api_key" })
+  .then((panelAppApiKey) => panelAppApiKey?.value)
+  .catch(() => null);
+
+if (!panelUrl) {
+  return Astro.redirect("/admin?type=danger&msg=panel.url.missing");
+}
+if (!panelAppApiKey) {
+  return Astro.redirect("/admin?type=danger&msg=panel.api.missing");
+}
+
+let allDone = false;
+let nextPageUrl = "/api/application/locations?include=nodes&page=1&per_page=5000";
+const locationsData: Locations = { data: [] };
+while (!allDone) {
+  const locations = await fetch(new URL(nextPageUrl, panelUrl), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${panelAppApiKey}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  if (locations.status !== 200) {
+    return Astro.redirect("/admin?type=danger&msg=panel.api.error");
+  }
+  if (!locations.ok) {
+    return Astro.redirect("/admin?type=danger&msg=panel.api.error");
+  }
+  const locationsDataTemp = await locations.json();
+  locationsData.data.push(...locationsDataTemp.data);
+  if (
+    locationsDataTemp.meta.pagination.current_page === locationsDataTemp.meta.pagination.total_pages
+  ) {
+    allDone = true;
+  } else {
+    nextPageUrl = `/api/application/locations?include=nodes&page=${locationsDataTemp.meta.pagination.current_page + 1}&per_page=5000`;
+  }
+}
+
+allDone = false;
+nextPageUrl = "/api/application/nests?include=eggs&page=1&per_page=5000";
+const nestsData: Nests = { data: [] };
+while (!allDone) {
+  const nests = await fetch(new URL(nextPageUrl, panelUrl), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${panelAppApiKey}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  if (nests.status !== 200) {
+    return Astro.redirect("/admin?type=danger&msg=admin.error&error=panel.api.error");
+  }
+  if (!nests.ok) {
+    return Astro.redirect("/admin?type=danger&msg=admin.error&error=panel.api.error");
+  }
+  const nestsDataTemp = await nests.json();
+  nestsData.data.push(...nestsDataTemp.data);
+  if (nestsDataTemp.meta.pagination.current_page === nestsDataTemp.meta.pagination.total_pages) {
+    allDone = true;
+  } else {
+    nextPageUrl = `/api/application/nests?include=eggs&page=${nestsDataTemp.meta.pagination.current_page + 1}&per_page=5000`;
+  }
+}
+---
+
+<Layout
+    title="Create Server Plan"
+    route="admin.plans"
+    items={[
+        { title: "Dashboard", url: "/admin" },
+        { title: "Server Plans", url: "/admin/plans" },
+    ]}
+>
+    <View nests={nestsData} locations={locationsData} plan={plan} cycles={cycles} />
+</Layout>
