@@ -1,5 +1,5 @@
 ---
-import { clients, settings } from "@/database/index";
+import { categories, clients, settings } from "@/database/index";
 import profile from "@/utils/profile";
 import type { Clients } from "@/database/entities/Clients";
 
@@ -20,6 +20,10 @@ if (c.success === true && c.clientId !== null) {
 const discordUrl = await settings
   .findOneBy({ key: "discord_url" })
   .then((setting) => setting?.value);
+const categoriesData = await categories.find({
+  order: { order: "ASC" },
+  select: ["id", "name"],
+});
 
 const lang = Astro.cookies.get("lang")?.value ?? "en";
 
@@ -55,8 +59,11 @@ switch (lang ?? "en") {
                     <ul aria-labelledby="plansMenu" class="dropdown-menu border-0 shadow">
                         <li><a href="/plans" class="dropdown-item">View All Plans</a></li>
                         <div class="dropdown-divider"></div>
-                        <li><a href="/plans/1" class="dropdown-item">Plan 1</a></li>
-                        <li><a href="/plans/2" class="dropdown-item">Plan 2</a></li>
+                        {
+                            categoriesData?.map((category) => (
+                                <li><a href={`/plans/${category.id}`} class="dropdown-item">{category.name}</a></li>
+                            ))
+                        }
                     </ul>
                 </li>
                 {

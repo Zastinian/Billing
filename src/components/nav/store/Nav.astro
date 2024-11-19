@@ -1,5 +1,5 @@
 ---
-import { clients, settings } from "@/database/index";
+import { categories, clients, settings } from "@/database/index";
 import profile from "@/utils/profile";
 import type { Clients } from "@/database/entities/Clients";
 
@@ -27,6 +27,10 @@ const logoPath = await settings.findOneBy({ key: "logo_path" }).then((setting) =
 const openRegistration = await settings
   .findOneBy({ key: "open_registration" })
   .then((setting) => setting?.value);
+const categoriesData = await categories.find({
+  order: { order: "ASC" },
+  select: ["id", "name"],
+});
 
 const lang = Astro.cookies.get("lang")?.value ?? "en";
 let language = "English";
@@ -55,7 +59,6 @@ switch (lang ?? "en") {
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-            <!-- Left navbar links -->
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
                     <a
@@ -69,8 +72,11 @@ switch (lang ?? "en") {
                     <ul aria-labelledby="plansMenu" class="dropdown-menu border-0 shadow">
                         <li><a href="/plans" class="dropdown-item">All Plans</a></li>
                         <div class="dropdown-divider"></div>
-                        <li><a href="/plans/1" class="dropdown-item">Plan 1</a></li>
-                        <li><a href="/plans/2" class="dropdown-item">Plan 2</a></li>
+                        {
+                            categoriesData?.map((category) => (
+                                <li><a href={`/plans/${category.id}`} class="dropdown-item">{category.name}</a></li>
+                            ))
+                        }
                     </ul>
                 </li>
                 {
