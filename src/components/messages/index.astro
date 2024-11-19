@@ -33,6 +33,15 @@ switch (msg) {
   case "auth.register.closed":
     message = "Registration is currently closed";
     break;
+  case "panel.url.missing":
+    message = "Panel URL is missing";
+    break;
+  case "panel.api.missing":
+    message = "Panel API Key is missing";
+    break;
+  case "panel.api.error":
+    message = "Error while checking the panel";
+    break;
   case "client.suspended":
     message = "Your account has been suspended contact an administrator";
     break;
@@ -147,6 +156,22 @@ switch (msg) {
     break;
   case "admin.category.delete.success":
     message = "Category deleted successfully";
+    break;
+  case "admin.plan.create.error":
+    message = "Please enter all the required fields";
+    break;
+  case "admin.plan.create.success":
+    message = "Plan created successfully";
+    break;
+  case "admin.plan.not_found":
+    message = "The specified plan is not valid";
+    break;
+  case "admin.plan.update.success":
+    message = "Plan updated successfully";
+    break;
+  case "admin.plan.cycle.delete.error":
+    message =
+      "Please delete all the servers that are assigned to this plan cycle before deleting the plan cycle";
     break;
   case "order.needs_login":
     message = "Please login to be able to purchase a product";
