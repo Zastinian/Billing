@@ -1,5 +1,5 @@
 export const serverStatus = {
-  cancelled: 0,
+  canceled: 0,
   pending: 1,
   active: 2,
   suspended: 3,
@@ -7,7 +7,7 @@ export const serverStatus = {
 };
 
 export const serverStatusName = {
-  [serverStatus.cancelled]: "Cancelled",
+  [serverStatus.canceled]: "canceled",
   [serverStatus.pending]: "Pending",
   [serverStatus.active]: "Active",
   [serverStatus.suspended]: "Suspended",
@@ -29,14 +29,14 @@ export const ticketStatusName = {
 };
 
 export const invoiceStatus = {
-  cancelled: 0,
+  canceled: 0,
   pending: 1,
   paid: 2,
   overdue: 3,
 };
 
 export const invoiceStatusName = {
-  [invoiceStatus.cancelled]: "Cancelled",
+  [invoiceStatus.canceled]: "canceled",
   [invoiceStatus.pending]: "Pending",
   [invoiceStatus.paid]: "Paid",
   [invoiceStatus.overdue]: "Overdue",
