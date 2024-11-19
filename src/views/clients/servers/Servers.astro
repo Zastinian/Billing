@@ -146,7 +146,7 @@ const panelUrl = await settings.findOneBy({ key: "panel_url" }).then((setting) =
                     <tbody>
                         {
                             serversData
-                                .filter((server) => server.status === serverStatus.cancelled)
+                                .filter((server) => server.status === serverStatus.canceled)
                                 .map(async (server) => {
                                     const serverPlan = server.planId ? await plans.findOneBy({ id: server.planId }) : undefined;
                                     return (
