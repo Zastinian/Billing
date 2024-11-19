@@ -1,15 +1,19 @@
 ---
 import type Nests from "@/types/nests";
 import type Locations from "@/types/locations";
+import type { Plans } from "@/database/entities/Plans";
+import type { PlanCycles } from "@/database/entities/PlanCycles";
 import { categories, coupons, discounts } from "@/database/index";
 import { MoreThanOrEqual } from "typeorm";
 
 interface Props {
   nests: Nests;
   locations: Locations;
+  plan: Plans;
+  cycles: PlanCycles[];
 }
 
-const { nests, locations } = Astro.props;
+const { nests, locations, plan, cycles } = Astro.props;
 
 const categoriesData = await categories.find({
   order: { order: "ASC" },
@@ -34,54 +38,110 @@ const discountsData = await discounts.find({
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <form action="/api/admin/plan/create" method="POST">
+            <form action={`/api/admin/plan/${plan.id}`} method="POST" id="updateForm">
                 <div class="card-body row">
                     <div class="form-group col-lg-4">
                         <label for="nameInput">Server Plan Name</label>
-                        <input type="text" name="name" class="form-control" id="nameInput" placeholder="Server Plan Name" required />
+                        <input
+                            value={plan?.name}
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            id="nameInput"
+                            placeholder="Server Plan Name"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-5">
                         <label for="descriptionInput">Short Description (Optional)</label>
-                        <textarea name="description" class="form-control" id="descriptionInput" placeholder="Around 10 words recommended"></textarea>
+                        <textarea
+                            name="description"
+                            class="form-control"
+                            id="descriptionInput"
+                            placeholder="Around 10 words recommended">{plan?.description}</textarea>
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="orderInput">Order (smaller = higher display priority)</label>
-                        <input type="text" name="order" value="1000" class="form-control" id="orderInput" placeholder="Order" required />
+                        <input
+                            value={plan?.order}
+                            type="text"
+                            name="order"
+                            value="1000"
+                            class="form-control"
+                            id="orderInput"
+                            placeholder="Order"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Category</label>
                         <select class="form-control" name="category" id="categorySelect">
-                            <option value="" selected disabled>Select a category...</option>
-                            {categoriesData?.map((category) => <option value={category.id}>{category.name}</option>)}
+                            <option value="" disabled>Select a category...</option>
+                            {
+                                categoriesData?.map((category) => (
+                                    <option value={category.id} selected={plan?.categoryId === category.id}>
+                                        {category.name}
+                                    </option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="ramInput">RAM (MB)</label>
-                        <input type="number" name="ram" min="0" class="form-control" id="ramInput" placeholder="0 = unlimited" required />
+                        <input
+                            value={plan?.ram}
+                            type="number"
+                            name="ram"
+                            min="0"
+                            class="form-control"
+                            id="ramInput"
+                            placeholder="0 = unlimited"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="cpuInput">CPU (%)</label>
-                        <input type="number" name="cpu" min="0" class="form-control" id="cpuInput" placeholder="0 = unlimited" required />
+                        <input
+                            value={plan?.cpu}
+                            type="number"
+                            name="cpu"
+                            min="0"
+                            class="form-control"
+                            id="cpuInput"
+                            placeholder="0 = unlimited"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="diskInput">Disk (MB)</label>
-                        <input type="number" name="disk" min="0" class="form-control" id="diskInput" placeholder="0 = unlimited" required />
+                        <input
+                            value={plan?.disk}
+                            type="number"
+                            name="disk"
+                            min="0"
+                            class="form-control"
+                            id="diskInput"
+                            placeholder="0 = unlimited"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="swapInput">Swap (MB)</label>
                         <input
+                            value={plan?.swap}
                             type="number"
                             name="swap"
                             min="-1"
                             class="form-control"
                             id="swapInput"
-                            placeholder="0 = disable; -1 = unlimited"
+                            placeholder="0 = disable, -1 = unlimited"
                             required
                         />
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="ioInput">Block IO</label>
                         <input
+                            value={plan?.io}
                             type="number"
                             name="io"
                             min="10"
@@ -95,11 +155,29 @@ const discountsData = await discounts.find({
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="databasesInput">Databases</label>
-                        <input type="number" name="databases" min="0" class="form-control" id="databasesInput" placeholder="Databases" required />
+                        <input
+                            value={plan?.databases}
+                            type="number"
+                            name="databases"
+                            min="0"
+                            class="form-control"
+                            id="databasesInput"
+                            placeholder="Databases"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="backupsInput">Backups</label>
-                        <input type="number" name="backups" min="0" class="form-control" id="backupsInput" placeholder="Backups" required />
+                        <input
+                            value={plan?.backups}
+                            type="number"
+                            name="backups"
+                            min="0"
+                            class="form-control"
+                            id="backupsInput"
+                            placeholder="Backups"
+                            required
+                        />
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
@@ -112,8 +190,40 @@ const discountsData = await discounts.find({
                                     <i class="fas fa-trash"></i> Clear All
                                 </button>
                             </div>
-                            <div class="selected-nodes d-flex flex-wrap mb-2"></div>
-                            <input type="hidden" name="nodes" id="nodesInput" value="" />
+                            <div class="selected-nodes d-flex flex-wrap mb-2">
+                                {
+                                    plan?.locationsNodesId.split(",").map((locationNodeId) => (
+                                        <div
+                                            class="badge badge-info d-flex align-items-center m-1 p-2"
+                                            data-value={locationNodeId}
+                                            style="position: relative;"
+                                        >
+                                            <div class="d-flex flex-column">
+                                                <small class="text-white-50">
+                                                    {
+                                                        locations?.data.find(
+                                                            (location) => location.attributes.id === Number(locationNodeId.split(":")[0]),
+                                                        )?.attributes.short
+                                                    }
+                                                </small>
+                                                <span>
+                                                    {
+                                                        locations?.data
+                                                            .find((location) => location.attributes.id === Number(locationNodeId.split(":")[0]))
+                                                            ?.attributes.relationships.nodes.data.find(
+                                                                (node) => node.attributes.id === Number(locationNodeId.split(":")[1]),
+                                                            )?.attributes.name
+                                                    }
+                                                </span>
+                                            </div>
+                                            <button type="button" class="btn btn-xs btn-tool tag-remove ml-2">
+                                                <i class="fas fa-times" />
+                                            </button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                            <input type="hidden" name="nodes" id="nodesInput" value={plan?.locationsNodesId} />
                             <select class="form-control node-select">
                                 <option value="" selected disabled>Select a node...</option>
                                 {
@@ -146,8 +256,39 @@ const discountsData = await discounts.find({
                                     <i class="fas fa-trash"></i> Clear All
                                 </button>
                             </div>
-                            <div class="selected-eggs d-flex flex-wrap mb-2"></div>
-                            <input type="hidden" name="eggs" id="eggsInput" value="" />
+                            <div class="selected-eggs d-flex flex-wrap mb-2">
+                                {
+                                    plan?.nestsEggsId.split(",").map((nestEggId) => (
+                                        <div
+                                            class="badge badge-info d-flex align-items-center m-1 p-2"
+                                            data-value={nestEggId}
+                                            style="position: relative;"
+                                        >
+                                            <div class="d-flex flex-column">
+                                                <small class="text-white-50">
+                                                    {
+                                                        nests?.data.find((nest) => nest.attributes.id === Number(nestEggId.split(":")[0]))?.attributes
+                                                            .name
+                                                    }
+                                                </small>
+                                                <span>
+                                                    {
+                                                        nests?.data
+                                                            .find((nest) => nest.attributes.id === Number(nestEggId.split(":")[0]))
+                                                            ?.attributes.relationships.eggs.data.find(
+                                                                (egg) => egg.attributes.id === Number(nestEggId.split(":")[1]),
+                                                            )?.attributes.name
+                                                    }
+                                                </span>
+                                            </div>
+                                            <button type="button" class="btn btn-xs btn-tool tag-remove ml-2">
+                                                <i class="fas fa-times" />
+                                            </button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                            <input type="hidden" name="eggs" id="eggsInput" value={plan?.nestsEggsId} />
                             <select class="form-control egg-select">
                                 <option value="" selected disabled>Select an egg...</option>
                                 {
@@ -175,6 +316,7 @@ const discountsData = await discounts.find({
                         <div class="form-group col-lg-4">
                             <label for="extraPortsInput">Extra Ports</label>
                             <input
+                                value={plan?.extraPorts}
                                 type="number"
                                 name="extra_ports"
                                 min="0"
@@ -186,15 +328,30 @@ const discountsData = await discounts.find({
                         </div>
                         <div class="form-group col-lg-4">
                             <label for="minPortInput">Minimum Port (Optional)</label>
-                            <input type="number" name="min_port" class="form-control" id="minPortInput" placeholder="e.g. 25565" />
+                            <input
+                                value={plan?.minPort}
+                                type="number"
+                                name="min_port"
+                                class="form-control"
+                                id="minPortInput"
+                                placeholder="e.g. 25565"
+                            />
                         </div>
                         <div class="form-group col-lg-4">
                             <label for="maxPortInput">Maximum Port (Optional)</label>
-                            <input type="number" name="max_port" class="form-control" id="maxPortInput" placeholder="e.g. 25575" />
+                            <input
+                                value={plan?.maxPort}
+                                type="number"
+                                name="max_port"
+                                class="form-control"
+                                id="maxPortInput"
+                                placeholder="e.g. 25575"
+                            />
                         </div>
                         <div class="form-group col-lg-12">
                             <label for="serverDescriptionInput">Server Description (Optional)</label>
                             <textarea
+                                value={plan?.serverDescription}
                                 name="server_description"
                                 class="form-control"
                                 id="serverDescriptionInput"
@@ -206,7 +363,7 @@ const discountsData = await discounts.find({
                                 <option value="">Select a discount...</option>
                                 {
                                     discountsData?.map((discount) => (
-                                        <option value={discount.id}>
+                                        <option value={discount.id} selected={plan?.discount === discount.id}>
                                             {discount.name} - {discount.percentOff}% OFF
                                         </option>
                                     ))
@@ -223,8 +380,31 @@ const discountsData = await discounts.find({
                                     <i class="fas fa-trash"></i> Clear All
                                 </button>
                             </div>
-                            <div class="selected-coupons d-flex flex-wrap mb-2"></div>
-                            <input type="hidden" name="coupons" id="couponsInput" value="" />
+                            <div class="selected-coupons d-flex flex-wrap mb-2">
+                                {
+                                    plan?.coupons?.split(",").map((couponCode) => {
+                                        if (!couponCode) return;
+                                        return (
+                                            <div
+                                                class="badge badge-info d-flex align-items-center m-1 p-2"
+                                                data-value={couponCode}
+                                                style="position: relative;"
+                                            >
+                                                <div class="d-flex flex-column">
+                                                    <small class="text-white-50">
+                                                        {couponsData?.find((coupon) => coupon.id === Number(couponCode))?.code}
+                                                    </small>
+                                                    <span>{couponsData?.find((coupon) => coupon.id === Number(couponCode))?.percentOff}</span>
+                                                </div>
+                                                <button type="button" class="btn btn-xs btn-tool tag-remove ml-2">
+                                                    <i class="fas fa-times" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })
+                                }
+                            </div>
+                            <input type="hidden" name="coupons" id="couponsInput" value={plan?.coupons} />
                             <select class="form-control coupon-select">
                                 <option value="" selected disabled>Select a coupon...</option>
                                 {
@@ -239,6 +419,7 @@ const discountsData = await discounts.find({
                         <div class="form-group col-lg-6">
                             <label for="daysSuspendInput">Days before server suspension</label>
                             <input
+                                value={plan?.daysBeforeSuspend}
                                 type="number"
                                 name="days_before_suspend"
                                 class="form-control"
@@ -250,6 +431,7 @@ const discountsData = await discounts.find({
                         <div class="form-group col-lg-6">
                             <label for="daysDeleteInput">Days before server deletion</label>
                             <input
+                                value={plan?.daysBeforeDelete}
                                 type="number"
                                 name="days_before_delete"
                                 class="form-control"
@@ -261,6 +443,7 @@ const discountsData = await discounts.find({
                         <div class="form-group col-lg-4">
                             <label for="globalLimitInput">Global Limit (Optional)</label>
                             <input
+                                value={plan?.globalLimit}
                                 type="number"
                                 name="global_limit"
                                 class="form-control"
@@ -271,6 +454,7 @@ const discountsData = await discounts.find({
                         <div class="form-group col-lg-4">
                             <label for="perClientInput">Per Client Limit (Optional)</label>
                             <input
+                                value={plan?.perClientLimit}
                                 type="number"
                                 name="per_client_limit"
                                 class="form-control"
@@ -281,6 +465,7 @@ const discountsData = await discounts.find({
                         <div class="form-group col-lg-4">
                             <label for="perClientTrialInput">Per Client Trial Limit (Optional)</label>
                             <input
+                                value={plan?.perClientTrialLimit}
                                 type="number"
                                 name="per_client_trial_limit"
                                 class="form-control"
@@ -296,8 +481,9 @@ const discountsData = await discounts.find({
                     <div class="form-group col-lg-3">
                         <label>Cycle Length</label>
                         <input
+                            value={cycles[0]?.cycleLength}
                             type="number"
-                            name="cycle[0][cycle_length]"
+                            name={`cycle[${cycles[0]?.id}][cycle_length]`}
                             class="form-control"
                             placeholder="e.g. enter '3', choose 'Monthly'"
                             required
@@ -305,42 +491,42 @@ const discountsData = await discounts.find({
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Cycle Type</label>
-                        <select class="form-control" name="cycle[0][cycle_type]">
-                            <option value="0">One-time</option>
-                            <option value="1">Hourly</option>
-                            <option value="2">Daily</option>
-                            <option value="3">Monthly</option>
-                            <option value="4">Yearly</option>
+                        <select class="form-control" name={`cycle[${cycles[0]?.id}][cycle_type]`}>
+                            <option value="0" selected={cycles[0]?.cycleType === 0}>One-time</option>
+                            <option value="1" selected={cycles[0]?.cycleType === 1}>Hourly</option>
+                            <option value="2" selected={cycles[0]?.cycleType === 2}>Daily</option>
+                            <option value="3" selected={cycles[0]?.cycleType === 3}>Monthly</option>
+                            <option value="4" selected={cycles[0]?.cycleType === 4}>Yearly</option>
                         </select>
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Initial Price</label>
-                        <input type="text" name="cycle[0][init_price]" class="form-control" placeholder="Use default currency" required />
+                        <input value={cycles[0]?.initPrice} type="text" name={`cycle[${cycles[0]?.id}][init_price]`} class="form-control" placeholder="Use default currency" required />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Renewal Price</label>
-                        <input type="text" name="cycle[0][renew_price]" class="form-control" placeholder="Use default currency" required />
+                        <input value={cycles[0]?.renewPrice} type="text" name={`cycle[${cycles[0]?.id}][renew_price]`} class="form-control" placeholder="Use default currency" required />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Setup fee</label>
-                        <input type="text" name="cycle[0][setup_fee]" class="form-control" placeholder="Use default currency" required />
+                        <input value={cycles[0]?.setupFee} type="text" name={`cycle[${cycles[0]?.id}][setup_fee]`} class="form-control" placeholder="Use default currency" required />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Late fee</label>
-                        <input type="text" name="cycle[0][late_fee]" class="form-control" placeholder="Use default currency" required />
+                        <input value={cycles[0]?.lateFee} type="text" name={`cycle[${cycles[0]?.id}][late_fee]`} class="form-control" placeholder="Use default currency" required />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Trial Length (Optional)</label>
-                        <input type="number" name="cycle[0][trial_length]" min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'" />
+                        <input value={cycles[0]?.trialLength} type="number" name={`cycle[${cycles[0]?.id}][trial_length]`} min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'" />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Trial Type (Optional)</label>
-                        <select class="form-control" name="cycle[0][trial_type]">
-                            <option value="">Select a trial type...</option>
-                            <option value="1">Hour(s)</option>
-                            <option value="2">Day(s)</option>
-                            <option value="3">Month(s)</option>
-                            <option value="4">Year(s)</option>
+                        <select class="form-control" name={`cycle[${cycles[0]?.id}][trial_type]`}>
+                            <option value="" selected={cycles[0]?.trialType === null}>Select a trial type...</option>
+                            <option value="1" selected={cycles[0]?.trialType === 1}>Hour(s)</option>
+                            <option value="2" selected={cycles[0]?.trialType === 2}>Day(s)</option>
+                            <option value="3" selected={cycles[0]?.trialType === 3}>Month(s)</option>
+                            <option value="4" selected={cycles[0]?.trialType === 4}>Year(s)</option>
                         </select>
                     </div>
                     <div class="form-group col-lg-12">
@@ -348,13 +534,108 @@ const discountsData = await discounts.find({
                         <h5>Additional Billing Cycles</h5>
                         <button type="button" class="btn btn-primary btn-sm" id="add-cycle"><i class="fas fa-plus"></i> Add Billing Cycle</button>
                     </div>
-                    <div class="col-lg-12 row" id="additional-cycles"></div>
-                </div>
-                <div class="card-footer row justify-content-center">
-                    <a href="/admin/plan" class="btn btn-default btn-sm col-lg-2 col-3">Cancel</a>
-                    <button type="submit" class="btn btn-success btn-sm col-lg-2 col-3 offset-lg-1 offset-2">Create</button>
+                    <div class="col-lg-12 row" id="additional-cycles">
+                        {
+                            cycles.slice(1).map((cycle) => (
+                                <div class="row col-12">
+                                    <div class="form-group col-lg-3">
+                                        <label>Cycle Length</label>
+                                        <input
+                                            value={cycle.cycleLength}
+                                            type="number"
+                                            name={`cycle[${cycle.id}][cycle_length]`}
+                                            class="form-control"
+                                            placeholder="e.g. enter '3', choose 'Monthly'"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Cycle Type</label>
+                                        <select class="form-control" name={`cycle[${cycle.id}][cycle_type]`}>
+                                            <option value="0" selected={cycle.cycleType === 0}>One-time</option>
+                                            <option value="1" selected={cycle.cycleType === 1}>Hourly</option>
+                                            <option value="2" selected={cycle.cycleType === 2}>Daily</option>
+                                            <option value="3" selected={cycle.cycleType === 3}>Monthly</option>
+                                            <option value="4" selected={cycle.cycleType === 4}>Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Initial Price</label>
+                                        <input
+                                            value={cycle.initPrice}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][init_price]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Renewal Price</label>
+                                        <input
+                                            value={cycle.renewPrice}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][renew_price]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Setup fee</label>
+                                        <input
+                                            value={cycle.setupFee}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][setup_fee]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Late fee</label>
+                                        <input
+                                            value={cycle.lateFee}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][late_fee]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Trial Length (Optional)</label>
+                                        <input
+                                            value={cycle.trialLength}
+                                            type="number"
+                                            name={`cycle[${cycle.id}][trial_length]`}
+                                            min="0"
+                                            class="form-control"
+                                            placeholder="e.g. enter '7', choose 'Days'"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Trial Type (Optional)</label>
+                                        <select class="form-control" name={`cycle[${cycle.id}][trial_type]`}>
+                                            <option value="" selected={cycle.trialType === null}>Select a trial type...</option>
+                                            <option value="1" selected={cycle.trialType === 1}>Hour(s)</option>
+                                            <option value="2" selected={cycle.trialType === 2}>Day(s)</option>
+                                            <option value="3" selected={cycle.trialType === 3}>Month(s)</option>
+                                            <option value="4" selected={cycle.trialType === 4}>Year(s)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-lg-12">
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="return this.parentNode.parentNode.remove()">
+                                            <i class="fas fa-trash" />
+                                        </button>
+                                        <hr />
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </div>
                 </div>
             </form>
+            <form action={`/api/admin/plan/${plan.id}/delete`} method="POST" id="deleteForm"></form>
+            <div class="card-footer row justify-content-center">
+                <button type="submit" form="updateForm" class="btn btn-success btn-sm col-lg-2 col-3">Save</button>
+                <button type="submit" form="deleteForm" class="btn btn-danger btn-sm col-lg-2 col-3 offset-lg-1 offset-2">Delete</button>
+            </div>
         </div>
     </div>
 </div>
@@ -365,11 +646,11 @@ const discountsData = await discounts.find({
             <div class="row col-12">
                 <div class="form-group col-lg-3">
                     <label>Cycle Length</label>
-                    <input type="number" name="cycle[${i}][cycle_length]" class="form-control" placeholder="e.g. enter '3', choose 'Monthly'">
+                    <input type="number" name="new_cycle[${i}][cycle_length]" class="form-control" placeholder="e.g. enter '3', choose 'Monthly'">
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Cycle Type</label>
-                    <select class="form-control" name="cycle[${i}][cycle_type]">
+                    <select class="form-control" name="new_cycle[${i}][cycle_type]">
                         <option value="0">One-time</option>
                         <option value="1">Hourly</option>
                         <option value="2">Daily</option>
@@ -379,27 +660,27 @@ const discountsData = await discounts.find({
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Initial Price</label>
-                    <input type="text" name="cycle[${i}][init_price]" class="form-control" placeholder="Use default currency">
+                    <input type="text" name="new_cycle[${i}][init_price]" class="form-control" placeholder="Use default currency">
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Renewal Price</label>
-                    <input type="text" name="cycle[${i}][renew_price]" class="form-control" placeholder="Use default currency">
+                    <input type="text" name="new_cycle[${i}][renew_price]" class="form-control" placeholder="Use default currency">
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Setup fee</label>
-                    <input type="text" name="cycle[${i}][setup_fee]" class="form-control" placeholder="Use default currency">
+                    <input type="text" name="new_cycle[${i}][setup_fee]" class="form-control" placeholder="Use default currency">
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Late fee</label>
-                    <input type="text" name="cycle[${i}][late_fee]" class="form-control" placeholder="Use default currency">
+                    <input type="text" name="new_cycle[${i}][late_fee]" class="form-control" placeholder="Use default currency">
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Trial Length (Optional)</label>
-                    <input type="number" name="cycle[${i}][trial_length]" min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'">
+                    <input type="number" name="new_cycle[${i}][trial_length]" min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'">
                 </div>
                 <div class="form-group col-lg-3">
                     <label>Trial Type (Optional)</label>
-                    <select class="form-control" name="cycle[${i}][trial_type]">
+                    <select class="form-control" name="new_cycle[${i}][trial_type]">
                         <option value="">Select a trial type...</option>
                         <option value="1">Hour(s)</option>
                         <option value="2">Day(s)</option>
