@@ -33,13 +33,13 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       .findOneBy({ key: "panel_url" })
       .then((panelUrl) => panelUrl?.value);
     if (!panelUrl) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.url.missing");
     }
     const panelAppApiKey = await settings
       .findOneBy({ key: "panel_app_api_key" })
       .then((panelAppApiKey) => panelAppApiKey?.value);
     if (!panelAppApiKey) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.api.missing");
     }
     const getPterodactylUser = await fetch(
       new URL(`/api/application/users/${client.userId}`, panelUrl).toString(),
@@ -53,10 +53,10 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       },
     );
     if (getPterodactylUser.status !== 200) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.api.error");
     }
     if (!getPterodactylUser.ok) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.api.error");
     }
     const getPterodactylUserData = await getPterodactylUser.json();
     const pterodactyl = await fetch(

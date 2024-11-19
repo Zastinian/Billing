@@ -26,13 +26,6 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (!(await client.verifyPassword(data.password))) {
       return redirect("/client/settings?type=danger&msg=client.settings.email.error");
     }
-    // const newJob = new Jobs();
-    // newJob.queue = "update_client_email";
-    // newJob.payload = JSON.stringify({
-    //   old: client.email,
-    //   new: data.email,
-    // });
-    // await jobs.save(newJob);
     const checkClient = await clients.findOneBy({ email: data.email });
     if (checkClient) {
       return redirect("/client/settings?type=danger&msg=client.settings.email.already");
@@ -41,13 +34,13 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       .findOneBy({ key: "panel_url" })
       .then((panelUrl) => panelUrl?.value);
     if (!panelUrl) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.url.missing");
     }
     const panelAppApiKey = await settings
       .findOneBy({ key: "panel_app_api_key" })
       .then((panelAppApiKey) => panelAppApiKey?.value);
     if (!panelAppApiKey) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.api.missing");
     }
     const checkPterodactylUser = await fetch(
       new URL(`/api/application/users?filter[email]=${data.email}`, panelUrl).toString(),
@@ -61,10 +54,10 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       },
     );
     if (checkPterodactylUser.status !== 200) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.api.error");
     }
     if (!checkPterodactylUser.ok) {
-      return redirect("/client/settings?type=danger&msg=error");
+      return redirect("/client/settings?type=danger&msg=panel.api.error");
     }
     const dataPterodactylUser = await checkPterodactylUser.json();
     if (dataPterodactylUser.data.length > 0) {
