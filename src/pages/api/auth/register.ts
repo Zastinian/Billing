@@ -27,13 +27,13 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
     .findOneBy({ key: "panel_url" })
     .then((panelUrl) => panelUrl?.value);
   if (!panelUrl) {
-    return redirect("/?type=danger&msg=error");
+    return redirect("/?type=danger&msg=panel.url.missing");
   }
   const panelAppApiKey = await settings
     .findOneBy({ key: "panel_app_api_key" })
     .then((panelAppApiKey) => panelAppApiKey?.value);
   if (!panelAppApiKey) {
-    return redirect("/?type=danger&msg=error");
+    return redirect("/?type=danger&msg=panel.api.missing");
   }
   const checkPterodactylUser = await fetch(
     new URL(`/api/application/users?filter[email]=${data.email}`, panelUrl).toString(),
@@ -47,10 +47,10 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
     },
   );
   if (checkPterodactylUser.status !== 200) {
-    return redirect("/?type=danger&msg=error");
+    return redirect("/?type=danger&msg=panel.api.error");
   }
   if (!checkPterodactylUser.ok) {
-    return redirect("/?type=danger&msg=error");
+    return redirect("/?type=danger&msg=panel.api.error");
   }
   const dataPterodactylUser = await checkPterodactylUser.json();
   if (dataPterodactylUser.data.length > 0) {
@@ -74,10 +74,10 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
     }),
   });
   if (pterodactyl.status !== 201) {
-    return redirect("/?type=danger&msg=error");
+    return redirect("/?type=danger&msg=panel.api.error");
   }
   if (!pterodactyl.ok) {
-    return redirect("/?type=danger&msg=error");
+    return redirect("/?type=danger&msg=panel.api.error");
   }
   const dataPterodactyl = await pterodactyl.json();
   const newClient = new Clients();
