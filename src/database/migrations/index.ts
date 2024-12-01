@@ -18,7 +18,6 @@ import { PlanCycles1725919024889 } from "./1725919024889-plan_cycles";
 import { Plans1725919112520 } from "./1725919112520-plans";
 import { Servers1725919156381 } from "./1725919156381-servers";
 import { Settings1725919183938 } from "./1725919183938-settings";
-import { Taxes1725919205001 } from "./1725919205001-taxes";
 import { TicketContents1725919218693 } from "./1725919218693-ticket_contents";
 import { Tickets1725919243975 } from "./1725919243975-tickets";
 import { UsedCoupons1725919262825 } from "./1725919262825-used_coupons";
@@ -44,7 +43,6 @@ export default [
   Plans1725919112520,
   Servers1725919156381,
   Settings1725919183938,
-  Taxes1725919205001,
   TicketContents1725919218693,
   Tickets1725919243975,
   UsedCoupons1725919262825,

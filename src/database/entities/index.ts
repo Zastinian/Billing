@@ -18,7 +18,6 @@ import { PlanCycles } from "./PlanCycles";
 import { Plans } from "./Plans";
 import { Servers } from "./Servers";
 import { Settings } from "./Settings";
-import { Taxes } from "./Taxes";
 import { TicketContents } from "./TicketContents";
 import { Tickets } from "./Tickets";
 import { UsedCoupons } from "./UsedCoupons";
@@ -44,7 +43,6 @@ export default [
   Plans,
   Servers,
   Settings,
-  Taxes,
   TicketContents,
   Tickets,
   UsedCoupons,
