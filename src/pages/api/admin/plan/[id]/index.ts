@@ -238,7 +238,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       const serversWithCycle = (await servers.findBy({ planCycle: cycleToDelete.id })).filter(
         (server) => {
           return (
-            server.status !== serverStatus.terminated || server.status !== serverStatus.canceled
+            server.status !== serverStatus.terminated && server.status !== serverStatus.canceled
           );
         },
       );
