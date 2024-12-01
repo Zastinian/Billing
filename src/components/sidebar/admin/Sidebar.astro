@@ -131,12 +131,6 @@ const logoPath = await settings.findOneBy({ key: "logo_path" }).then((setting) =
                         <p>Currencies</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/admin/taxes" class={`nav-link ${route === "admin.taxes" ? "active" : ""}`}>
-                        <i class="nav-icon fas fa-funnel-dollar"></i>
-                        <p>Taxes</p>
-                    </a>
-                </li>
                 <li class="nav-header">SUPPORT</li>
                 <li class="nav-item">
                     <a href="/admin/tickets" class={`nav-link ${route === "admin.tickets" ? "active" : ""}`}>
