@@ -18,13 +18,13 @@
     "key:generate": "bun run ./src/scripts/key.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^8.3.4",
-    "astro": "^4.16.6",
+    "@astrojs/node": "^9.0.0",
+    "astro": "^5.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "5.2.0",
     "mssql": "^11.0.1",
-    "mysql2": "^3.11.3",
-    "pg": "^8.13.0",
+    "mysql2": "^3.11.5",
+    "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.20"
@@ -33,8 +33,8 @@
     "@astrojs/check": "^0.9.4",
     "@biomejs/biome": "^1.9.4",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.7.6",
-    "husky": "^9.1.6",
-    "typescript": "^5.6.3"
+    "@types/node": "^22.10.1",
+    "husky": "^9.1.7",
+    "typescript": "^5.7.2"
   }
 }
