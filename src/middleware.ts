@@ -126,13 +126,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
           });
           return next();
         }
-        const client = await clients
-          .findOneBy({ id: c.clientId })
-          .then((client) => {
-            if (client?.email === c.email) {
-              return client;
-            }
-          });
+        const client = await clients.findOneBy({ id: c.clientId }).then((client) => {
+          if (client?.email === c.email) {
+            return client;
+          }
+        });
         if (!client) {
           context.cookies.set("_SECURE_SESSION_TOKEN_", sessionToken, {
             path: "/",
@@ -197,13 +195,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
       return next("/404");
     }
-    const client = await clients
-      .findOneBy({ id: c.clientId })
-      .then((client) => {
-        if (client?.email === c.email) {
-          return client;
-        }
-      });
+    const client = await clients.findOneBy({ id: c.clientId }).then((client) => {
+      if (client?.email === c.email) {
+        return client;
+      }
+    });
     if (!client) {
       if (isOrderRoute) {
         return next("/?type=danger&msg=order.needs_login");
@@ -221,12 +217,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return next("/?type=danger&msg=order.needs_login");
       }
       return next("/404");
-    }
-    if (client.isAdmin !== 1) {
-      if (isOrderRoute) {
-        return next("/?type=danger&msg=order.needs_login");
-      }
-      return next("/?type=danger&msg=client.suspended");
     }
     if (isAdminRoute && client.isAdmin !== 1) {
       return next("/404");
