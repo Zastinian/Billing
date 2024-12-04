@@ -18,7 +18,7 @@
     "key:generate": "bun run ./src/scripts/key.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^9.0.0",
+    "@hedystia/astro-bun": "^0.0.4",
     "astro": "^5.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "5.2.0",
