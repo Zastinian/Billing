@@ -26,24 +26,6 @@ export class Categories1725918209833 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: "global_limit",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "per_client_limit",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "per_client_trial_limit",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
             name: "order",
             type: "int",
             default: 1000,

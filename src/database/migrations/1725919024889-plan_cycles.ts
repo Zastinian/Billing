@@ -57,26 +57,6 @@ export class PlanCycles1725919024889 implements MigrationInterface {
             default: 0.0,
           },
           {
-            name: "late_fee",
-            type: "decimal",
-            precision: 16,
-            scale: 6,
-            unsigned: true,
-            default: 0.0,
-          },
-          {
-            name: "trial_length",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "trial_type",
-            type: "tinyint",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
             name: "created_at",
             type: "datetime",
             isNullable: true,

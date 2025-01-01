@@ -85,18 +85,6 @@ export class Plans1725919112520 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: "min_port",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "max_port",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
             name: "nests_eggs_id",
             type: "varchar",
             length: "255",
@@ -139,12 +127,6 @@ export class Plans1725919112520 implements MigrationInterface {
           },
           {
             name: "per_client_limit",
-            type: "int",
-            unsigned: true,
-            isNullable: true,
-          },
-          {
-            name: "per_client_trial_limit",
             type: "int",
             unsigned: true,
             isNullable: true,

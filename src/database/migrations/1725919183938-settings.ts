@@ -66,6 +66,12 @@ export class Settings1725919183938 implements MigrationInterface {
         updated_at: new Date(),
       },
       {
+        key: "tickets_enabled",
+        value: "true",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
         key: "panel_url",
         value: null,
         created_at: new Date(),

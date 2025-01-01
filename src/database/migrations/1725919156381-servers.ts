@@ -53,46 +53,10 @@ export class Servers1725919156381 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: "payment_method",
-            type: "varchar",
-            length: "255",
-            isNullable: false,
-          },
-          {
             name: "server_name",
             type: "varchar",
             length: "255",
             isNullable: false,
-          },
-          {
-            name: "nest_id",
-            type: "int",
-            unsigned: true,
-            isNullable: false,
-          },
-          {
-            name: "egg_id",
-            type: "int",
-            unsigned: true,
-            isNullable: false,
-          },
-          {
-            name: "location_id",
-            type: "int",
-            unsigned: true,
-            isNullable: false,
-          },
-          {
-            name: "node_id",
-            type: "int",
-            unsigned: true,
-            isNullable: false,
-          },
-          {
-            name: "ip_address",
-            type: "varchar",
-            length: "255",
-            isNullable: true,
           },
           {
             name: "status",

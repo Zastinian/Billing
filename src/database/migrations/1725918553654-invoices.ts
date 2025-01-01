@@ -44,20 +44,6 @@ export class Invoices1725918553654 implements MigrationInterface {
             default: 0.0,
           },
           {
-            name: "late_fee",
-            type: "decimal",
-            precision: 16,
-            scale: 6,
-            unsigned: true,
-            default: 0.0,
-          },
-          {
-            name: "payment_method",
-            type: "varchar",
-            length: "255",
-            isNullable: true,
-          },
-          {
             name: "payment_link",
             type: "text",
             isNullable: true,
