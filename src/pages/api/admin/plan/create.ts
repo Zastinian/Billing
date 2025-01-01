@@ -99,9 +99,6 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       init_price: string;
       renew_price: string;
       setup_fee: string;
-      late_fee: string;
-      trial_length: string;
-      trial_type: string;
     }
 
     const requiredFields: (keyof Cycle)[] = [
@@ -110,7 +107,6 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       "init_price",
       "renew_price",
       "setup_fee",
-      "late_fee",
     ];
 
     const cycles: Cycle[] = Object.entries(data)
@@ -126,9 +122,6 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
               init_price: "",
               renew_price: "",
               setup_fee: "",
-              late_fee: "",
-              trial_length: "",
-              trial_type: "",
             };
           }
           result[index][field] = value.trim();
@@ -146,26 +139,23 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     }
 
     const numericFields = [
-      "min_port",
-      "max_port",
-      "discount",
       "global_limit",
       "per_client_limit",
-      "per_client_trial_limit",
     ];
 
     const formatFields = {
       locationsNodesId: /^(\d+:\d+,?)+$/,
       nestsEggsId: /^(\d+:\d+,?)+$/,
-      coupons: /^(\d+,?)+$/,
     };
 
     for (const field of numericFields) {
       if (field in data) {
-        const value = data[field];
-        if (value.length === 0) {
+        const rawValue = data[field];
+        if (rawValue.length === 0) {
           continue;
-        } else if (field in data && typeof value !== "number") {
+        }
+        const numericValue = Number(rawValue);
+        if (isNaN(numericValue)) {
           return redirect(`/admin/plans?type=danger&msg=admin.plan.create.error`);
         }
       }
@@ -192,17 +182,11 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     plan.databases = Number(data.databases);
     plan.backups = Number(data.backups);
     plan.extraPorts = Number(data.extra_ports);
-    plan.minPort = data.min_port.length < 0 ? Number(data.min_port) : null;
-    plan.maxPort = data.max_port.length < 0 ? Number(data.max_port) : null;
     plan.serverDescription = data.server_description ?? null;
-    plan.discount = data.discount.length < 0 ? Number(data.discount) : null;
-    plan.coupons = data.coupons ?? null;
     plan.daysBeforeSuspend = Number(data.days_before_suspend);
     plan.daysBeforeDelete = Number(data.days_before_delete);
-    plan.globalLimit = data.global_limit.length < 0 ? Number(data.global_limit) : null;
-    plan.perClientLimit = data.per_client_limit.length < 0 ? Number(data.per_client_limit) : null;
-    plan.perClientTrialLimit =
-      data.per_client_trial_limit.length < 0 ? Number(data.per_client_trial_limit) : null;
+    plan.globalLimit = data.global_limit.length > 0 ? Number(data.global_limit) : null;
+    plan.perClientLimit = data.per_client_limit.length > 0 ? Number(data.per_client_limit) : null;
     plan.locationsNodesId = data.nodes;
     plan.nestsEggsId = data.eggs;
     plan.createdAt = new Date();
@@ -217,9 +201,6 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       planCycle.initPrice = Number(cycle.init_price);
       planCycle.renewPrice = Number(cycle.renew_price);
       planCycle.setupFee = Number(cycle.setup_fee);
-      planCycle.lateFee = Number(cycle.late_fee);
-      planCycle.trialLength = cycle.trial_length ? Number(cycle.trial_length) : null;
-      planCycle.trialType = cycle.trial_type ? Number(cycle.trial_type) : null;
       planCycle.createdAt = new Date();
       planCycle.updatedAt = new Date();
       await planCycles.save(planCycle);
