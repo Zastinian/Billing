@@ -66,17 +66,15 @@ const phpMyAdminUrl = await settings
                     <b>Recurring Amount</b><br />
                     <b>Billing Cycle</b><br />
                     <b>Server Creation Date</b><br />
-                    <b>Due Date</b><br />
-                    <b>Payment Method</b><br />
-                    <b>Backup Payment Method</b>
+                    <b>Server Update Date</b><br />
+                    <b>Due Date</b>
                 </p>
                 <p class="card-text col-5">
                     {clientCurrency?.symbol}{convertCurrency(Number(planCycle?.renewPrice ?? 0), defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}<br />
                     {cycleTypeName[Number(planCycle?.cycleType)]}<br />
                     {server?.createdAt?.toLocaleDateString()} - {server?.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br />
-                    {server?.dueDate?.toLocaleDateString()} - {server?.dueDate?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br />
-                    {server?.paymentMethod}<br />
-                    Account Credit
+                    {server?.updatedAt?.toLocaleDateString()} - {server?.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br />
+                    {server?.dueDate?.toLocaleDateString()} - {server?.dueDate?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
                 </p>
             </div>
         </div>

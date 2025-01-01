@@ -1,31 +1,67 @@
 ---
+import profile from "@/utils/profile";
+import type { Plans } from "@/database/entities/Plans";
+import type { Clients } from "@/database/entities/Clients";
+import type { Categories } from "@/database/entities/Categories";
+import type { Currencies } from "@/database/entities/Currencies";
+import convertCurrency from "@/utils/convertCurrency";
+import { planCycles, currencies, clients } from "@/database/index";
+import { cycleTypeName } from "@/utils/status";
+import parseEntities from "@/utils/parseEntities";
+
+interface Props {
+    plan: Plans;
+    category: Categories;
+    panelUrl: string;
+    panelAppApiKey: string;
+}
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+    client = await clients.findOneBy({ id: c.clientId });
+}
+
+const { plan, category, panelUrl, panelAppApiKey } = Astro.props;
+
+const planCyclesData = await planCycles.find({
+    order: { id: "ASC" },
+    select: ["id", "initPrice", "renewPrice", "cycleType", "cycleLength"],
+});
+
+const clientCurrency = await currencies.findOneBy({ id: client?.currency });
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
 ---
 
 <div class="row">
     <div class="col-lg-9">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title"><i>Programming: Bun</i></h5>
+                <h5 class="card-title"><i>{category.name}: {plan.name}</i></h5>
                 <p class="card-text">
                     <ul>
-                        <li>1024 MB RAM</li>
-                        <li>100% CPU</li>
-                        <li>2048 MB Disk</li>
-                        <li>0 Databases</li>
-                        <li>0 Backups</li>
-                        <li>0 Extra Ports</li>
+                        <li>{plan.ram === 0 ? "Unlimited RAM" : `${plan.ram} MB RAM`}</li>
+                        <li>{plan.cpu === 0 ? "Unlimited CPU" : `${plan.cpu}% CPU`}</li>
+                        <li>{plan.disk === 0 ? "Unlimited DISK" : `${plan.disk} MB DISK`}</li>
+                        <li>{plan.databases} Databases</li>
+                        <li>{plan.backups} Backups</li>
+                        <li>{plan.extraPorts} Extra Ports</li>
                     </ul>
                 </p>
                 <a href="/plans" class="card-link"><i class="fas fa-arrow-left text-sm"></i> Choose another server plan</a>
             </div>
         </div>
-        <form action="{{ route('api.store.order', ['id' => $id]) }}" method="POST" id="order-form" data-callback="orderForm">
+        <form id="order-form">
             <div class="form-group row">
                 <label for="serverNameInput" class="col-lg-4 col-form-label">Server Name</label>
                 <div class="col-lg-6">
                     <input
                         type="text"
-                        name="server_name"
+                        name="serverName"
+                        minlength="3"
+                        maxlength="20"
                         class="form-control"
                         id="serverNameInput"
                         placeholder="This option can be changed later in the panel"
@@ -36,7 +72,22 @@
                 <label class="col-lg-4 col-form-label">Billing Cycle</label>
                 <div class="col-lg-6">
                     <select class="form-control" name="cycle" id="billing-cycle">
-                        <option value="{{ $plan_cycle->id }}"> $1.00 USD / Month </option>
+                        {
+                            planCyclesData.map((cycle) => (
+                                <option
+                                    value={cycle.id}
+                                    data-initPrice={cycle.initPrice}
+                                    data-renewPrice={cycle.renewPrice}
+                                    data-setupFee={cycle.setupFee}
+                                    data-cycleType={cycleTypeName[cycle.cycleType]}
+                                    data-cycleLength={cycle.cycleLength}
+                                >
+                                    {clientCurrency?.symbol}
+                                    {convertCurrency(Number(cycle.renewPrice), defaultCurrency as Currencies, clientCurrency as Currencies)}{" "}
+                                    {clientCurrency?.name} / {cycleTypeName[cycle.cycleType]}
+                                </option>
+                            ))
+                        }
                     </select>
                 </div>
             </div>
@@ -71,9 +122,49 @@
                 <label class="col-lg-4 col-form-label">Server Nest / Egg</label>
                 <div class="col-lg-4">
                     <select class="form-control" name="egg">
-                        <option value="" disabled>Programming</option>
-                        <option value="nest_id:egg_id">Bun</option>
-                        <option value="" disabled></option>
+                        {
+                            parseEntities(plan.nestsEggsId).map(async (nest) => {
+                                const nestData = await fetch(new URL(`/api/application/nests/${nest.id}?include=eggs`, panelUrl).toString(), {
+                                    method: "GET",
+                                    headers: {
+                                        Authorization: `Bearer ${panelAppApiKey}`,
+                                        Accept: "application/json",
+                                        "Content-Type": "application/json",
+                                    },
+                                })
+                                    .then((res) => res.json())
+                                    .catch(() => null);
+                                if (!nestData) return;
+                                const eggs = nest.values
+                                    .map((egg) => {
+                                        interface Egg {
+                                            attributes: {
+                                                id: number;
+                                                name: string;
+                                            };
+                                        }
+                                        const eggData = nestData.attributes.relationships.eggs.data.find(
+                                            (eggData: Egg) => eggData.attributes.id === egg,
+                                        );
+                                        if (!eggData) return undefined;
+                                        return {
+                                            id: eggData.attributes.id,
+                                            name: eggData.attributes.name,
+                                        };
+                                    })
+                                    .filter((egg) => egg !== undefined);
+                                return (
+                                    <>
+                                        <option value="" disabled>
+                                            {nestData.attributes.name}
+                                        </option>
+                                        {eggs.map((egg) => (
+                                            <option value={`${nest.id}:${egg.id}`}>{egg.name}</option>
+                                        ))}
+                                    </>
+                                );
+                            })
+                        }
                     </select>
                 </div>
             </div>
@@ -81,9 +172,130 @@
                 <label class="col-lg-4 col-form-label">Server Location / Node</label>
                 <div class="col-lg-4">
                     <select class="form-control" name="node">
-                        <option disabled>(Germany)</option>
-                        <option value="location_id:node_id">Node 1</option>
-                        <option value="" disabled></option>
+                        {
+                            parseEntities(plan.locationsNodesId).map(async (location) => {
+                                const locationData = await fetch(
+                                    new URL(`/api/application/locations/${location.id}?include=nodes`, panelUrl).toString(),
+                                    {
+                                        method: "GET",
+                                        headers: {
+                                            Authorization: `Bearer ${panelAppApiKey}`,
+                                            Accept: "application/json",
+                                            "Content-Type": "application/json",
+                                        },
+                                    },
+                                )
+                                    .then((res) => res.json())
+                                    .catch(() => null);
+                                if (!locationData) return;
+                                const nodes = await Promise.all(
+                                    location.values.map(async (node) => {
+                                        interface Allocation {
+                                            attributes: {
+                                                id: number;
+                                                assigned: boolean;
+                                            };
+                                        }
+                                        try {
+                                            const nodeData = await fetch(
+                                                new URL(`/api/application/nodes/${node}?include=allocations`, panelUrl).toString(),
+                                                {
+                                                    method: "GET",
+                                                    headers: {
+                                                        Authorization: `Bearer ${panelAppApiKey}`,
+                                                        Accept: "application/json",
+                                                        "Content-Type": "application/json",
+                                                    },
+                                                },
+                                            )
+                                                .then((res) => res.json())
+                                                .catch(() => null);
+                                            if (!nodeData) return null;
+                                            if (nodeData.attributes.maintenance_mode === true)
+                                                return {
+                                                    id: nodeData.attributes.id,
+                                                    name: nodeData.attributes.name,
+                                                    offline: false,
+                                                    maintenance_mode: true,
+                                                    full: false,
+                                                };
+                                            const checkNodeSettings = await fetch(
+                                                new URL(`/api/application/nodes/${node}/configuration`, panelUrl).toString(),
+                                                {
+                                                    method: "GET",
+                                                    headers: {
+                                                        Authorization: `Bearer ${panelAppApiKey}`,
+                                                        Accept: "application/json",
+                                                        "Content-Type": "application/json",
+                                                    },
+                                                },
+                                            )
+                                                .then((res) => res.json())
+                                                .catch(() => null);
+                                            if (!checkNodeSettings) return null;
+                                            const checkStatus = await fetch(
+                                                `${nodeData.attributes.scheme}://${nodeData.attributes.fqdn}:${nodeData.attributes.daemon_listen}/api/system`,
+                                                {
+                                                    method: "GET",
+                                                    headers: {
+                                                        Authorization: `Bearer ${checkNodeSettings.token}`,
+                                                        Accept: "application/json",
+                                                        "Content-Type": "application/json",
+                                                    },
+                                                },
+                                            ).catch(() => null);
+                                            if (!checkStatus || checkStatus.ok === false)
+                                                return {
+                                                    id: nodeData.attributes.id,
+                                                    name: nodeData.attributes.name,
+                                                    offline: true,
+                                                    maintenance_mode: false,
+                                                    full: false,
+                                                };
+                                            const allocations = nodeData.attributes.relationships.allocations.data.filter(
+                                                (allocation: Allocation) => allocation.attributes.assigned === false,
+                                            );
+                                            if (allocations.length > 0) {
+                                                return {
+                                                    id: nodeData.attributes.id,
+                                                    name: nodeData.attributes.name,
+                                                    offline: false,
+                                                    maintenance_mode: false,
+                                                    full: false,
+                                                };
+                                            }
+                                            return {
+                                                id: nodeData.attributes.id,
+                                                name: nodeData.attributes.name,
+                                                offline: false,
+                                                maintenance_mode: false,
+                                                full: true,
+                                            };
+                                        } catch {
+                                            return null;
+                                        }
+                                    }),
+                                ).then((nodes) =>
+                                    nodes.filter(
+                                        (node): node is { id: number; name: string; offline: boolean; maintenance_mode: boolean; full: boolean } =>
+                                            node !== null,
+                                    ),
+                                );
+                                return (
+                                    <>
+                                        <option value="" disabled>
+                                            {locationData.attributes.short} - Location
+                                        </option>
+                                        {nodes.map((node) => (
+                                            <option value={`${location.id}:${node.id}`} disabled={node.offline || node.maintenance_mode || node.full}>
+                                                {node.name} {node.offline ? "(Offline)" : ""} {node.maintenance_mode ? "(Under Maintenance)" : ""}{" "}
+                                                {node.full ? "(Full)" : ""}
+                                            </option>
+                                        ))}
+                                    </>
+                                );
+                            })
+                        }
                     </select>
                 </div>
             </div>
@@ -104,10 +316,11 @@
                 <h5 class="card-title m-0">Order Summary</h5>
             </div>
             <div class="card-body">
-                <h6>Server <span class="float-right">Bun</span></h6>
+                <h6>Server <span class="float-right">{plan.name}</span></h6>
                 <small>
-                    Monthly <span class="float-right">$1.00<span id="plan-init"></span> USD</span><br />
-                    Setup Fee <span class="float-right">$0.00<span id="plan-setup"></span> USD</span>
+                    <span id="billing-cycle-summary">Monthly</span>
+                    <span class="float-right"><span id="plan-init"></span> {clientCurrency?.name}</span><br />
+                    Setup Fee <span class="float-right"><span id="plan-setup"></span> {clientCurrency?.name}</span>
                 </small>
                 <hr />
                 <!-- Coming Soon
@@ -121,12 +334,10 @@
                 </small>
                 <hr />
                 -->
-                <h6>Due Today <span class="float-right">$1.00<span id="due-today"></span> USD</span></h6>
-                <small>Next Monthly <span class="float-right">$1.00<span id="next-monthly"></span> USD</span></small><br />
-                <small>Free Trial<span class="float-right">10<span id="next-monthly"></span> days</span></small><br />
+                <h6>Due Today <span class="float-right"><span id="due-today"></span> {clientCurrency?.name}</span></h6>
+                <small>Next Monthly <span class="float-right"><span id="next-monthly"></span> {clientCurrency?.name}</span></small><br />
                 <hr />
-                <button type="submit" form="order-form" class="btn btn-primary float-right">Continue <i class="fas fa-arrow-circle-right"></i></button
-                >
+                <button type="submit" form="order-form" class="btn btn-success float-right">Buy <i class="fas fa-arrow-circle-right"></i></button>
             </div>
         </div>
     </div>
@@ -153,9 +364,87 @@
         border: 4px solid #333;
     }
 </style>
-
+<!--
 <script is:inline>
     function updateAmount(value) {
         document.getElementById("ram-amount").innerText = value * 1024;
     }
+</script>
+ -->
+
+<script src="/plugins/toastr/toastr.min.js" is:inline></script>
+<script is:inline>
+import convertCurrency from "@/src/utils/convertCurrency";
+
+    lazyLoadCss("/plugins/toastr/toastr.min.css");
+</script>
+<script>
+    import { actions, isInputError } from "astro:actions";
+    import { navigate } from "astro:transitions/client";
+    const form = document.querySelector("form");
+    form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        toastr.info("Creating server...");
+        const formData = new FormData(form);
+        const { error } = await actions.purchaseServer(formData);
+        if (isInputError(error)) {
+            if (error.fields.serverName) {
+                toastr.error(error.fields.serverName.join(", "));
+                return;
+            }
+            if (error.fields.cycle) {
+                toastr.error(error.fields.cycle.join(", "));
+                return;
+            }
+            if (error.fields.egg) {
+                toastr.error(error.fields.egg.join(", "));
+                return;
+            }
+            if (error.fields.node) {
+                toastr.error(error.fields.node.join(", "));
+                return;
+            }
+        }
+        if (error) {
+            toastr.error(error.message);
+            return;
+        }
+        toastr.success("Server purchased successfully!");
+        setTimeout(() => {
+            navigate("/client/servers");
+        }, 1500);
+    });
+</script>
+<script
+    define:vars={{
+        clientCurrency,
+        defaultCurrency,
+        convertCurrency,
+    }}
+    is:inline
+>
+    document.addEventListener("DOMContentLoaded", function () {
+        const billingCycleSelect = document.getElementById("billing-cycle");
+        const planInitPrice = document.getElementById("plan-init");
+        const planSetup = document.getElementById("plan-setup");
+        const dueToday = document.getElementById("due-today");
+        const nextMonthly = document.getElementById("next-monthly");
+
+        function updateOrderSummary() {
+            const selectedOption = billingCycleSelect.selectedOptions[0];
+            const cycleType = selectedOption.getAttribute("data-cycleType");
+            const cycleLength = selectedOption.getAttribute("data-cycleLength");
+            const initPrice = selectedOption.getAttribute("data-initPrice");
+            const renewPrice = selectedOption.getAttribute("data-renewPrice");
+
+            planInitPrice.textContent = convertCurrency(Number(initPrice), defaultCurrency, clientCurrency);
+            planSetup.textContent = "0";
+            dueToday.textContent = convertCurrency(Number(initPrice), defaultCurrency, clientCurrency);
+            nextMonthly.textContent = convertCurrency(Number(renewPrice), defaultCurrency, clientCurrency);
+            const cycleText = `${cycleType} (${cycleLength} ${cycleLength > 1 ? "Months" : "Month"})`;
+            document.querySelector("#billing-cycle-summary").textContent = cycleText;
+        }
+        billingCycleSelect.addEventListener("change", updateOrderSummary);
+        updateOrderSummary();
+    });
 </script>

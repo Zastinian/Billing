@@ -25,7 +25,7 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
 ---
 
 <div class="row">
-    <div class="col-lg-6 col-md-6">
+    <div class="col-lg-6">
         <div class="small-box bg-success">
             <div class="inner">
                 <h3>{clientCurrency?.symbol}{convertCurrency(clientCredit ?? 0, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</h3>

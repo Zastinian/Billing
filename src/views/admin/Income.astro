@@ -1,5 +1,5 @@
 ---
-import { clients, currencies, invoices, servers } from "@/database/index";
+import { clients, currencies, invoices } from "@/database/index";
 import { invoiceStatus } from "@/utils/status";
 import profile from "@/utils/profile";
 import type { Clients } from "@/database/entities/Clients";
@@ -32,16 +32,16 @@ const last90DaysIncomes = incomes.filter(
 const lastYearIncomes = incomes.filter(
   (income) => new Date(Number(income.createdAt)).getTime() > Date.now() - 365 * 24 * 60 * 60 * 1000,
 );
-const last7DaysIncomesSum = last7DaysIncomes.reduce((sum, income) => sum + Number(income.total), 0);
+const last7DaysIncomesSum = last7DaysIncomes.reduce((sum, income) => sum + 1, 0);
 const last30DaysIncomesSum = last30DaysIncomes.reduce(
-  (sum, income) => sum + Number(income.total),
+  (sum, income) => sum + 1,
   0,
 );
 const last90DaysIncomesSum = last90DaysIncomes.reduce(
-  (sum, income) => sum + Number(income.total),
+  (sum, income) => sum + 1,
   0,
 );
-const lastYearIncomesSum = lastYearIncomes.reduce((sum, income) => sum + Number(income.total), 0);
+const lastYearIncomesSum = lastYearIncomes.reduce((sum, income) => sum +1, 0);
 ---
 
 <div class="row">
@@ -115,13 +115,12 @@ const lastYearIncomesSum = lastYearIncomes.reduce((sum, income) => sum + Number(
                     incomes.sort((a, b) => new Date(Number(b.createdAt)).getTime() - new
                     Date(Number(a.createdAt)).getTime()).map(async (income) => {
                     const client = income.clientId ? await clients.findOneBy({ id: income.clientId }) : undefined;
-                    const server = income.serverId ? await servers.findOneBy({ id: income.serverId }) : undefined;
                     return (
                     <tr>
                         <td>{income.id}</td>
                         <td>{client?.email}</td>
-                        <td>{server?.serverName ?? "Credits"}</td>
-                        <td>{clientCurrency?.symbol}{convertCurrency(income.total, defaultCurrency as Currencies,
+                        <td>{}</td>
+                        <td>{clientCurrency?.symbol}{convertCurrency(1, defaultCurrency as Currencies,
                             clientCurrency as Currencies)} {clientCurrency?.name}</td>
                         <td>{income.createdAt?.toLocaleDateString()} - {income.createdAt?.toLocaleTimeString(undefined,
                             { hour: '2-digit', minute: '2-digit', hour12: false })}</td>

@@ -3,7 +3,7 @@ import { categories } from "@/database/index";
 
 const categoriesData = await categories.find({
   order: { order: "ASC" },
-  select: ["id", "name", "order", "globalLimit", "perClientLimit", "createdAt", "updatedAt"],
+  select: ["id", "name", "order", "createdAt", "updatedAt"],
 });
 ---
 
@@ -25,8 +25,8 @@ const categoriesData = await categories.find({
                             <th>Order</th>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Global Limit</th>
-                            <th>Per Client Limit</th>
+                            <th>Creation Date</th>
+                            <th>Updated Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,8 +38,8 @@ const categoriesData = await categories.find({
                                         <a href={`/admin/categories/${category.id}`}>{category.id}</a>
                                     </td>
                                     <td>{category.name}</td>
-                                    <td>{category.globalLimit ?? "Unlimited"}</td>
-                                    <td>{category.perClientLimit ?? "Unlimited"}</td>
+                                    <td>{category.createdAt?.toLocaleDateString()} - {category.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    <td>{category.updatedAt?.toLocaleDateString()} - {category.updatedAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
                                 </tr>
                             ))
                         }
@@ -49,8 +49,8 @@ const categoriesData = await categories.find({
                             <th>Order</th>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Global Limit</th>
-                            <th>Per Client Limit</th>
+                            <th>Creation Date</th>
+                            <th>Updated Date</th>
                         </tr>
                     </tfoot>
                 </table>

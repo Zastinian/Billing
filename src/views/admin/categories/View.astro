@@ -46,45 +46,6 @@ const { category } = Astro.props;
                             required
                         />
                     </div>
-                    <div class="form-group col-lg-4">
-                        <label for="orderInput">Global Limit (Optional)</label>
-                        <input
-                            type="number"
-                            name="globalLimit"
-                            value={category.globalLimit}
-                            class="form-control"
-                            id="globalLimitInput"
-                            placeholder="Global Limit"
-                            min="0"
-                            max="1000"
-                        />
-                    </div>
-                    <div class="form-group col-lg-4">
-                        <label for="orderInput">Per Client Limit (Optional)</label>
-                        <input
-                            type="number"
-                            name="perClientLimit"
-                            value={category.perClientLimit}
-                            class="form-control"
-                            id="perClientLimitInput"
-                            placeholder="Per Client Limit"
-                            min="0"
-                            max="1000"
-                        />
-                    </div>
-                    <div class="form-group col-lg-4">
-                        <label for="orderInput">Per Client Trial Limit (Optional)</label>
-                        <input
-                            type="number"
-                            name="perClientTrialLimit"
-                            value={category.perClientTrialLimit}
-                            class="form-control"
-                            id="perClientTrialLimitInput"
-                            placeholder="Per Client Trial Limit"
-                            min="0"
-                            max="1000"
-                        />
-                    </div>
                 </div>
             </form>
             <form action={`/api/admin/category/${category.id}/delete`} method="POST" id="deleteForm"></form>

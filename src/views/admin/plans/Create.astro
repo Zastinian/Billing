@@ -5,29 +5,29 @@ import { categories, coupons, discounts } from "@/database/index";
 import { MoreThanOrEqual } from "typeorm";
 
 interface Props {
-  nests: Nests;
-  locations: Locations;
+    nests: Nests;
+    locations: Locations;
 }
 
 const { nests, locations } = Astro.props;
 
 const categoriesData = await categories.find({
-  order: { order: "ASC" },
-  select: ["id", "name"],
+    order: { order: "ASC" },
+    select: ["id", "name"],
 });
 const couponsData = await coupons.find({
-  where: {
-    endDate: MoreThanOrEqual(new Date()),
-  },
-  order: { updatedAt: "DESC" },
-  select: ["id", "code", "percentOff"],
+    where: {
+        endDate: MoreThanOrEqual(new Date()),
+    },
+    order: { updatedAt: "DESC" },
+    select: ["id", "code", "percentOff"],
 });
 const discountsData = await discounts.find({
-  where: {
-    endDate: MoreThanOrEqual(new Date()),
-  },
-  order: { updatedAt: "DESC" },
-  select: ["id", "name", "percentOff"],
+    where: {
+        endDate: MoreThanOrEqual(new Date()),
+    },
+    order: { updatedAt: "DESC" },
+    select: ["id", "name", "percentOff"],
 });
 ---
 
@@ -184,14 +184,6 @@ const discountsData = await discounts.find({
                                 required
                             />
                         </div>
-                        <div class="form-group col-lg-4">
-                            <label for="minPortInput">Minimum Port (Optional)</label>
-                            <input type="number" name="min_port" class="form-control" id="minPortInput" placeholder="e.g. 25565" />
-                        </div>
-                        <div class="form-group col-lg-4">
-                            <label for="maxPortInput">Maximum Port (Optional)</label>
-                            <input type="number" name="max_port" class="form-control" id="maxPortInput" placeholder="e.g. 25575" />
-                        </div>
                         <div class="form-group col-lg-12">
                             <label for="serverDescriptionInput">Server Description (Optional)</label>
                             <textarea
@@ -278,16 +270,6 @@ const discountsData = await discounts.find({
                                 placeholder="0 = No servers can be created"
                             />
                         </div>
-                        <div class="form-group col-lg-4">
-                            <label for="perClientTrialInput">Per Client Trial Limit (Optional)</label>
-                            <input
-                                type="number"
-                                name="per_client_trial_limit"
-                                class="form-control"
-                                id="perClientTrialInput"
-                                placeholder="0 = No free trials allowed"
-                            />
-                        </div>
                     </div>
                     <div class="form-group col-lg-12">
                         <hr />
@@ -324,24 +306,6 @@ const discountsData = await discounts.find({
                     <div class="form-group col-lg-3">
                         <label>Setup fee</label>
                         <input type="text" name="cycle[0][setup_fee]" class="form-control" placeholder="Use default currency" required />
-                    </div>
-                    <div class="form-group col-lg-3">
-                        <label>Late fee</label>
-                        <input type="text" name="cycle[0][late_fee]" class="form-control" placeholder="Use default currency" required />
-                    </div>
-                    <div class="form-group col-lg-3">
-                        <label>Trial Length (Optional)</label>
-                        <input type="number" name="cycle[0][trial_length]" min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'" />
-                    </div>
-                    <div class="form-group col-lg-3">
-                        <label>Trial Type (Optional)</label>
-                        <select class="form-control" name="cycle[0][trial_type]">
-                            <option value="">Select a trial type...</option>
-                            <option value="1">Hour(s)</option>
-                            <option value="2">Day(s)</option>
-                            <option value="3">Month(s)</option>
-                            <option value="4">Year(s)</option>
-                        </select>
                     </div>
                     <div class="form-group col-lg-12">
                         <hr />
@@ -389,24 +353,6 @@ const discountsData = await discounts.find({
                     <label>Setup fee</label>
                     <input type="text" name="cycle[${i}][setup_fee]" class="form-control" placeholder="Use default currency">
                 </div>
-                <div class="form-group col-lg-3">
-                    <label>Late fee</label>
-                    <input type="text" name="cycle[${i}][late_fee]" class="form-control" placeholder="Use default currency">
-                </div>
-                <div class="form-group col-lg-3">
-                    <label>Trial Length (Optional)</label>
-                    <input type="number" name="cycle[${i}][trial_length]" min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'">
-                </div>
-                <div class="form-group col-lg-3">
-                    <label>Trial Type (Optional)</label>
-                    <select class="form-control" name="cycle[${i}][trial_type]">
-                        <option value="">Select a trial type...</option>
-                        <option value="1">Hour(s)</option>
-                        <option value="2">Day(s)</option>
-                        <option value="3">Month(s)</option>
-                        <option value="4">Year(s)</option>
-                    </select>
-                </div>
                 <div class="form-group col-lg-12">
                     <button type="button" class="btn btn-danger btn-sm" onclick="return this.parentNode.parentNode.remove()"><i class="fas fa-trash"></i></button>
                     <hr>
@@ -445,13 +391,13 @@ const discountsData = await discounts.find({
             $("#eggsInput").val(eggs.join(","));
         }
 
-        function updateCouponsInput() {
-            const coupons = [];
-            $(".selected-coupons .badge").each(function () {
-                coupons.push($(this).data("value"));
-            });
-            $("#couponsInput").val(coupons.join(","));
-        }
+function updateCouponsInput() {
+    const coupons = [];
+    $(".selected-coupons .badge").each(function () {
+        coupons.push($(this).data("value"));
+    });
+    $("#couponsInput").val(coupons.join(","));
+}
 
         function createSelectedTag(value, groupLabel, itemLabel) {
             return `
@@ -492,9 +438,10 @@ const discountsData = await discounts.find({
             const location = option.data("location");
             const nodeName = option.data("node");
 
-            if (!$(`.selected-nodes .badge[data-value="${value}"]`).length) {
+            if (location && nodeName && !$(`.selected-nodes .badge[data-value="${value}"]`).length) {
                 $(".selected-nodes").append(createSelectedTag(value, location, nodeName));
                 updateNodesInput();
+                option.prop("disabled", true);
             }
         }
 
@@ -505,9 +452,10 @@ const discountsData = await discounts.find({
             const nest = option.data("nest");
             const eggName = option.data("egg");
 
-            if (!$(`.selected-eggs .badge[data-value="${value}"]`).length) {
+            if (nest && eggName && !$(`.selected-eggs .badge[data-value="${value}"]`).length) {
                 $(".selected-eggs").append(createSelectedTag(value, nest, eggName));
                 updateEggsInput();
+                option.prop("disabled", true);
             }
         }
 
@@ -544,7 +492,7 @@ const discountsData = await discounts.find({
 
         $(".select-all-nodes").click(function () {
             $(".node-select option").each(function () {
-                if (!$(this).is(":disabled") && $(this).val()) {
+                if (!$(this).is(":disabled") && $(this).val() && $(this).data("location") && $(this).data("node")) {
                     addNodeIfNotExists($(this));
                 }
             });
@@ -552,7 +500,7 @@ const discountsData = await discounts.find({
 
         $(".select-all-eggs").click(function () {
             $(".egg-select option").each(function () {
-                if (!$(this).is(":disabled") && $(this).val()) {
+                if (!$(this).is(":disabled") && $(this).val() && $(this).data("nest") && $(this).data("egg")) {
                     addEggIfNotExists($(this));
                 }
             });
@@ -569,11 +517,13 @@ const discountsData = await discounts.find({
         $(".clear-all-nodes").click(function () {
             $(".selected-nodes").empty();
             updateNodesInput();
+            $(".node-select option").prop("disabled", false);
         });
 
         $(".clear-all-eggs").click(function () {
             $(".selected-eggs").empty();
             updateEggsInput();
+            $(".egg-select option").prop("disabled", false);
         });
 
         $(".clear-all-coupons").click(function () {
@@ -582,10 +532,13 @@ const discountsData = await discounts.find({
         });
 
         $(document).on("click", ".tag-remove", function () {
+            const value = $(this).closest(".badge").data("value");
             $(this).closest(".badge").remove();
             updateNodesInput();
             updateEggsInput();
             updateCouponsInput();
+            $(`.node-select option[value="${value}"]`).prop("disabled", false);
+            $(`.egg-select option[value="${value}"]`).prop("disabled", false);
         });
 
         $("form").on("submit", function (e) {

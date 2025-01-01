@@ -7,31 +7,31 @@ import { categories, coupons, discounts } from "@/database/index";
 import { MoreThanOrEqual } from "typeorm";
 
 interface Props {
-  nests: Nests;
-  locations: Locations;
-  plan: Plans;
-  cycles: PlanCycles[];
+    nests: Nests;
+    locations: Locations;
+    plan: Plans;
+    cycles: PlanCycles[];
 }
 
 const { nests, locations, plan, cycles } = Astro.props;
 
 const categoriesData = await categories.find({
-  order: { order: "ASC" },
-  select: ["id", "name"],
+    order: { order: "ASC" },
+    select: ["id", "name"],
 });
 const couponsData = await coupons.find({
-  where: {
-    endDate: MoreThanOrEqual(new Date()),
-  },
-  order: { updatedAt: "DESC" },
-  select: ["id", "code", "percentOff"],
+    where: {
+        endDate: MoreThanOrEqual(new Date()),
+    },
+    order: { updatedAt: "DESC" },
+    select: ["id", "code", "percentOff"],
 });
 const discountsData = await discounts.find({
-  where: {
-    endDate: MoreThanOrEqual(new Date()),
-  },
-  order: { updatedAt: "DESC" },
-  select: ["id", "name", "percentOff"],
+    where: {
+        endDate: MoreThanOrEqual(new Date()),
+    },
+    order: { updatedAt: "DESC" },
+    select: ["id", "name", "percentOff"],
 });
 ---
 
@@ -54,11 +54,9 @@ const discountsData = await discounts.find({
                     </div>
                     <div class="form-group col-lg-5">
                         <label for="descriptionInput">Short Description (Optional)</label>
-                        <textarea
-                            name="description"
-                            class="form-control"
-                            id="descriptionInput"
-                            placeholder="Around 10 words recommended">{plan?.description}</textarea>
+                        <textarea name="description" class="form-control" id="descriptionInput" placeholder="Around 10 words recommended"
+                            >{plan?.description}</textarea
+                        >
                     </div>
                     <div class="form-group col-lg-3">
                         <label for="orderInput">Order (smaller = higher display priority)</label>
@@ -326,28 +324,6 @@ const discountsData = await discounts.find({
                                 required
                             />
                         </div>
-                        <div class="form-group col-lg-4">
-                            <label for="minPortInput">Minimum Port (Optional)</label>
-                            <input
-                                value={plan?.minPort}
-                                type="number"
-                                name="min_port"
-                                class="form-control"
-                                id="minPortInput"
-                                placeholder="e.g. 25565"
-                            />
-                        </div>
-                        <div class="form-group col-lg-4">
-                            <label for="maxPortInput">Maximum Port (Optional)</label>
-                            <input
-                                value={plan?.maxPort}
-                                type="number"
-                                name="max_port"
-                                class="form-control"
-                                id="maxPortInput"
-                                placeholder="e.g. 25575"
-                            />
-                        </div>
                         <div class="form-group col-lg-12">
                             <label for="serverDescriptionInput">Server Description (Optional)</label>
                             <textarea
@@ -462,17 +438,6 @@ const discountsData = await discounts.find({
                                 placeholder="0 = No servers can be created"
                             />
                         </div>
-                        <div class="form-group col-lg-4">
-                            <label for="perClientTrialInput">Per Client Trial Limit (Optional)</label>
-                            <input
-                                value={plan?.perClientTrialLimit}
-                                type="number"
-                                name="per_client_trial_limit"
-                                class="form-control"
-                                id="perClientTrialInput"
-                                placeholder="0 = No free trials allowed"
-                            />
-                        </div>
                     </div>
                     <div class="form-group col-lg-12">
                         <hr />
@@ -501,33 +466,36 @@ const discountsData = await discounts.find({
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Initial Price</label>
-                        <input value={cycles[0]?.initPrice} type="text" name={`cycle[${cycles[0]?.id}][init_price]`} class="form-control" placeholder="Use default currency" required />
+                        <input
+                            value={cycles[0]?.initPrice}
+                            type="text"
+                            name={`cycle[${cycles[0]?.id}][init_price]`}
+                            class="form-control"
+                            placeholder="Use default currency"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Renewal Price</label>
-                        <input value={cycles[0]?.renewPrice} type="text" name={`cycle[${cycles[0]?.id}][renew_price]`} class="form-control" placeholder="Use default currency" required />
+                        <input
+                            value={cycles[0]?.renewPrice}
+                            type="text"
+                            name={`cycle[${cycles[0]?.id}][renew_price]`}
+                            class="form-control"
+                            placeholder="Use default currency"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-3">
                         <label>Setup fee</label>
-                        <input value={cycles[0]?.setupFee} type="text" name={`cycle[${cycles[0]?.id}][setup_fee]`} class="form-control" placeholder="Use default currency" required />
-                    </div>
-                    <div class="form-group col-lg-3">
-                        <label>Late fee</label>
-                        <input value={cycles[0]?.lateFee} type="text" name={`cycle[${cycles[0]?.id}][late_fee]`} class="form-control" placeholder="Use default currency" required />
-                    </div>
-                    <div class="form-group col-lg-3">
-                        <label>Trial Length (Optional)</label>
-                        <input value={cycles[0]?.trialLength} type="number" name={`cycle[${cycles[0]?.id}][trial_length]`} min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'" />
-                    </div>
-                    <div class="form-group col-lg-3">
-                        <label>Trial Type (Optional)</label>
-                        <select class="form-control" name={`cycle[${cycles[0]?.id}][trial_type]`}>
-                            <option value="" selected={cycles[0]?.trialType === null}>Select a trial type...</option>
-                            <option value="1" selected={cycles[0]?.trialType === 1}>Hour(s)</option>
-                            <option value="2" selected={cycles[0]?.trialType === 2}>Day(s)</option>
-                            <option value="3" selected={cycles[0]?.trialType === 3}>Month(s)</option>
-                            <option value="4" selected={cycles[0]?.trialType === 4}>Year(s)</option>
-                        </select>
+                        <input
+                            value={cycles[0]?.setupFee}
+                            type="text"
+                            name={`cycle[${cycles[0]?.id}][setup_fee]`}
+                            class="form-control"
+                            placeholder="Use default currency"
+                            required
+                        />
                     </div>
                     <div class="form-group col-lg-12">
                         <hr />
@@ -551,11 +519,21 @@ const discountsData = await discounts.find({
                                     <div class="form-group col-lg-3">
                                         <label>Cycle Type</label>
                                         <select class="form-control" name={`cycle[${cycle.id}][cycle_type]`}>
-                                            <option value="0" selected={cycle.cycleType === 0}>One-time</option>
-                                            <option value="1" selected={cycle.cycleType === 1}>Hourly</option>
-                                            <option value="2" selected={cycle.cycleType === 2}>Daily</option>
-                                            <option value="3" selected={cycle.cycleType === 3}>Monthly</option>
-                                            <option value="4" selected={cycle.cycleType === 4}>Yearly</option>
+                                            <option value="0" selected={cycle.cycleType === 0}>
+                                                One-time
+                                            </option>
+                                            <option value="1" selected={cycle.cycleType === 1}>
+                                                Hourly
+                                            </option>
+                                            <option value="2" selected={cycle.cycleType === 2}>
+                                                Daily
+                                            </option>
+                                            <option value="3" selected={cycle.cycleType === 3}>
+                                                Monthly
+                                            </option>
+                                            <option value="4" selected={cycle.cycleType === 4}>
+                                                Yearly
+                                            </option>
                                         </select>
                                     </div>
                                     <div class="form-group col-lg-3">
@@ -587,37 +565,6 @@ const discountsData = await discounts.find({
                                             class="form-control"
                                             placeholder="Use default currency"
                                         />
-                                    </div>
-                                    <div class="form-group col-lg-3">
-                                        <label>Late fee</label>
-                                        <input
-                                            value={cycle.lateFee}
-                                            type="text"
-                                            name={`cycle[${cycle.id}][late_fee]`}
-                                            class="form-control"
-                                            placeholder="Use default currency"
-                                        />
-                                    </div>
-                                    <div class="form-group col-lg-3">
-                                        <label>Trial Length (Optional)</label>
-                                        <input
-                                            value={cycle.trialLength}
-                                            type="number"
-                                            name={`cycle[${cycle.id}][trial_length]`}
-                                            min="0"
-                                            class="form-control"
-                                            placeholder="e.g. enter '7', choose 'Days'"
-                                        />
-                                    </div>
-                                    <div class="form-group col-lg-3">
-                                        <label>Trial Type (Optional)</label>
-                                        <select class="form-control" name={`cycle[${cycle.id}][trial_type]`}>
-                                            <option value="" selected={cycle.trialType === null}>Select a trial type...</option>
-                                            <option value="1" selected={cycle.trialType === 1}>Hour(s)</option>
-                                            <option value="2" selected={cycle.trialType === 2}>Day(s)</option>
-                                            <option value="3" selected={cycle.trialType === 3}>Month(s)</option>
-                                            <option value="4" selected={cycle.trialType === 4}>Year(s)</option>
-                                        </select>
                                     </div>
                                     <div class="form-group col-lg-12">
                                         <button type="button" class="btn btn-danger btn-sm" onclick="return this.parentNode.parentNode.remove()">
@@ -670,24 +617,6 @@ const discountsData = await discounts.find({
                     <label>Setup fee</label>
                     <input type="text" name="new_cycle[${i}][setup_fee]" class="form-control" placeholder="Use default currency">
                 </div>
-                <div class="form-group col-lg-3">
-                    <label>Late fee</label>
-                    <input type="text" name="new_cycle[${i}][late_fee]" class="form-control" placeholder="Use default currency">
-                </div>
-                <div class="form-group col-lg-3">
-                    <label>Trial Length (Optional)</label>
-                    <input type="number" name="new_cycle[${i}][trial_length]" min="0" class="form-control" placeholder="e.g. enter '7', choose 'Days'">
-                </div>
-                <div class="form-group col-lg-3">
-                    <label>Trial Type (Optional)</label>
-                    <select class="form-control" name="new_cycle[${i}][trial_type]">
-                        <option value="">Select a trial type...</option>
-                        <option value="1">Hour(s)</option>
-                        <option value="2">Day(s)</option>
-                        <option value="3">Month(s)</option>
-                        <option value="4">Year(s)</option>
-                    </select>
-                </div>
                 <div class="form-group col-lg-12">
                     <button type="button" class="btn btn-danger btn-sm" onclick="return this.parentNode.parentNode.remove()"><i class="fas fa-trash"></i></button>
                     <hr>
@@ -716,6 +645,20 @@ const discountsData = await discounts.find({
                 nodes.push($(this).data("value"));
             });
             $("#nodesInput").val(nodes.join(","));
+        }
+
+        function disableSelectedNodeOptions() {
+            $(".selected-nodes .badge").each(function () {
+                const value = $(this).data("value");
+                $(`.node-select option[value="${value}"]`).prop("disabled", true);
+            });
+        }
+
+        function disableSelectedEggOptions() {
+            $(".selected-eggs .badge").each(function () {
+                const value = $(this).data("value");
+                $(`.egg-select option[value="${value}"]`).prop("disabled", true);
+            });
         }
 
         function updateEggsInput() {
@@ -773,9 +716,10 @@ const discountsData = await discounts.find({
             const location = option.data("location");
             const nodeName = option.data("node");
 
-            if (!$(`.selected-nodes .badge[data-value="${value}"]`).length) {
+            if (location && nodeName && !$(`.selected-nodes .badge[data-value="${value}"]`).length) {
                 $(".selected-nodes").append(createSelectedTag(value, location, nodeName));
                 updateNodesInput();
+                option.prop("disabled", true);
             }
         }
 
@@ -786,9 +730,10 @@ const discountsData = await discounts.find({
             const nest = option.data("nest");
             const eggName = option.data("egg");
 
-            if (!$(`.selected-eggs .badge[data-value="${value}"]`).length) {
+            if (nest && eggName && !$(`.selected-eggs .badge[data-value="${value}"]`).length) {
                 $(".selected-eggs").append(createSelectedTag(value, nest, eggName));
                 updateEggsInput();
+                option.prop("disabled", true);
             }
         }
 
@@ -799,9 +744,10 @@ const discountsData = await discounts.find({
             const code = option.data("code");
             const discount = option.data("discount");
 
-            if (!$(`.selected-coupons .badge[data-value="${value}"]`).length) {
+            if (code && discount && !$(`.selected-coupons .badge[data-value="${value}"]`).length) {
                 $(".selected-coupons").append(createSelectedTag(value, discount, code));
                 updateCouponsInput();
+                option.prop("disabled", true);
             }
         }
 
@@ -825,7 +771,7 @@ const discountsData = await discounts.find({
 
         $(".select-all-nodes").click(function () {
             $(".node-select option").each(function () {
-                if (!$(this).is(":disabled") && $(this).val()) {
+                if (!$(this).is(":disabled") && $(this).val() && $(this).data("location") && $(this).data("node")) {
                     addNodeIfNotExists($(this));
                 }
             });
@@ -833,7 +779,7 @@ const discountsData = await discounts.find({
 
         $(".select-all-eggs").click(function () {
             $(".egg-select option").each(function () {
-                if (!$(this).is(":disabled") && $(this).val()) {
+                if (!$(this).is(":disabled") && $(this).val() && $(this).data("nest") && $(this).data("egg")) {
                     addEggIfNotExists($(this));
                 }
             });
@@ -841,7 +787,7 @@ const discountsData = await discounts.find({
 
         $(".select-all-coupons").click(function () {
             $(".coupon-select option").each(function () {
-                if (!$(this).is(":disabled") && $(this).val()) {
+                if (!$(this).is(":disabled") && $(this).val() && $(this).data("code") && $(this).data("discount")) {
                     addCouponIfNotExists($(this));
                 }
             });
@@ -850,24 +796,36 @@ const discountsData = await discounts.find({
         $(".clear-all-nodes").click(function () {
             $(".selected-nodes").empty();
             updateNodesInput();
+            $(".node-select option").prop("disabled", false);
+            disableSelectedNodeOptions();
         });
 
         $(".clear-all-eggs").click(function () {
             $(".selected-eggs").empty();
             updateEggsInput();
+            $(".egg-select option").prop("disabled", false);
+            disableSelectedEggOptions();
         });
 
         $(".clear-all-coupons").click(function () {
             $(".selected-coupons").empty();
             updateCouponsInput();
+            $(".coupon-select option").prop("disabled", false);
         });
 
         $(document).on("click", ".tag-remove", function () {
+            const value = $(this).closest(".badge").data("value");
             $(this).closest(".badge").remove();
             updateNodesInput();
             updateEggsInput();
             updateCouponsInput();
+            $(`.node-select option[value="${value}"]`).prop("disabled", false);
+            $(`.egg-select option[value="${value}"]`).prop("disabled", false);
+            $(`.coupon-select option[value="${value}"]`).prop("disabled", false);
         });
+
+        disableSelectedNodeOptions();
+        disableSelectedEggOptions();
 
         $("form").on("submit", function (e) {
             if (!validateSelections()) {
