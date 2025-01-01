@@ -43,15 +43,17 @@ export const invoiceStatusName = {
 };
 
 export const cycleType = {
-  daily: 0,
-  weekly: 1,
-  monthly: 2,
-  yearly: 3,
+  oneTime: 0,
+  hourly: 1,
+  daily: 2,
+  monthly: 3,
+  yearly: 4,
 };
 
 export const cycleTypeName = {
+  [cycleType.oneTime]: "One-time",
+  [cycleType.hourly]: "Hourly",
   [cycleType.daily]: "Daily",
-  [cycleType.weekly]: "Weekly",
   [cycleType.monthly]: "Monthly",
   [cycleType.yearly]: "Yearly",
 };
