@@ -28,26 +28,8 @@ export class Servers {
   @Column("datetime", { name: "due_date", nullable: true })
   dueDate: Date | null;
 
-  @Column("varchar", { name: "payment_method", length: 255 })
-  paymentMethod: string;
-
   @Column("varchar", { name: "server_name", length: 255 })
   serverName: string;
-
-  @Column("int", { name: "nest_id" })
-  nestId: number;
-
-  @Column("int", { name: "egg_id" })
-  eggId: number;
-
-  @Column("int", { name: "location_id" })
-  locationId: number;
-
-  @Column("int", { name: "node_id" })
-  nodeId: number;
-
-  @Column("varchar", { name: "ip_address", nullable: true, length: 255 })
-  ipAddress: string | null;
 
   @Column("tinyint", { name: "status", default: serverStatus.pending })
   status: number;
@@ -58,6 +40,6 @@ export class Servers {
   @Column("datetime", { name: "updated_at", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date | null;
 
-  @Column("datetime", { name: "last_notif", nullable: true })
+  @Column("datetime", { name: "last_notif", nullable: true, default: null })
   lastNotif: Date | null;
 }

@@ -41,12 +41,6 @@ export class Plans {
   @Column("varchar", { name: "locations_nodes_id", length: 255 })
   locationsNodesId: string;
 
-  @Column("int", { name: "min_port", nullable: true })
-  minPort: number | null;
-
-  @Column("int", { name: "max_port", nullable: true })
-  maxPort: number | null;
-
   @Column("varchar", { name: "nests_eggs_id", length: 255 })
   nestsEggsId: string;
 
@@ -70,9 +64,6 @@ export class Plans {
 
   @Column("int", { name: "per_client_limit", nullable: true })
   perClientLimit: number | null;
-
-  @Column("int", { name: "per_client_trial_limit", nullable: true })
-  perClientTrialLimit: number | null;
 
   @Column("int", { name: "order", default: 1000 })
   order: number;

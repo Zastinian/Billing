@@ -23,17 +23,6 @@ export class Invoices {
   })
   credit: number;
 
-  @Column("decimal", {
-    name: "late_fee",
-    precision: 16,
-    scale: 6,
-    default: 0,
-  })
-  lateFee: number;
-
-  @Column("varchar", { name: "payment_method", nullable: true, length: 255 })
-  paymentMethod: string | null;
-
   @Column("text", { name: "payment_link", nullable: true })
   paymentLink: string | null;
 
