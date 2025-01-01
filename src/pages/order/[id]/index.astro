@@ -3,8 +3,66 @@ const { id } = Astro.params;
 
 import Layout from "@/layouts/store/Layout.astro";
 import View from "@/views/store/plans/Order.astro";
+import { categories, plans, servers, settings } from "@/database/index";
+import { serverStatus } from "@/utils/status";
+import profile from "@/utils/profile";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+const plan = await plans.findOneBy({ id: Number(id) }).catch(() => null);
+
+if (!plan) {
+    return Astro.redirect("/plans");
+}
+
+if (!c.clientId) {
+    return Astro.redirect("/plans");
+}
+
+const category = await categories.findOneBy({ id: plan.categoryId }).catch(() => null);
+
+if (!category) {
+    return Astro.redirect("/plans");
+}
+
+let serverLimit: number | null = null;
+let clientServerLimit: number | null = null;
+if (typeof plan.globalLimit === "number") {
+    const serversWithPlan = await servers.count({
+        where: {
+            planId: plan.id,
+            status: serverStatus.active || serverStatus.pending || serverStatus.suspended,
+        },
+    });
+    serverLimit = plan.globalLimit - serversWithPlan;
+}
+if (typeof plan.perClientLimit === "number") {
+    const clientServers = await servers.count({
+        where: {
+            planId: plan.id,
+            clientId: c.clientId,
+            status: serverStatus.active || serverStatus.pending || serverStatus.suspended,
+        },
+    });
+    clientServerLimit = plan.perClientLimit - clientServers;
+}
+if (typeof serverLimit === "number" && serverLimit <= 0) {
+    return Astro.redirect("/plans?type=danger&msg=store.global.limit");
+}
+if (typeof clientServerLimit === "number" && clientServerLimit <= 0) {
+    return Astro.redirect("/plans?type=danger&msg=store.client.limit");
+}
+const panelUrl = await settings.findOneBy({ key: "panel_url" }).then((panelUrl) => panelUrl?.value);
+if (!panelUrl) {
+    return Astro.redirect("/?type=danger&msg=panel.url.missing");
+}
+const panelAppApiKey = await settings.findOneBy({ key: "panel_app_api_key" }).then((panelAppApiKey) => panelAppApiKey?.value);
+if (!panelAppApiKey) {
+    return Astro.redirect("/?type=danger&msg=panel.api.missing");
+}
 ---
 
 <Layout title="Bun">
-    <View />
+    <View plan={plan} panelUrl={panelUrl} panelAppApiKey={panelAppApiKey} category={category} />
 </Layout>
