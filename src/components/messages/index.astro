@@ -151,8 +151,7 @@ switch (msg) {
     message = "Please enter a valid category name, and make sure the category name is unique";
     break;
   case "admin.category.delete.error":
-    message =
-      "Please delete all the plans that are assigned to this category before deleting the category";
+    message = "Please delete all the plans that are assigned to this category before deleting the category";
     break;
   case "admin.category.delete.success":
     message = "Category deleted successfully";
@@ -170,8 +169,13 @@ switch (msg) {
     message = "Plan updated successfully";
     break;
   case "admin.plan.cycle.delete.error":
-    message =
-      "Please delete all the servers that are assigned to this plan cycle before deleting the plan cycle";
+    message = "Please delete all the servers that are assigned to this plan cycle before deleting the plan cycle";
+    break;
+  case "store.global.limit":
+    message = "The global server limit has been reached";
+    break;
+  case "store.client.limit":
+    message = "The per client server limit has been reached";
     break;
   case "order.needs_login":
     message = "Please login to be able to purchase a product";
@@ -180,27 +184,13 @@ switch (msg) {
 ---
 
 {
-    type === "danger"
-    ?
-        <div class="alert alert-danger">
-            {message}
-        </div>
-    :
-    type === "warning"
-    ?
-        <div class="alert alert-warning">
-            {message}
-        </div>
-    :
-    type === "info"
-    ?
-        <div class="alert alert-info">
-            {message}
-        </div>
-    :
-    type === "success"
-    &&
-        <div class="alert alert-success">
-            {message}
-        </div>
+  type === "danger" ? (
+    <div class="alert alert-danger">{message}</div>
+  ) : type === "warning" ? (
+    <div class="alert alert-warning">{message}</div>
+  ) : type === "info" ? (
+    <div class="alert alert-info">{message}</div>
+  ) : (
+    type === "success" && <div class="alert alert-success">{message}</div>
+  )
 }
