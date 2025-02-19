@@ -3,8 +3,9 @@ import { clients, settings } from "@/database/index";
 import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
 
+const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
+
 export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, params }) => {
-  const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");

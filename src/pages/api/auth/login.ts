@@ -2,8 +2,9 @@ import { clients } from "@/database/index";
 import jwt from "jsonwebtoken";
 import type { APIRoute } from "astro";
 
+const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
+
 export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) => {
-  const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");

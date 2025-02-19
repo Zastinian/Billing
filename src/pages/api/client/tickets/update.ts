@@ -5,8 +5,9 @@ import type { APIRoute } from "astro";
 import { ticketStatus } from "@/utils/status";
 import { TicketContents } from "@/database/entities/TicketContents";
 
+const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
+
 export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-    const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
   const requestUrl = new URL(request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");
@@ -27,13 +28,11 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (params.get("id") === undefined) {
       return redirect("/client/tickets?type=danger&msg=client.tickets.error");
     }
-    const ticket = await tickets
-      .findOneBy({ id: Number(params.get("id")) })
-      .then((ticket) => {
-        if (ticket?.clientId === client?.id) {
-          return ticket;
-        }
-      });
+    const ticket = await tickets.findOneBy({ id: Number(params.get("id")) }).then((ticket) => {
+      if (ticket?.clientId === client?.id) {
+        return ticket;
+      }
+    });
     if (!ticket) {
       return redirect("/client/tickets?type=danger&msg=client.tickets.error");
     }
