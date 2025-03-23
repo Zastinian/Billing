@@ -14,7 +14,8 @@
     "prepare:husky": "husky",
     "db:create": "bunx --bun typeorm migration:create src/database/migrations/<name>",
     "db:entity": "bunx --bun typeorm entity:create src/database/entities/<name>",
-    "key:generate": "bun run ./src/scripts/key.ts"
+    "db:migrate": "bunx --bun typeorm migration:run --dataSource src/database/data-source.ts",
+    "key:generate": "bun --bun run ./src/scripts/key.ts"
   },
   "dependencies": {
     "@hedystia/astro-bun": "^0.3.1",
