@@ -84,6 +84,7 @@ const AppDataSource = new DataSource({
   logging: false,
   entities: entities,
   migrations: migrations,
+  migrationsRun: true,
   subscribers: [],
 });
 
