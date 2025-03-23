@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import profile from "@/utils/profile";
 import { clients } from "@/database/index";
+import { STORE_URL } from "astro:env/server";
 
 // Rate limit and time frame settings
 const PAGE_RATE_LIMIT = 75; // Maximum number of requests allowed for pages
@@ -23,7 +24,7 @@ const generateSessionID = () => Math.random().toString(36).slice(2, 24);
 export const onRequest = defineMiddleware(async (context, next) => {
   let sessionID: string | null = null;
 
-  const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
+  const storeUrl = new URL(STORE_URL ?? "");
   const requestUrl = new URL(context.request.url);
   if (requestUrl.origin !== storeUrl.origin) {
     return new Response("Blocked: Are you a bot?", { status: 403 });
@@ -42,7 +43,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const referrer = context.request.headers.get("referer");
-  const allowedReferrers = [new URL(import.meta.env.STORE_URL ?? "").origin];
+  const allowedReferrers = [new URL(STORE_URL ?? "").origin];
 
   if (referrer) {
     const referrerOrigin = new URL(referrer).origin;

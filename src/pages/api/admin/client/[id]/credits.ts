@@ -2,8 +2,9 @@ import { clients, credits } from "@/database/index";
 import profile from "@/utils/profile";
 import { Credits } from "@/database/entities/Credits";
 import type { APIRoute } from "astro";
+import { STORE_URL } from "astro:env/server";
 
-const storeUrl = new URL(import.meta.env.STORE_URL ?? "");
+const storeUrl = new URL(STORE_URL ?? "");
 
 export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, params }) => {
   const requestUrl = new URL(request.url);

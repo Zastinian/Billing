@@ -2,7 +2,7 @@ import AppDataSource from "./data-source";
 
 await AppDataSource.initialize().catch((e) => {
   console.error("Unable to connect to the database, please check your configuration.");
-  console.error("Try using `npm run db:migrate` to create the database tables.");
+  console.error("Try using `bun run db:migrate` to create the database tables.");
 
   console.error(`Error: ${e}`);
   process.exit(1);

@@ -1,3 +1,4 @@
+import { APP_KEY } from "astro:env/server";
 import { createHmac, randomBytes } from "crypto";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
@@ -51,14 +52,14 @@ export class Clients {
   updatedAt: Date;
 
   async setPassword(password: string): Promise<void> {
-    this.password = createHmac("sha256", String(import.meta.env.APP_KEY))
+    this.password = createHmac("sha256", String(APP_KEY))
       .update(password)
       .digest("base64");
   }
 
   async verifyPassword(password: string): Promise<boolean> {
     return (
-      createHmac("sha256", String(import.meta.env.APP_KEY))
+      createHmac("sha256", String(APP_KEY))
         .update(password)
         .digest("base64") === this.password
     );
