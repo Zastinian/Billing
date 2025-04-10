@@ -39,6 +39,9 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
     <div class="col-lg-9">
         <div class="card">
             <div class="card-body">
+                <input type="hidden" id="planId" value={plan.id} />
+                <input type="hidden" id="due-today-backup-price" />
+                <input type="hidden" id="next-monthly-backup-price" />
                 <h5 class="card-title"><i>{category.name}: {plan.name}</i></h5>
                 <p class="card-text">
                     <ul>
@@ -412,7 +415,6 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                     </select>
                 </div>
             </div>
-            <input type="hidden" id="planId" value={plan.id} />
             <div class="form-group row">
                 <label for="couponCodeInput" class="col-lg-4 col-form-label"
                     >Coupon Code</label
@@ -420,14 +422,21 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                 <div class="col-lg-4 col-9">
                     <input
                         type="text"
-                        name="coupon"
                         class="form-control"
                         id="couponCodeInput"
                         placeholder="Coupon Code"
                     />
+                    <input
+                        type="hidden"
+                        name="coupon"
+                        id="couponCodeApplyInput"
+                    />
                 </div>
                 <div class="col-lg-3 col-3">
-                    <button type="button" class="btn btn-primary"
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="couponCodeApplyButton"
                         >Apply <i class="fas fa-arrow-circle-right"></i></button
                     >
                 </div>
@@ -450,6 +459,11 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                     Setup Fee <span class="float-right"
                         ><span id="plan-setup"></span>
                         {clientCurrency?.name}</span
+                    >
+                    <br />
+                    Coupon Discount <span class="float-right"
+                        ><span id="plan-coupons">0</span>
+                        %</span
                     >
                 </small>
                 <hr />
@@ -557,6 +571,76 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
             navigate("/client/servers");
         }, 1500);
     });
+    const couponCodeApplyButton = document.getElementById(
+        "couponCodeApplyButton",
+    ) as HTMLButtonElement | null;
+    const couponCodeApplyInput = document.getElementById(
+        "couponCodeApplyInput",
+    ) as HTMLInputElement | null;
+    const couponCodeInput = document.getElementById(
+        "couponCodeInput",
+    ) as HTMLInputElement | null;
+    const planId = document.getElementById("planId") as HTMLInputElement | null;
+    const planCoupons = document.getElementById(
+        "plan-coupons",
+    ) as HTMLSpanElement | null;
+    const dueToday = document.getElementById(
+        "due-today",
+    ) as HTMLSpanElement | null;
+    const nextMonthly = document.getElementById(
+        "next-monthly",
+    ) as HTMLSpanElement | null;
+    const dueTodayBackupPrice = document.getElementById(
+        "due-today-backup-price",
+    ) as HTMLInputElement | null;
+    const nextMonthlyBackupPrice = document.getElementById(
+        "next-monthly-backup-price",
+    ) as HTMLInputElement | null;
+    couponCodeApplyButton?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const couponCode = couponCodeInput?.value;
+        if (!couponCode) return;
+        const { error, data } = await actions.checkCoupon({
+            coupon: couponCode,
+            planId: planId ? Number(planId.value) : null,
+        });
+        if (isInputError(error)) {
+            if (error.fields.coupon) {
+                toastr.error(error.fields.coupon.join(", "));
+                return;
+            }
+            if (error.fields.planId) {
+                toastr.error(error.fields.planId.join(", "));
+                return;
+            }
+        }
+        if (error) {
+            toastr.error(error.message);
+            return;
+        }
+        toastr.success("Coupon applied successfully!");
+        if (couponCodeApplyInput) couponCodeApplyInput.value = couponCode;
+        if (planCoupons) planCoupons.textContent = String(data.percentOff);
+        function percentOffToDiscount(price: number, percentOff: number) {
+            return String(price - price * (percentOff / 100));
+        }
+        if (dueToday && dueTodayBackupPrice) {
+            dueToday.textContent = percentOffToDiscount(
+                Number(dueTodayBackupPrice.value),
+                data.percentOff,
+            );
+        }
+        if (nextMonthly && nextMonthlyBackupPrice) {
+            if (data.oneTime === 0) {
+                nextMonthly.textContent = percentOffToDiscount(
+                    Number(nextMonthlyBackupPrice.value),
+                    data.percentOff,
+                );
+            } else {
+                nextMonthly.textContent = String(nextMonthlyBackupPrice.value);
+            }
+        }
+    });
 </script>
 <script
     define:vars={{
@@ -575,30 +659,54 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
         const planSetup = document.getElementById("plan-setup");
         const dueToday = document.getElementById("due-today");
         const nextMonthly = document.getElementById("next-monthly");
-
+        const dueTodayBackupPrice = document.getElementById(
+            "due-today-backup-price",
+        );
+        const nextMonthlyBackupPrice = document.getElementById(
+            "next-monthly-backup-price",
+        );
         function updateOrderSummary() {
             const selectedOption = billingCycleSelect.selectedOptions[0];
             const cycleType = selectedOption.getAttribute("data-cycleType");
             const cycleLength = selectedOption.getAttribute("data-cycleLength");
             const initPrice = selectedOption.getAttribute("data-initPrice");
             const renewPrice = selectedOption.getAttribute("data-renewPrice");
+            const setupFee = selectedOption.getAttribute("data-setupFee");
 
             planInitPrice.textContent = convertCurrency(
                 Number(initPrice),
                 defaultCurrency,
                 clientCurrency,
             );
-            planSetup.textContent = "0";
-            dueToday.textContent = convertCurrency(
-                Number(initPrice),
+
+            planSetup.textContent = convertCurrency(
+                Number(setupFee),
                 defaultCurrency,
                 clientCurrency,
             );
+
+            dueToday.textContent = convertCurrency(
+                Number(initPrice) + Number(setupFee),
+                defaultCurrency,
+                clientCurrency,
+            );
+            dueTodayBackupPrice.value = convertCurrency(
+                Number(initPrice) + Number(setupFee),
+                defaultCurrency,
+                clientCurrency,
+            );
+
             nextMonthly.textContent = convertCurrency(
                 Number(renewPrice),
                 defaultCurrency,
                 clientCurrency,
             );
+            nextMonthlyBackupPrice.value = convertCurrency(
+                Number(renewPrice),
+                defaultCurrency,
+                clientCurrency,
+            );
+
             const cycleText = `${cycleType} (${cycleLength} ${cycleLength > 1 ? "Months" : "Month"})`;
             document.querySelector("#billing-cycle-summary").textContent =
                 cycleText;
