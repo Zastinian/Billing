@@ -541,31 +541,38 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
     const form = document.querySelector("form");
     form?.addEventListener("submit", async (event) => {
         event.preventDefault();
+        // @ts-ignore
         toastr.info("Creating server...");
         const formData = new FormData(form);
         const { error } = await actions.purchaseServer(formData);
         if (isInputError(error)) {
             if (error.fields.serverName) {
+                // @ts-ignore
                 toastr.error(error.fields.serverName.join(", "));
                 return;
             }
             if (error.fields.cycle) {
+                // @ts-ignore
                 toastr.error(error.fields.cycle.join(", "));
                 return;
             }
             if (error.fields.egg) {
+                // @ts-ignore
                 toastr.error(error.fields.egg.join(", "));
                 return;
             }
             if (error.fields.node) {
+                // @ts-ignore
                 toastr.error(error.fields.node.join(", "));
                 return;
             }
         }
         if (error) {
+            // @ts-ignore
             toastr.error(error.message);
             return;
         }
+        // @ts-ignore
         toastr.success("Server purchased successfully!");
         setTimeout(() => {
             navigate("/client/servers");
@@ -606,18 +613,22 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
         });
         if (isInputError(error)) {
             if (error.fields.coupon) {
+                // @ts-ignore
                 toastr.error(error.fields.coupon.join(", "));
                 return;
             }
             if (error.fields.planId) {
+                // @ts-ignore
                 toastr.error(error.fields.planId.join(", "));
                 return;
             }
         }
         if (error) {
+            // @ts-ignore
             toastr.error(error.message);
             return;
         }
+        // @ts-ignore
         toastr.success("Coupon applied successfully!");
         if (couponCodeApplyInput) couponCodeApplyInput.value = couponCode;
         if (planCoupons) planCoupons.textContent = String(data.percentOff);
