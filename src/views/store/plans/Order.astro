@@ -42,20 +42,43 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                 <h5 class="card-title"><i>{category.name}: {plan.name}</i></h5>
                 <p class="card-text">
                     <ul>
-                        <li>{plan.ram === 0 ? "Unlimited RAM" : `${plan.ram} MB RAM`}</li>
-                        <li>{plan.cpu === 0 ? "Unlimited CPU" : `${plan.cpu}% CPU`}</li>
-                        <li>{plan.disk === 0 ? "Unlimited DISK" : `${plan.disk} MB DISK`}</li>
+                        <li>
+                            {
+                                plan.ram === 0
+                                    ? "Unlimited RAM"
+                                    : `${plan.ram} MB RAM`
+                            }
+                        </li>
+                        <li>
+                            {
+                                plan.cpu === 0
+                                    ? "Unlimited CPU"
+                                    : `${plan.cpu}% CPU`
+                            }
+                        </li>
+                        <li>
+                            {
+                                plan.disk === 0
+                                    ? "Unlimited DISK"
+                                    : `${plan.disk} MB DISK`
+                            }
+                        </li>
                         <li>{plan.databases} Databases</li>
                         <li>{plan.backups} Backups</li>
                         <li>{plan.extraPorts} Extra Ports</li>
                     </ul>
                 </p>
-                <a href="/plans" class="card-link"><i class="fas fa-arrow-left text-sm"></i> Choose another server plan</a>
+                <a href="/plans" class="card-link"
+                    ><i class="fas fa-arrow-left text-sm"></i> Choose another server
+                    plan</a
+                >
             </div>
         </div>
         <form id="order-form">
             <div class="form-group row">
-                <label for="serverNameInput" class="col-lg-4 col-form-label">Server Name</label>
+                <label for="serverNameInput" class="col-lg-4 col-form-label"
+                    >Server Name</label
+                >
                 <div class="col-lg-6">
                     <input
                         type="text"
@@ -71,7 +94,11 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
             <div class="form-group row">
                 <label class="col-lg-4 col-form-label">Billing Cycle</label>
                 <div class="col-lg-6">
-                    <select class="form-control" name="cycle" id="billing-cycle">
+                    <select
+                        class="form-control"
+                        name="cycle"
+                        id="billing-cycle"
+                    >
                         {
                             planCyclesData.map((cycle) => (
                                 <option
@@ -79,12 +106,19 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                                     data-initPrice={cycle.initPrice}
                                     data-renewPrice={cycle.renewPrice}
                                     data-setupFee={cycle.setupFee}
-                                    data-cycleType={cycleTypeName[cycle.cycleType]}
+                                    data-cycleType={
+                                        cycleTypeName[cycle.cycleType]
+                                    }
                                     data-cycleLength={cycle.cycleLength}
                                 >
                                     {clientCurrency?.symbol}
-                                    {convertCurrency(Number(cycle.renewPrice), defaultCurrency as Currencies, clientCurrency as Currencies)}{" "}
-                                    {clientCurrency?.name} / {cycleTypeName[cycle.cycleType]}
+                                    {convertCurrency(
+                                        Number(cycle.renewPrice),
+                                        defaultCurrency as Currencies,
+                                        clientCurrency as Currencies,
+                                    )}{" "}
+                                    {clientCurrency?.name} /{" "}
+                                    {cycleTypeName[cycle.cycleType]}
                                 </option>
                             ))
                         }
@@ -123,189 +157,279 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                 <div class="col-lg-4">
                     <select class="form-control" name="egg">
                         {
-                            parseEntities(plan.nestsEggsId).map(async (nest) => {
-                                const nestData = await fetch(new URL(`/api/application/nests/${nest.id}?include=eggs`, panelUrl).toString(), {
-                                    method: "GET",
-                                    headers: {
-                                        Authorization: `Bearer ${panelAppApiKey}`,
-                                        Accept: "application/json",
-                                        "Content-Type": "application/json",
-                                    },
-                                })
-                                    .then((res) => res.json())
-                                    .catch(() => null);
-                                if (!nestData) return;
-                                const eggs = nest.values
-                                    .map((egg) => {
-                                        interface Egg {
-                                            attributes: {
-                                                id: number;
-                                                name: string;
+                            parseEntities(plan.nestsEggsId).map(
+                                async (nest) => {
+                                    const nestData = await fetch(
+                                        new URL(
+                                            `/api/application/nests/${nest.id}?include=eggs`,
+                                            panelUrl,
+                                        ).toString(),
+                                        {
+                                            method: "GET",
+                                            headers: {
+                                                Authorization: `Bearer ${panelAppApiKey}`,
+                                                Accept: "application/json",
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                        },
+                                    )
+                                        .then((res) => res.json())
+                                        .catch(() => null);
+                                    if (!nestData) return;
+                                    const eggs = nest.values
+                                        .map((egg) => {
+                                            interface Egg {
+                                                attributes: {
+                                                    id: number;
+                                                    name: string;
+                                                };
+                                            }
+                                            const eggData =
+                                                nestData.attributes.relationships.eggs.data.find(
+                                                    (eggData: Egg) =>
+                                                        eggData.attributes
+                                                            .id === egg,
+                                                );
+                                            if (!eggData) return undefined;
+                                            return {
+                                                id: eggData.attributes.id,
+                                                name: eggData.attributes.name,
                                             };
-                                        }
-                                        const eggData = nestData.attributes.relationships.eggs.data.find(
-                                            (eggData: Egg) => eggData.attributes.id === egg,
-                                        );
-                                        if (!eggData) return undefined;
-                                        return {
-                                            id: eggData.attributes.id,
-                                            name: eggData.attributes.name,
-                                        };
-                                    })
-                                    .filter((egg) => egg !== undefined);
-                                return (
-                                    <>
-                                        <option value="" disabled>
-                                            {nestData.attributes.name}
-                                        </option>
-                                        {eggs.map((egg) => (
-                                            <option value={`${nest.id}:${egg.id}`}>{egg.name}</option>
-                                        ))}
-                                    </>
-                                );
-                            })
+                                        })
+                                        .filter((egg) => egg !== undefined);
+                                    return (
+                                        <>
+                                            <option value="" disabled>
+                                                {nestData.attributes.name}
+                                            </option>
+                                            {eggs.map((egg) => (
+                                                <option
+                                                    value={`${nest.id}:${egg.id}`}
+                                                >
+                                                    {egg.name}
+                                                </option>
+                                            ))}
+                                        </>
+                                    );
+                                },
+                            )
                         }
                     </select>
                 </div>
             </div>
             <div class="form-group row">
-                <label class="col-lg-4 col-form-label">Server Location / Node</label>
+                <label class="col-lg-4 col-form-label"
+                    >Server Location / Node</label
+                >
                 <div class="col-lg-4">
                     <select class="form-control" name="node">
                         {
-                            parseEntities(plan.locationsNodesId).map(async (location) => {
-                                const locationData = await fetch(
-                                    new URL(`/api/application/locations/${location.id}?include=nodes`, panelUrl).toString(),
-                                    {
-                                        method: "GET",
-                                        headers: {
-                                            Authorization: `Bearer ${panelAppApiKey}`,
-                                            Accept: "application/json",
-                                            "Content-Type": "application/json",
+                            parseEntities(plan.locationsNodesId).map(
+                                async (location) => {
+                                    const locationData = await fetch(
+                                        new URL(
+                                            `/api/application/locations/${location.id}?include=nodes`,
+                                            panelUrl,
+                                        ).toString(),
+                                        {
+                                            method: "GET",
+                                            headers: {
+                                                Authorization: `Bearer ${panelAppApiKey}`,
+                                                Accept: "application/json",
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
                                         },
-                                    },
-                                )
-                                    .then((res) => res.json())
-                                    .catch(() => null);
-                                if (!locationData) return;
-                                const nodes = await Promise.all(
-                                    location.values.map(async (node) => {
-                                        interface Allocation {
-                                            attributes: {
-                                                id: number;
-                                                assigned: boolean;
-                                            };
-                                        }
-                                        try {
-                                            const nodeData = await fetch(
-                                                new URL(`/api/application/nodes/${node}?include=allocations`, panelUrl).toString(),
-                                                {
-                                                    method: "GET",
-                                                    headers: {
-                                                        Authorization: `Bearer ${panelAppApiKey}`,
-                                                        Accept: "application/json",
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                },
-                                            )
-                                                .then((res) => res.json())
-                                                .catch(() => null);
-                                            if (!nodeData) return null;
-                                            if (nodeData.attributes.maintenance_mode === true)
-                                                return {
-                                                    id: nodeData.attributes.id,
-                                                    name: nodeData.attributes.name,
-                                                    offline: false,
-                                                    maintenance_mode: true,
-                                                    full: false,
-                                                };
-                                            const checkNodeSettings = await fetch(
-                                                new URL(`/api/application/nodes/${node}/configuration`, panelUrl).toString(),
-                                                {
-                                                    method: "GET",
-                                                    headers: {
-                                                        Authorization: `Bearer ${panelAppApiKey}`,
-                                                        Accept: "application/json",
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                },
-                                            )
-                                                .then((res) => res.json())
-                                                .catch(() => null);
-                                            if (!checkNodeSettings) return null;
-                                            const checkStatus = await fetch(
-                                                `${nodeData.attributes.scheme}://${nodeData.attributes.fqdn}:${nodeData.attributes.daemon_listen}/api/system`,
-                                                {
-                                                    method: "GET",
-                                                    headers: {
-                                                        Authorization: `Bearer ${checkNodeSettings.token}`,
-                                                        Accept: "application/json",
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                },
-                                            ).catch(() => null);
-                                            if (!checkStatus || checkStatus.ok === false)
-                                                return {
-                                                    id: nodeData.attributes.id,
-                                                    name: nodeData.attributes.name,
-                                                    offline: true,
-                                                    maintenance_mode: false,
-                                                    full: false,
-                                                };
-                                            const allocations = nodeData.attributes.relationships.allocations.data.filter(
-                                                (allocation: Allocation) => allocation.attributes.assigned === false,
-                                            );
-                                            if (allocations.length > 0) {
-                                                return {
-                                                    id: nodeData.attributes.id,
-                                                    name: nodeData.attributes.name,
-                                                    offline: false,
-                                                    maintenance_mode: false,
-                                                    full: false,
+                                    )
+                                        .then((res) => res.json())
+                                        .catch(() => null);
+                                    if (!locationData) return;
+                                    const nodes = await Promise.all(
+                                        location.values.map(async (node) => {
+                                            interface Allocation {
+                                                attributes: {
+                                                    id: number;
+                                                    assigned: boolean;
                                                 };
                                             }
-                                            return {
-                                                id: nodeData.attributes.id,
-                                                name: nodeData.attributes.name,
-                                                offline: false,
-                                                maintenance_mode: false,
-                                                full: true,
-                                            };
-                                        } catch {
-                                            return null;
-                                        }
-                                    }),
-                                ).then((nodes) =>
-                                    nodes.filter(
-                                        (node): node is { id: number; name: string; offline: boolean; maintenance_mode: boolean; full: boolean } =>
-                                            node !== null,
-                                    ),
-                                );
-                                return (
-                                    <>
-                                        <option value="" disabled>
-                                            {locationData.attributes.short} - Location
-                                        </option>
-                                        {nodes.map((node) => (
-                                            <option value={`${location.id}:${node.id}`} disabled={node.offline || node.maintenance_mode || node.full}>
-                                                {node.name} {node.offline ? "(Offline)" : ""} {node.maintenance_mode ? "(Under Maintenance)" : ""}{" "}
-                                                {node.full ? "(Full)" : ""}
+                                            try {
+                                                const nodeData = await fetch(
+                                                    new URL(
+                                                        `/api/application/nodes/${node}?include=allocations`,
+                                                        panelUrl,
+                                                    ).toString(),
+                                                    {
+                                                        method: "GET",
+                                                        headers: {
+                                                            Authorization: `Bearer ${panelAppApiKey}`,
+                                                            Accept: "application/json",
+                                                            "Content-Type":
+                                                                "application/json",
+                                                        },
+                                                    },
+                                                )
+                                                    .then((res) => res.json())
+                                                    .catch(() => null);
+                                                if (!nodeData) return null;
+                                                if (
+                                                    nodeData.attributes
+                                                        .maintenance_mode ===
+                                                    true
+                                                )
+                                                    return {
+                                                        id: nodeData.attributes
+                                                            .id,
+                                                        name: nodeData
+                                                            .attributes.name,
+                                                        offline: false,
+                                                        maintenance_mode: true,
+                                                        full: false,
+                                                    };
+                                                const checkNodeSettings =
+                                                    await fetch(
+                                                        new URL(
+                                                            `/api/application/nodes/${node}/configuration`,
+                                                            panelUrl,
+                                                        ).toString(),
+                                                        {
+                                                            method: "GET",
+                                                            headers: {
+                                                                Authorization: `Bearer ${panelAppApiKey}`,
+                                                                Accept: "application/json",
+                                                                "Content-Type":
+                                                                    "application/json",
+                                                            },
+                                                        },
+                                                    )
+                                                        .then((res) =>
+                                                            res.json(),
+                                                        )
+                                                        .catch(() => null);
+                                                if (!checkNodeSettings)
+                                                    return null;
+                                                const checkStatus = await fetch(
+                                                    `${nodeData.attributes.scheme}://${nodeData.attributes.fqdn}:${nodeData.attributes.daemon_listen}/api/system`,
+                                                    {
+                                                        method: "GET",
+                                                        headers: {
+                                                            Authorization: `Bearer ${checkNodeSettings.token}`,
+                                                            Accept: "application/json",
+                                                            "Content-Type":
+                                                                "application/json",
+                                                        },
+                                                    },
+                                                ).catch(() => null);
+                                                if (
+                                                    !checkStatus ||
+                                                    checkStatus.ok === false
+                                                )
+                                                    return {
+                                                        id: nodeData.attributes
+                                                            .id,
+                                                        name: nodeData
+                                                            .attributes.name,
+                                                        offline: true,
+                                                        maintenance_mode: false,
+                                                        full: false,
+                                                    };
+                                                const allocations =
+                                                    nodeData.attributes.relationships.allocations.data.filter(
+                                                        (
+                                                            allocation: Allocation,
+                                                        ) =>
+                                                            allocation
+                                                                .attributes
+                                                                .assigned ===
+                                                            false,
+                                                    );
+                                                if (allocations.length > 0) {
+                                                    return {
+                                                        id: nodeData.attributes
+                                                            .id,
+                                                        name: nodeData
+                                                            .attributes.name,
+                                                        offline: false,
+                                                        maintenance_mode: false,
+                                                        full: false,
+                                                    };
+                                                }
+                                                return {
+                                                    id: nodeData.attributes.id,
+                                                    name: nodeData.attributes
+                                                        .name,
+                                                    offline: false,
+                                                    maintenance_mode: false,
+                                                    full: true,
+                                                };
+                                            } catch {
+                                                return null;
+                                            }
+                                        }),
+                                    ).then((nodes) =>
+                                        nodes.filter(
+                                            (
+                                                node,
+                                            ): node is {
+                                                id: number;
+                                                name: string;
+                                                offline: boolean;
+                                                maintenance_mode: boolean;
+                                                full: boolean;
+                                            } => node !== null,
+                                        ),
+                                    );
+                                    return (
+                                        <>
+                                            <option value="" disabled>
+                                                {locationData.attributes.short}{" "}
+                                                - Location
                                             </option>
-                                        ))}
-                                    </>
-                                );
-                            })
+                                            {nodes.map((node) => (
+                                                <option
+                                                    value={`${location.id}:${node.id}`}
+                                                    disabled={
+                                                        node.offline ||
+                                                        node.maintenance_mode ||
+                                                        node.full
+                                                    }
+                                                >
+                                                    {node.name}{" "}
+                                                    {node.offline
+                                                        ? "(Offline)"
+                                                        : ""}{" "}
+                                                    {node.maintenance_mode
+                                                        ? "(Under Maintenance)"
+                                                        : ""}{" "}
+                                                    {node.full ? "(Full)" : ""}
+                                                </option>
+                                            ))}
+                                        </>
+                                    );
+                                },
+                            )
                         }
                     </select>
                 </div>
             </div>
+            <input type="hidden" id="planId" value={plan.id} />
             <div class="form-group row">
-                <label for="couponCodeInput" class="col-lg-4 col-form-label">Coupon Code</label>
+                <label for="couponCodeInput" class="col-lg-4 col-form-label"
+                    >Coupon Code</label
+                >
                 <div class="col-lg-4 col-9">
-                    <input type="text" name="coupon" class="form-control" id="couponCodeInput" placeholder="Coupon Code" />
+                    <input
+                        type="text"
+                        name="coupon"
+                        class="form-control"
+                        id="couponCodeInput"
+                        placeholder="Coupon Code"
+                    />
                 </div>
                 <div class="col-lg-3 col-3">
-                    <button type="button" class="btn btn-primary">Apply <i class="fas fa-arrow-circle-right"></i></button>
+                    <button type="button" class="btn btn-primary"
+                        >Apply <i class="fas fa-arrow-circle-right"></i></button
+                    >
                 </div>
             </div>
         </form>
@@ -319,8 +443,14 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                 <h6>Server <span class="float-right">{plan.name}</span></h6>
                 <small>
                     <span id="billing-cycle-summary">Monthly</span>
-                    <span class="float-right"><span id="plan-init"></span> {clientCurrency?.name}</span><br />
-                    Setup Fee <span class="float-right"><span id="plan-setup"></span> {clientCurrency?.name}</span>
+                    <span class="float-right"
+                        ><span id="plan-init"></span>
+                        {clientCurrency?.name}</span
+                    ><br />
+                    Setup Fee <span class="float-right"
+                        ><span id="plan-setup"></span>
+                        {clientCurrency?.name}</span
+                    >
                 </small>
                 <hr />
                 <!-- Coming Soon
@@ -334,10 +464,25 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
                 </small>
                 <hr />
                 -->
-                <h6>Due Today <span class="float-right"><span id="due-today"></span> {clientCurrency?.name}</span></h6>
-                <small>Next Monthly <span class="float-right"><span id="next-monthly"></span> {clientCurrency?.name}</span></small><br />
+                <h6>
+                    Due Today <span class="float-right"
+                        ><span id="due-today"></span>
+                        {clientCurrency?.name}</span
+                    >
+                </h6>
+                <small
+                    >Next Monthly <span class="float-right"
+                        ><span id="next-monthly"></span>
+                        {clientCurrency?.name}</span
+                    ></small
+                ><br />
                 <hr />
-                <button type="submit" form="order-form" class="btn btn-success float-right">Buy <i class="fas fa-arrow-circle-right"></i></button>
+                <button
+                    type="submit"
+                    form="order-form"
+                    class="btn btn-success float-right"
+                    >Buy <i class="fas fa-arrow-circle-right"></i></button
+                >
             </div>
         </div>
     </div>
@@ -374,8 +519,6 @@ const defaultCurrency = await currencies.findOneBy({ id: 1 });
 
 <script src="/plugins/toastr/toastr.min.js" is:inline></script>
 <script is:inline>
-import convertCurrency from "@/src/utils/convertCurrency";
-
     lazyLoadCss("/plugins/toastr/toastr.min.css");
 </script>
 <script>
@@ -419,10 +562,13 @@ import convertCurrency from "@/src/utils/convertCurrency";
     define:vars={{
         clientCurrency,
         defaultCurrency,
-        convertCurrency,
     }}
     is:inline
 >
+    function convertCurrency(amount, fromCurrency, toCurrency) {
+        const convertedAmount = (amount * toCurrency.rate) / fromCurrency.rate;
+        return convertedAmount.toFixed(toCurrency.precision);
+    }
     document.addEventListener("DOMContentLoaded", function () {
         const billingCycleSelect = document.getElementById("billing-cycle");
         const planInitPrice = document.getElementById("plan-init");
@@ -437,12 +583,25 @@ import convertCurrency from "@/src/utils/convertCurrency";
             const initPrice = selectedOption.getAttribute("data-initPrice");
             const renewPrice = selectedOption.getAttribute("data-renewPrice");
 
-            planInitPrice.textContent = convertCurrency(Number(initPrice), defaultCurrency, clientCurrency);
+            planInitPrice.textContent = convertCurrency(
+                Number(initPrice),
+                defaultCurrency,
+                clientCurrency,
+            );
             planSetup.textContent = "0";
-            dueToday.textContent = convertCurrency(Number(initPrice), defaultCurrency, clientCurrency);
-            nextMonthly.textContent = convertCurrency(Number(renewPrice), defaultCurrency, clientCurrency);
+            dueToday.textContent = convertCurrency(
+                Number(initPrice),
+                defaultCurrency,
+                clientCurrency,
+            );
+            nextMonthly.textContent = convertCurrency(
+                Number(renewPrice),
+                defaultCurrency,
+                clientCurrency,
+            );
             const cycleText = `${cycleType} (${cycleLength} ${cycleLength > 1 ? "Months" : "Month"})`;
-            document.querySelector("#billing-cycle-summary").textContent = cycleText;
+            document.querySelector("#billing-cycle-summary").textContent =
+                cycleText;
         }
         billingCycleSelect.addEventListener("change", updateOrderSummary);
         updateOrderSummary();
