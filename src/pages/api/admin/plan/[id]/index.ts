@@ -185,10 +185,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       }
     }
 
-    const numericFields = [
-      "global_limit",
-      "per_client_limit",
-    ];
+    const numericFields = ["global_limit", "per_client_limit"];
 
     const formatFields = {
       locationsNodesId: /^(\d+:\d+,?)+$/,
@@ -269,6 +266,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
     plan.perClientLimit = data.per_client_limit.length > 0 ? Number(data.per_client_limit) : null;
     plan.locationsNodesId = data.nodes;
     plan.nestsEggsId = data.eggs;
+    plan.coupons = data.coupons ?? null;
     plan.updatedAt = new Date();
     await plans.save(plan);
 
