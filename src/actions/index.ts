@@ -1,13 +1,27 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { clients, credits, plans, planCycles, servers, settings } from "@/database/index";
+import {
+  clients,
+  credits,
+  plans,
+  planCycles,
+  servers,
+  settings,
+  coupons,
+  usedCoupons,
+} from "@/database/index";
 import { Servers } from "@/database/entities/Servers";
 import { Credits } from "@/database/entities/Credits";
 import profile from "@/utils/profile";
 import parseEntities, { isValidFormat } from "@/utils/parseEntities";
 import { cycleType, serverStatus } from "@/utils/status";
+import { UsedCoupons } from "../database/entities/UsedCoupons";
 
 let userAlreadyCreatingAServer: any[] = [];
+
+function percentOffToDiscount(price: number, percentOff: number) {
+  return price - price * (percentOff / 100);
+}
 
 export const server = {
   purchaseServer: defineAction({
@@ -25,6 +39,11 @@ export const server = {
       node: z.string({
         message: "Node is required.",
       }),
+      coupon: z.optional(
+        z.string({
+          message: "Coupon code is invalid.",
+        }),
+      ),
     }),
     handler: async (input, context) => {
       if (input.serverName.length < 3 || input.serverName.length > 20)
@@ -57,14 +76,49 @@ export const server = {
         userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
         throw new ActionError({ message: "Plan not found.", code: "NOT_FOUND" });
       }
-      if (client.credit < planCycle.initPrice + planCycle.setupFee) {
-        userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
-        throw new ActionError({ message: "Insufficient credits.", code: "CONFLICT" });
-      }
       const plan = await plans.findOneBy({ id: Number(planCycle.planId) });
       if (!plan) {
         userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
         throw new ActionError({ message: "Plan not found.", code: "NOT_FOUND" });
+      }
+      let discount = 0;
+      let couponId: number | null = null;
+      let totalDiscount = percentOffToDiscount(planCycle.initPrice - planCycle.setupFee, discount);
+      let totalPrice = client.credit - totalDiscount;
+      if (input.coupon) {
+        const coupon = await coupons.findOneBy({ code: input.coupon });
+
+        if (coupon) {
+          const allUsedCoupons = await usedCoupons.find({
+            where: { couponId: coupon.id },
+          });
+
+          const clientUsedCoupons = allUsedCoupons.filter((used) => used.clientId === client.id);
+
+          const isGlobalLimitReached =
+            coupon.globalLimit && allUsedCoupons.length >= coupon.globalLimit;
+          const isClientLimitReached =
+            coupon.perClientLimit && clientUsedCoupons.length >= coupon.perClientLimit;
+
+          const isPlanSpecificCoupon = coupon.isGlobal !== 1;
+          const isCouponValidForPlan =
+            !isPlanSpecificCoupon ||
+            (plan.coupons && plan.coupons.split(",").includes(coupon.id.toString()));
+
+          if (!isGlobalLimitReached && !isClientLimitReached && isCouponValidForPlan) {
+            discount = coupon.percentOff;
+            couponId = coupon.id;
+            totalDiscount = percentOffToDiscount(
+              planCycle.initPrice - planCycle.setupFee,
+              discount,
+            );
+            totalPrice = client.credit - totalDiscount;
+          }
+        }
+      }
+      if (totalPrice < 0) {
+        userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
+        throw new ActionError({ message: "Insufficient credits.", code: "CONFLICT" });
       }
       if (typeof plan.globalLimit === "number") {
         const serversWithPlan = await servers.count({
@@ -290,6 +344,16 @@ export const server = {
         }
         return now;
       };
+      if (couponId) {
+        const newUsedCoupon = new UsedCoupons();
+        newUsedCoupon.couponId = couponId;
+        newUsedCoupon.clientId = client.id;
+        newUsedCoupon.serverId = createServer.attributes.id;
+        newUsedCoupon.createdAt = new Date();
+        newUsedCoupon.updatedAt = new Date();
+
+        await usedCoupons.save(newUsedCoupon);
+      }
       const server = new Servers();
       server.serverId = createServer.attributes.id;
       server.identifier = createServer.attributes.identifier;
@@ -302,19 +366,97 @@ export const server = {
       server.createdAt = new Date();
       server.updatedAt = new Date();
       await servers.save(server);
-      const clientChange = client.credit - (planCycle.initPrice - planCycle.setupFee);
       const credit = new Credits();
       credit.clientId = client.id;
       credit.details = "Purchased a server";
-      credit.change = -(planCycle.initPrice + planCycle.setupFee);
-      credit.balance = clientChange;
+      credit.change = -totalDiscount;
+      credit.balance = totalPrice;
       credit.createdAt = new Date();
       await credits.save(credit);
-      client.credit = clientChange;
+      client.credit = totalPrice;
       client.updatedAt = new Date();
       await clients.save(client);
       userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
       return { status: 201 };
+    },
+  }),
+  checkCoupon: defineAction({
+    accept: "json",
+    input: z.object({
+      coupon: z.string({
+        message: "Coupon code is invalid.",
+      }),
+      planId: z.nullable(
+        z.number({
+          message: "Plan is invalid.",
+        }),
+      ),
+    }),
+    handler: async (input, context) => {
+      const cookies = context.request.headers.get("cookie");
+      if (!cookies) throw new Error("Session error.");
+      const cookie = cookies
+        .split(";")
+        .find((token) => token.includes("_SECURE_SESSION_TOKEN_"))
+        ?.split("=")[1]
+        ?.trim();
+      if (!cookie) throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      const c = profile(cookie);
+      if (!c.clientId) throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      const client = await clients.findOneBy({ id: c.clientId });
+      if (!client) {
+        throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      }
+      const coupon = await coupons.findOneBy({ code: input.coupon });
+      if (!coupon) {
+        throw new ActionError({ message: "Coupon not found.", code: "NOT_FOUND" });
+      }
+      if (coupon.isGlobal !== 1) {
+        if (!input.planId) {
+          throw new ActionError({
+            message: "Plan is required.",
+            code: "NOT_FOUND",
+          });
+        }
+        const plan = await plans.findOneBy({ id: input.planId });
+        if (!plan) {
+          throw new ActionError({ message: "Plan not found.", code: "NOT_FOUND" });
+        }
+        if (!plan.coupons) {
+          throw new ActionError({
+            message: "The coupon is not valid on this plan.",
+            code: "NOT_FOUND",
+          });
+        }
+        const planCoupons = plan.coupons.split(",");
+        if (!planCoupons.includes(coupon.id.toString())) {
+          throw new ActionError({
+            message: "The coupon is not valid on this plan.",
+            code: "NOT_FOUND",
+          });
+        }
+      }
+      const usedCoupon = await usedCoupons.find({
+        where: {
+          couponId: coupon.id,
+        },
+      });
+      if (coupon.globalLimit && usedCoupon.length >= coupon.globalLimit) {
+        throw new ActionError({
+          message: "The coupon global limit has been reached.",
+          code: "CONFLICT",
+        });
+      }
+      const clientUsedCoupons = usedCoupon.filter(
+        (usedCoupon) => usedCoupon.clientId === client.id,
+      );
+      if (coupon.perClientLimit && clientUsedCoupons.length >= coupon.perClientLimit) {
+        throw new ActionError({
+          message: "The coupon per client limit has been reached.",
+          code: "CONFLICT",
+        });
+      }
+      return { status: 200, percentOff: coupon.percentOff, oneTime: coupon.oneTime };
     },
   }),
 };
