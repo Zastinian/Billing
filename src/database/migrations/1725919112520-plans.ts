@@ -80,14 +80,12 @@ export class Plans1725919112520 implements MigrationInterface {
           },
           {
             name: "locations_nodes_id",
-            type: "varchar",
-            length: "255",
+            type: "text",
             isNullable: false,
           },
           {
             name: "nests_eggs_id",
-            type: "varchar",
-            length: "255",
+            type: "text",
             isNullable: false,
           },
           {
@@ -103,8 +101,7 @@ export class Plans1725919112520 implements MigrationInterface {
           },
           {
             name: "coupons",
-            type: "varchar",
-            length: "255",
+            type: "text",
             isNullable: true,
           },
           {

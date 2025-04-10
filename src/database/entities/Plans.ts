@@ -38,10 +38,10 @@ export class Plans {
   @Column("int", { name: "extra_ports" })
   extraPorts: number;
 
-  @Column("varchar", { name: "locations_nodes_id", length: 255 })
+  @Column("text", { name: "locations_nodes_id" })
   locationsNodesId: string;
 
-  @Column("varchar", { name: "nests_eggs_id", length: 255 })
+  @Column("text", { name: "nests_eggs_id" })
   nestsEggsId: string;
 
   @Column("text", { name: "server_description", nullable: true })
@@ -50,7 +50,7 @@ export class Plans {
   @Column("int", { name: "discount", nullable: true })
   discount: number | null;
 
-  @Column("varchar", { name: "coupons", nullable: true, length: 255 })
+  @Column("text", { name: "coupons", nullable: true })
   coupons: string | null;
 
   @Column("int", { name: "days_before_suspend", nullable: true })
