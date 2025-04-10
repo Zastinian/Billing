@@ -10,13 +10,13 @@ const couponsData = await coupons.find({
         "oneTime",
         "isGlobal",
         "globalLimit",
+        "endDate",
         "createdAt",
         "updatedAt",
     ],
 });
 
 const usedCouponsData = await usedCoupons.find({
-    order: { updatedAt: "DESC" },
     select: ["id", "couponId"],
 });
 ---
@@ -46,6 +46,7 @@ const usedCouponsData = await usedCoupons.find({
                             <th>Valid?</th>
                             <th>Total Uses</th>
                             <th>Expiry Date</th>
+                            <th>Update Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -101,8 +102,8 @@ const usedCouponsData = await usedCoupons.find({
                                     <td>
                                         {
                                             usedCouponsData.filter(
-                                                (coupon) =>
-                                                    coupon.couponId ===
+                                                (couponUsed) =>
+                                                    couponUsed.couponId ===
                                                     coupon.id,
                                             ).length
                                         }
@@ -110,6 +111,18 @@ const usedCouponsData = await usedCoupons.find({
                                     <td>
                                         {coupon.endDate?.toLocaleDateString()} -{" "}
                                         {coupon.endDate?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                    <td>
+                                        {coupon.updatedAt?.toLocaleDateString()}{" "}
+                                        -{" "}
+                                        {coupon.updatedAt?.toLocaleTimeString(
                                             undefined,
                                             {
                                                 hour: "2-digit",
@@ -132,6 +145,7 @@ const usedCouponsData = await usedCoupons.find({
                             <th>Valid?</th>
                             <th>Total Uses</th>
                             <th>Expiry Date</th>
+                            <th>Update Date</th>
                         </tr>
                     </tfoot>
                 </table>
