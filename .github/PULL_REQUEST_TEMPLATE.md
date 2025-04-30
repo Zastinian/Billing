@@ -38,4 +38,4 @@ Provide any other important details below.
 
 :question:
 
-[1]: https://github.com/Zastinian/HedystiaBilling/pulls
+[1]: https://github.com/Zastinian/Billing/pulls

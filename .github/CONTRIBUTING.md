@@ -34,6 +34,6 @@ to ensure you aren't duplicating anyone's work. Then, do the following:
 6. If any changes are requested by the project maintainers, make them and follow
    this process again until the changes are merged in.
 
-[1]: https://github.com/Zastinian/HedystiaBilling/issues/new
-[2]: https://github.com/Zastinian/HedystiaBilling/compare
-[3]: https://github.com/Zastinian/HedystiaBilling/pulls
+[1]: https://github.com/Zastinian/Billing/issues/new
+[2]: https://github.com/Zastinian/Billing/compare
+[3]: https://github.com/Zastinian/Billing/pulls
