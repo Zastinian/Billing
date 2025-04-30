@@ -44,15 +44,15 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       Number(data.is_global) < 0 ||
       Number(data.is_global) > 1
     ) {
-      return redirect("/admin/categories?type=danger&msg=admin.coupon.update.error");
+      return redirect("/admin/coupons?type=danger&msg=admin.coupon.update.error");
     }
     const couponId = params.id;
     if (!couponId || typeof Number(couponId) !== "number" || Number.isNaN(Number(couponId))) {
-      return redirect("/admin/plans?type=danger&msg=admin.coupon.not_found");
+      return redirect("/admin/coupons?type=danger&msg=admin.coupon.not_found");
     }
     const coupon = await coupons.findOneBy({ id: Number(couponId) });
     if (!coupon) {
-      return redirect("/admin/plans?type=danger&msg=admin.coupon.not_found");
+      return redirect("/admin/coupons?type=danger&msg=admin.coupon.not_found");
     }
     const existCouponWithSameCode = await coupons.exists({
       where: {

@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       Number(data.is_global) < 0 ||
       Number(data.is_global) > 1
     ) {
-      return redirect("/admin/categories?type=danger&msg=admin.coupon.create.error");
+      return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
     }
     const existCouponWithSameCode = await coupons.exists({
       where: {
@@ -58,13 +58,13 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (data.end_date) {
       const endDate = new Date(data.end_date);
       if (isNaN(endDate.getTime())) {
-        return redirect("/admin/categories?type=danger&msg=admin.coupon.create.error");
+        return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
       }
     }
     if (data.global_limit) {
       const globalLimit = Number(data.global_limit);
       if (isNaN(globalLimit)) {
-        return redirect("/admin/categories?type=danger&msg=admin.coupon.create.error");
+        return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
       }
     }
     if (data.per_client_limit) {
