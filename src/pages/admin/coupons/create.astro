@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/coupons/Create.astro";
+---
+
+<Layout
+    title="Create Coupon"
+    route="admin.coupons"
+    items={[
+        { title: "Dashboard", url: "/admin" },
+        { title: "Coupon Codes", url: "/admin/coupons" },
+    ]}
+>
+    <View />
+</Layout>

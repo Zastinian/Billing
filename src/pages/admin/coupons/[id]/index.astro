@@ -1,0 +1,26 @@
+---
+const { id } = Astro.params;
+
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/coupons/View.astro";
+import { coupons } from "@/database/index";
+
+const coupon = await coupons.findOneBy({ id: Number(id) }).catch(() => null);
+
+if (!coupon) {
+    return Astro.redirect(
+        "/admin/coupons?type=danger&msg=admin.coupon.not_found",
+    );
+}
+---
+
+<Layout
+    title={`Coupon #${id}`}
+    route="admin.coupons"
+    items={[
+        { title: "Dashboard", url: "/admin" },
+        { title: "Coupon Codes", url: "/admin/coupons" },
+    ]}
+>
+    <View coupon={coupon} />
+</Layout>

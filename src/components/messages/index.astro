@@ -55,7 +55,8 @@ switch (msg) {
     message = "The email address is already in use";
     break;
   case "client.settings.password.error":
-    message = "Please enter a valid current password, and make sure the passwords match";
+    message =
+      "Please enter a valid current password, and make sure the passwords match";
     break;
   case "client.settings.success":
     message = "Settings saved successfully";
@@ -64,10 +65,12 @@ switch (msg) {
     message = "Please enter a valid subject and message";
     break;
   case "client.tickets.create.error.subject":
-    message = "Please enter a valid subject (min 5 characters) and (max 255 characters)";
+    message =
+      "Please enter a valid subject (min 5 characters) and (max 255 characters)";
     break;
   case "client.tickets.create.error.message":
-    message = "Please enter a valid message (min 5 characters) and (max 500 characters)";
+    message =
+      "Please enter a valid message (min 5 characters) and (max 500 characters)";
     break;
   case "client.tickets.error":
     message = "The specified ticket are not valid";
@@ -88,7 +91,8 @@ switch (msg) {
     message = "Some page data is missing or invalid";
     break;
   case "admin.client.password.error":
-    message = "Please enter a valid current password, and make sure the passwords match";
+    message =
+      "Please enter a valid current password, and make sure the passwords match";
     break;
   case "admin.client.password.success":
     message = "Password changed successfully";
@@ -148,10 +152,12 @@ switch (msg) {
     message = "The specified category is not valid";
     break;
   case "admin.category.update.error":
-    message = "Please enter a valid category name, and make sure the category name is unique";
+    message =
+      "Please enter a valid category name, and make sure the category name is unique";
     break;
   case "admin.category.delete.error":
-    message = "Please delete all the plans that are assigned to this category before deleting the category";
+    message =
+      "Please delete all the plans that are assigned to this category before deleting the category";
     break;
   case "admin.category.delete.success":
     message = "Category deleted successfully";
@@ -169,7 +175,32 @@ switch (msg) {
     message = "Plan updated successfully";
     break;
   case "admin.plan.cycle.delete.error":
-    message = "Please delete all the servers that are assigned to this plan cycle before deleting the plan cycle";
+    message =
+      "Please delete all the servers that are assigned to this plan cycle before deleting the plan cycle";
+    break;
+  case "admin.coupon.not_found":
+    message = "The specified coupon is not valid";
+    break;
+  case "admin.coupon.create.error":
+    message = "Some coupon data is missing or invalid";
+    break;
+  case "admin.coupon.create.success":
+    message = "Coupon created successfully";
+    break;
+  case "admin.coupon.exists":
+    message = "A coupon with the same code already exists";
+    break;
+  case "admin.coupon.update.error":
+    message = "Some coupon data is missing or invalid";
+    break;
+  case "admin.coupon.update.success":
+    message = "Coupon updated successfully";
+    break;
+  case "admin.coupon.delete.error":
+    message = "Please check if the coupon exists";
+    break;
+  case "admin.coupon.delete.success":
+    message = "Coupon deleted successfully";
     break;
   case "store.global.limit":
     message = "The global server limit has been reached";
