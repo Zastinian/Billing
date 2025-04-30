@@ -1,7 +1,8 @@
-import { clients, coupons, usedCoupons } from "@/database/index";
+import { clients, coupons, plans, usedCoupons } from "@/database/index";
 import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
 import { STORE_URL } from "astro:env/server";
+import { Like } from "typeorm";
 
 const storeUrl = new URL(STORE_URL ?? "");
 
@@ -39,6 +40,17 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
     });
     for (const usedCoupon of usedCouponData) {
       await usedCoupons.remove(usedCoupon);
+    }
+    const plansData = await plans.find({
+      where: { coupons: Like(`%${coupon.id},%`) },
+      select: ["id", "coupons"],
+    });
+    for (const plan of plansData) {
+      if (!plan.coupons) continue;
+      const newCoupons = plan.coupons
+        .split(",")
+        .filter((couponId) => Number(couponId) !== coupon.id);
+      await plans.update(plan.id, { coupons: newCoupons.join(",") });
     }
     await coupons.remove(coupon);
     return redirect(`/admin/coupons?type=success&msg=admin.coupon.delete.success`);
