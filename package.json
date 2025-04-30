@@ -19,12 +19,12 @@
   },
   "dependencies": {
     "@hedystia/astro-bun": "^0.3.1",
-    "astro": "^5.6.1",
+    "astro": "^5.7.9",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "~6.15.0",
+    "mongodb": "^6.16.0",
     "mssql": "^11.0.1",
-    "mysql2": "^3.14.0",
-    "pg": "^8.14.1",
+    "mysql2": "^3.14.1",
+    "pg": "^8.15.6",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.22"
@@ -33,7 +33,7 @@
     "@astrojs/check": "^0.9.4",
     "@biomejs/biome": "^1.9.4",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.15.3",
     "husky": "^9.1.7",
     "typescript": "^5.8.3"
   }
