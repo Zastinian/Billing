@@ -31,7 +31,7 @@ const panelUrl = await settings
   .catch(() => null);
 const panelAppApiKey = await settings
   .findOneBy({ key: "panel_app_api_key" })
-  .then((panelAppApiKey) => panelAppApiKey?.value)
+  .then((panelAppApiKey) => panelAppApiKey?.getValue())
   .catch(() => null);
 
 if (!panelUrl) {
@@ -42,7 +42,8 @@ if (!panelAppApiKey) {
 }
 
 let allDone = false;
-let nextPageUrl = "/api/application/locations?include=nodes&page=1&per_page=5000";
+let nextPageUrl =
+  "/api/application/locations?include=nodes&page=1&per_page=5000";
 const locationsData: Locations = { data: [] };
 while (!allDone) {
   const locations = await fetch(new URL(nextPageUrl, panelUrl), {
@@ -62,7 +63,8 @@ while (!allDone) {
   const locationsDataTemp = await locations.json();
   locationsData.data.push(...locationsDataTemp.data);
   if (
-    locationsDataTemp.meta.pagination.current_page === locationsDataTemp.meta.pagination.total_pages
+    locationsDataTemp.meta.pagination.current_page ===
+    locationsDataTemp.meta.pagination.total_pages
   ) {
     allDone = true;
   } else {
@@ -83,14 +85,21 @@ while (!allDone) {
     },
   });
   if (nests.status !== 200) {
-    return Astro.redirect("/admin?type=danger&msg=admin.error&error=panel.api.error");
+    return Astro.redirect(
+      "/admin?type=danger&msg=admin.error&error=panel.api.error",
+    );
   }
   if (!nests.ok) {
-    return Astro.redirect("/admin?type=danger&msg=admin.error&error=panel.api.error");
+    return Astro.redirect(
+      "/admin?type=danger&msg=admin.error&error=panel.api.error",
+    );
   }
   const nestsDataTemp = await nests.json();
   nestsData.data.push(...nestsDataTemp.data);
-  if (nestsDataTemp.meta.pagination.current_page === nestsDataTemp.meta.pagination.total_pages) {
+  if (
+    nestsDataTemp.meta.pagination.current_page ===
+    nestsDataTemp.meta.pagination.total_pages
+  ) {
     allDone = true;
   } else {
     nextPageUrl = `/api/application/nests?include=eggs&page=${nestsDataTemp.meta.pagination.current_page + 1}&per_page=5000`;
@@ -99,12 +108,17 @@ while (!allDone) {
 ---
 
 <Layout
-    title="Create Server Plan"
-    route="admin.plans"
-    items={[
-        { title: "Dashboard", url: "/admin" },
-        { title: "Server Plans", url: "/admin/plans" },
-    ]}
+  title="Create Server Plan"
+  route="admin.plans"
+  items={[
+    { title: "Dashboard", url: "/admin" },
+    { title: "Server Plans", url: "/admin/plans" },
+  ]}
 >
-    <View nests={nestsData} locations={locationsData} plan={plan} cycles={cycles} />
+  <View
+    nests={nestsData}
+    locations={locationsData}
+    plan={plan}
+    cycles={cycles}
+  />
 </Layout>

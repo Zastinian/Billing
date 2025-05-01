@@ -44,13 +44,17 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       .findOneBy({ key: "panel_url" })
       .then((panelUrl) => panelUrl?.value);
     if (!panelUrl) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Panel URL is missing")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Panel URL is missing")}`,
+      );
     }
     const panelAppApiKey = await settings
       .findOneBy({ key: "panel_app_api_key" })
-      .then((panelAppApiKey) => panelAppApiKey?.value);
+      .then((panelAppApiKey) => panelAppApiKey?.getValue());
     if (!panelAppApiKey) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Panel API Key is missing")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Panel API Key is missing")}`,
+      );
     }
     const checkPterodactylUser = await fetch(
       new URL(`/api/application/users?filter[email]=${data.email}`, panelUrl).toString(),
@@ -64,10 +68,14 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       },
     );
     if (checkPterodactylUser.status !== 200) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while checking the user in the panel")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while checking the user in the panel")}`,
+      );
     }
     if (!checkPterodactylUser.ok) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while checking the user in the panel")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while checking the user in the panel")}`,
+      );
     }
     const dataPterodactylUser = await checkPterodactylUser.json();
     if (dataPterodactylUser.data.length > 0) {
@@ -85,10 +93,14 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       },
     );
     if (getPterodactylUser.status !== 200) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while getting the user in the panel")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while getting the user in the panel")}`,
+      );
     }
     if (!getPterodactylUser.ok) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while getting the user in the panel")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while getting the user in the panel")}`,
+      );
     }
     const getPterodactylUserData = await getPterodactylUser.json();
     const pterodactyl = await fetch(
@@ -109,10 +121,14 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       },
     );
     if (pterodactyl.status !== 200) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while updating the user in the panel")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while updating the user in the panel")}`,
+      );
     }
     if (!pterodactyl.ok) {
-      return redirect(`/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while updating the user in the panel")}`);
+      return redirect(
+        `/admin/clients/${client.id}?type=danger&msg=admin.error&error=${encodeURI("Error while updating the user in the panel")}`,
+      );
     }
     client.email = data.email;
     client.setSessionToken();

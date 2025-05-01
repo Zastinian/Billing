@@ -175,10 +175,10 @@ if (
                     if (!panel_client_api_key) {
                         const newSetting = new Settings();
                         newSetting.key = "panel_client_api_key";
-                        newSetting.value = data.client;
+                        newSetting.setValue(data.client);
                         await settings.save(newSetting);
                     } else {
-                        panel_client_api_key.value = data.client;
+                        panel_client_api_key.setValue(data.client);
                         await settings.save(panel_client_api_key);
                     }
                     const panel_app_api_key = await settings.findOneBy({
@@ -187,10 +187,10 @@ if (
                     if (!panel_app_api_key) {
                         const newSetting = new Settings();
                         newSetting.key = "panel_app_api_key";
-                        newSetting.value = data.app;
+                        newSetting.setValue(data.app);
                         await settings.save(newSetting);
                     } else {
-                        panel_app_api_key.value = data.app;
+                        panel_app_api_key.setValue(data.app);
                         await settings.save(panel_app_api_key);
                     }
                     const tickets_enabled = await settings.findOneBy({

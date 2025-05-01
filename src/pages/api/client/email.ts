@@ -40,7 +40,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     }
     const panelAppApiKey = await settings
       .findOneBy({ key: "panel_app_api_key" })
-      .then((panelAppApiKey) => panelAppApiKey?.value);
+      .then((panelAppApiKey) => panelAppApiKey?.getValue());
     if (!panelAppApiKey) {
       return redirect("/client/settings?type=danger&msg=panel.api.missing");
     }

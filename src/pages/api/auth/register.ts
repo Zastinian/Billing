@@ -11,9 +11,7 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
   if (requestUrl.origin !== storeUrl.origin) {
     return rewrite("/404");
   }
-  const openRegistration = await settings
-    .findOneBy({ key: "open_registration" })
-    ;
+  const openRegistration = await settings.findOneBy({ key: "open_registration" });
   if (openRegistration?.value !== "true") {
     return redirect("/?type=danger&msg=auth.register.closed");
   }
@@ -33,7 +31,7 @@ export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) =>
   }
   const panelAppApiKey = await settings
     .findOneBy({ key: "panel_app_api_key" })
-    .then((panelAppApiKey) => panelAppApiKey?.value);
+    .then((panelAppApiKey) => panelAppApiKey?.getValue());
   if (!panelAppApiKey) {
     return redirect("/?type=danger&msg=panel.api.missing");
   }

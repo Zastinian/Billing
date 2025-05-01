@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (data.password !== data.password_confirmation) {
       return redirect("/client/settings?type=danger&msg=client.settings.password.error");
     }
-    if (!await client.verifyPassword(data.current)) {
+    if (!(await client.verifyPassword(data.current))) {
       return redirect("/client/settings?type=danger&msg=client.settings.password.error");
     }
     const panelUrl = await settings
@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     }
     const panelAppApiKey = await settings
       .findOneBy({ key: "panel_app_api_key" })
-      .then((panelAppApiKey) => panelAppApiKey?.value);
+      .then((panelAppApiKey) => panelAppApiKey?.getValue());
     if (!panelAppApiKey) {
       return redirect("/client/settings?type=danger&msg=panel.api.missing");
     }

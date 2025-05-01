@@ -102,13 +102,13 @@ export class Settings1725919183938 implements MigrationInterface {
         updated_at: new Date(),
       },
       {
-        key: "hcaptcha_site_key",
+        key: "turnstile_site_key",
         value: null,
         created_at: new Date(),
         updated_at: new Date(),
       },
       {
-        key: "hcaptcha_secret_key",
+        key: "turnstile_secret_key",
         value: null,
         created_at: new Date(),
         updated_at: new Date(),

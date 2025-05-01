@@ -156,7 +156,7 @@ export const server = {
       }
       const panelAppApiKey = await settings
         .findOneBy({ key: "panel_app_api_key" })
-        .then((panelAppApiKey) => panelAppApiKey?.value);
+        .then((panelAppApiKey) => panelAppApiKey?.getValue());
       if (!panelAppApiKey) {
         userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
         throw new ActionError({ message: "Panel API key is missing.", code: "NOT_FOUND" });
