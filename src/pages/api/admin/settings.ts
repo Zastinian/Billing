@@ -111,10 +111,10 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (!panel_app_api_key) {
       const newSetting = new Settings();
       newSetting.key = "panel_app_api_key";
-      newSetting.value = data.panel_app_api_key;
+      newSetting.setValue(data.panel_app_api_key);
       await settings.save(newSetting);
     } else {
-      panel_app_api_key.value = data.panel_app_api_key;
+      panel_app_api_key.setValue(data.panel_app_api_key);
       await settings.save(panel_app_api_key);
     }
     const discord_url = await settings.findOneBy({ key: "discord_url" });
