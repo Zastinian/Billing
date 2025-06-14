@@ -53,6 +53,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     requestUrl.pathname.startsWith("/api/external") ||
     requestUrl.pathname.startsWith("/api/webhook");
 
+  const protectedPaths = ["/css", "/img", "/js", "/plugins"];
+  const isProtected = protectedPaths.some((prefix) => requestUrl.pathname.startsWith(prefix));
+
+  if (isProtected) {
+    const referer = context.request.headers.get("referer");
+    const origin = referer ? new URL(referer).origin : null;
+
+    if (origin !== storeUrl.origin) {
+      return new Response("Blocked: Resource abuse", { status: 403 });
+    }
+  }
+
   if (!isExternalApi) {
     const userAgent = context.request.headers.get("user-agent")?.toLowerCase() ?? "";
 
