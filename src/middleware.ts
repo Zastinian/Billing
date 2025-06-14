@@ -12,7 +12,7 @@ const API_RATE_LIMIT = 1000; // Maximum number of requests allowed for API route
 const API_TIME_FRAME = 5 * 60 * 1000; // Time window for API routes (5 minutes)
 const API_BAN_TIME = 5 * 60 * 1000; // Ban time for API in milliseconds (5 minutes)
 
-const MAX_REQUEST_SIZE = 1 * 1024 * 1024; // Maximum request size in bytes
+const MAX_REQUEST_SIZE = 1 * 1024 * 1024; // Maximum request size in bytes (1 mb)
 
 const sessionRequestsMap = new Map<
   string,
@@ -25,8 +25,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let sessionID: string | null = null;
 
   const storeUrl = new URL(STORE_URL ?? "");
+  const forwardedProto = context.request.headers.get("x-forwarded-proto");
+  const isHttps = forwardedProto
+    ? forwardedProto === "https"
+      ? "https://"
+      : "http://"
+    : "http://";
+
   const requestUrl = new URL(context.request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
+  if (new URL(`${isHttps}${requestUrl.host}`).origin !== storeUrl.origin) {
     return new Response("Blocked: Are you a bot?", { status: 403 });
   }
 
@@ -42,13 +49,33 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  const referrer = context.request.headers.get("referer");
-  const allowedReferrers = [new URL(STORE_URL ?? "").origin];
+  const isExternalApi =
+    requestUrl.pathname.startsWith("/api/external") ||
+    requestUrl.pathname.startsWith("/api/webhook");
 
-  if (referrer) {
-    const referrerOrigin = new URL(referrer).origin;
-    if (!allowedReferrers.some((allowedRef) => referrerOrigin.startsWith(allowedRef))) {
+  if (!isExternalApi) {
+    const userAgent = context.request.headers.get("user-agent")?.toLowerCase() ?? "";
+
+    const allowedBrowsers = ["chrome", "firefox", "safari", "edge", "opera", "mozilla", "webkit"];
+
+    const disallowedBots = [
+      "bot",
+      "crawl",
+      "spider",
+      "curl",
+      "wget",
+      "python-requests",
+      "java",
+      "httpclient",
+      "axios",
+    ];
+
+    if (disallowedBots.some((bot) => userAgent.includes(bot))) {
       return new Response("Blocked: Are you a bot?", { status: 403 });
+    }
+
+    if (!allowedBrowsers.some((browser) => userAgent.includes(browser))) {
+      return new Response("Blocked: Unsupported browser", { status: 403 });
     }
   }
 
@@ -164,7 +191,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isAdminRoute ||
     isClientRoute ||
     isOrderRoute ||
-    (isApiRoute && !isLoginRoute && !isRegisterRoute)
+    (isApiRoute && !isLoginRoute && !isRegisterRoute && !isExternalApi)
   ) {
     if (!cookie) {
       if (isOrderRoute) {
