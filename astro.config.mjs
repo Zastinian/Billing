@@ -9,6 +9,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 3000,
+    allowedHosts: [(new URL(String(process.env.STORE_URL))).hostname]
   },
   devToolbar: {
     enabled: false,
@@ -27,5 +28,13 @@ export default defineConfig({
       STORE_URL: envField.string({ context: "server", access: "public", url: true }),
     },
     validateSecrets: true,
+  },
+  vite: {
+    server: {
+      allowedHosts: [(new URL(String(process.env.STORE_URL))).hostname]
+    },
+    preview: {
+      allowedHosts: [(new URL(String(process.env.STORE_URL))).hostname]
+    }
   },
 });
