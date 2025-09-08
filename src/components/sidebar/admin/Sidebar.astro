@@ -278,14 +278,23 @@ const logoPath = await settings
                         </li>
                     </ul>
                 </li>
-                <li class="nav-header">EXTENSIONS</li>
+                <li class="nav-header">PAYMENT GATEWAYS</li>
                 <li class="nav-item">
                     <a
-                        href="{{ route('admin.extension.show', ['id' => $extension::$display_name]) }}"
-                        class="nav-link"
+                        href="/admin/payments/paypal"
+                        class={`nav-link ${route === "admin.payments.paypal" ? "active" : ""}`}
                     >
-                        <i class="nav-icon fas fa-plug"></i>
-                        <p>a</p>
+                        <i class="nav-icon fas fa-file-invoice"></i>
+                        <p>PayPal</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a
+                        href="/admin/payments/mercadopago"
+                        class={`nav-link ${route === "admin.payments.mercadopago" ? "active" : ""}`}
+                    >
+                        <i class="nav-icon fas fa-file-invoice"></i>
+                        <p>MercadoPago</p>
                     </a>
                 </li>
             </ul>
