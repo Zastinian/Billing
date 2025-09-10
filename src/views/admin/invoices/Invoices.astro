@@ -1,0 +1,205 @@
+---
+import { invoices } from "@/database/index";
+import { invoiceStatus } from "@/src/utils/status";
+
+const invoicesData = await invoices.find();
+
+const unpaidInvoices = invoicesData.filter(
+    (i) => i.paid === invoiceStatus.pending,
+);
+const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
+---
+
+<div class="row justify-content-center">
+    <div class="card col-12">
+        <div class="card-header">
+            <h3 class="card-title">Unpaid Invoices</h3>
+            <div class="card-tools">
+                <button
+                    type="button"
+                    class="btn btn-tool"
+                    data-card-widget="collapse"
+                    ><i class="fas fa-minus"></i></button
+                >
+            </div>
+        </div>
+        <div class="card-body table-responsive">
+            <table
+                id="unpaid-invoice-table"
+                class="table table-hover text-nowrap"
+            >
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Amount</th>
+                        <th>Invoice Date</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {
+                            unpaidInvoices.map((i) => (
+                                <>
+                                    <td>
+                                        <a href={`/admin/invoices/${i.id}`}>
+                                            {i.id}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a
+                                            href={`/admin/clients/${i.clientId}`}
+                                            target="_blank"
+                                        >
+                                            {i.clientId}
+                                        </a>
+                                    </td>
+                                    <td>{i.total}</td>
+                                    <td>
+                                        {i.createdAt?.toLocaleDateString()} -{" "}
+                                        {i.createdAt?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                    <td>
+                                        {i.dueDate?.toLocaleDateString()} -{" "}
+                                        {i.dueDate?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                </>
+                            ))
+                        }
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Amount</th>
+                        <th>Invoice Date</th>
+                        <th>Due Date</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="card col-12">
+        <div class="card-header">
+            <h3 class="card-title">Paid Invoices</h3>
+            <div class="card-tools">
+                <button
+                    type="button"
+                    class="btn btn-tool"
+                    data-card-widget="collapse"
+                    ><i class="fas fa-minus"></i></button
+                >
+            </div>
+        </div>
+        <div class="card-body table-responsive">
+            <table
+                id="paid-invoice-table"
+                class="table table-hover text-nowrap"
+            >
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Amount</th>
+                        <th>Invoice Date</th>
+                        <th>Paid Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {
+                            paidInvoices.map((i) => (
+                                <>
+                                    <td>
+                                        <a href={`/admin/invoices/${i.id}`}>
+                                            {i.id}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a
+                                            href={`/admin/clients/${i.clientId}`}
+                                            target="_blank"
+                                        >
+                                            {i.clientId}
+                                        </a>
+                                    </td>
+                                    <td>{i.total}</td>
+                                    <td>
+                                        {i.createdAt?.toLocaleDateString()} -{" "}
+                                        {i.createdAt?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                    <td>
+                                        {i.updatedAt?.toLocaleDateString()} -{" "}
+                                        {i.updatedAt?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                </>
+                            ))
+                        }
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Amount</th>
+                        <th>Invoice Date</th>
+                        <th>Paid Date</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script is:inline>
+    lazyLoadCss("/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css");
+</script>
+
+<script src="/plugins/datatables/jquery.dataTables.min.js" is:inline></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" is:inline
+></script>
+
+<script is:inline>
+    $(function () {
+        $("#unpaid-invoice-table").DataTable({
+            responsive: false,
+            lengthChange: false,
+            autoWidth: false,
+        });
+        $("#paid-invoice-table").DataTable({
+            responsive: false,
+            lengthChange: false,
+            autoWidth: false,
+        });
+    });
+</script>
