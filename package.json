@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@hedystia/astro-bun": "0.3.2",
-    "astro": "5.9.2",
+    "astro": "5.13.7",
     "jsonwebtoken": "9.0.2",
     "mongodb": "6.17.0",
     "mssql": "11.0.1",
@@ -26,14 +26,14 @@
     "pg": "8.16.0",
     "reflect-metadata": "0.2.2",
     "sqlite3": "5.1.7",
-    "typeorm": "0.3.24"
+    "typeorm": "0.3.26"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.4",
-    "@biomejs/biome": "1.9.4",
-    "@types/jsonwebtoken": "9.0.9",
+    "@biomejs/biome": "2.2.4",
+    "@types/jsonwebtoken": "9.0.10",
     "@types/node": "24.0.1",
     "husky": "9.1.7",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   }
 }
