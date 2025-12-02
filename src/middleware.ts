@@ -1,7 +1,7 @@
-import { defineMiddleware } from "astro:middleware";
-import profile from "@/utils/profile";
-import { clients } from "@/database/index";
 import { STORE_URL } from "astro:env/server";
+import { defineMiddleware } from "astro:middleware";
+import { clients } from "@/database/index";
+import profile from "@/utils/profile";
 
 // Rate limit and time frame settings
 const PAGE_RATE_LIMIT = 75; // Maximum number of requests allowed for pages
@@ -43,7 +43,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (["POST", "PUT", "PATCH"].includes(context.request.method)) {
     // Limit request body size (preventing excessive payloads)
-    const contentLength = parseInt(context.request.headers.get("content-length") || "0", 10);
+    const contentLength = Number.parseInt(context.request.headers.get("content-length") || "0", 10);
     if (contentLength > MAX_REQUEST_SIZE) {
       return new Response("Blocked: Request too large", { status: 413 });
     }
@@ -68,7 +68,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (!isExternalApi) {
     const userAgent = context.request.headers.get("user-agent")?.toLowerCase() ?? "";
 
-    const allowedBrowsers = ["chrome", "firefox", "safari", "edge", "opera", "mozilla", "webkit"];
+    const allowedBrowsers = [
+      "chrome",
+      "firefox",
+      "safari",
+      "edge",
+      "opera",
+      "mozilla",
+      "webkit",
+      "zen-browser",
+      "zen",
+      "vivaldi",
+    ];
 
     const disallowedBots = [
       "bot",
@@ -93,7 +104,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const connectSidId = context.cookies.get("connect.sid.id");
 
-  if (connectSidId && connectSidId.value) {
+  if (connectSidId?.value) {
     sessionID = connectSidId.value;
   }
 
