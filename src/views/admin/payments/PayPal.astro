@@ -1,0 +1,99 @@
+---
+import { extensions } from "@/database/index";
+
+const extensionData = await extensions.find({
+  where: { extension: "PayPal" },
+});
+
+const getExtensionValue = async (key: string) => {
+  const ext = extensionData.find((e) => e.key === key);
+  if (!ext) return "";
+  return (await ext.getValue()) || "";
+};
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <form action="/api/admin/extension/PayPal" method="POST">
+                <div class="card-body row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="enabledInput">Enabled</label>
+                            <select class="form-control" name="enabled" id="enabledInput">
+                                <option value="1" selected={await getExtensionValue("enabled") === "1"}>Enabled</option>
+                                <option value="0" selected={await getExtensionValue("enabled") === "0"}>Disabled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modeInput">Mode</label>
+                            <select class="form-control" name="mode" id="modeInput">
+                                <option value="live" selected={await getExtensionValue("mode") === "live"}>Live</option>
+                                <option value="sandbox" selected={await getExtensionValue("mode") === "sandbox"}>Sandbox</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="clientIdInput">Client ID</label>
+                            <input
+                                type="text"
+                                name="client_id"
+                                value={await getExtensionValue("client_id")}
+                                class="form-control"
+                                id="clientIdInput"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="clientSecretInput">Client Secret</label>
+                            <input
+                                type="text"
+                                name="client_secret"
+                                value={await getExtensionValue("client_secret")}
+                                class="form-control"
+                                id="clientSecretInput"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label for="webhookEnabledInput">Webhook Enabled</label>
+                            <select class="form-control" name="webhook_enabled" id="webhookEnabledInput">
+                                <option value="1" selected={await getExtensionValue("webhook_enabled") === "1"}>Enabled</option>
+                                <option value="0" selected={await getExtensionValue("webhook_enabled") === "0"}>Disabled (Use Cron)</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                If enabled, configure webhook URL in PayPal: <code>{Astro.url.origin}/api/webhook/paypal</code>
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="webhookIdInput">Webhook ID (Optional)</label>
+                            <input
+                                type="text"
+                                name="webhook_id"
+                                value={await getExtensionValue("webhook_id")}
+                                class="form-control"
+                                id="webhookIdInput"
+                            />
+                            <small class="form-text text-muted">
+                                Required only if webhook is enabled. Get this from PayPal Dashboard.
+                            </small>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <h5>Configuration Guide:</h5>
+                            <ul class="mb-0">
+                                <li><strong>Sandbox Mode:</strong> Use for testing with PayPal sandbox credentials</li>
+                                <li><strong>Live Mode:</strong> Use for production with live PayPal credentials</li>
+                                <li><strong>Webhook:</strong> Real-time payment verification (recommended)</li>
+                                <li><strong>Cron:</strong> Checks payments every 15 minutes (fallback)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

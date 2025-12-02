@@ -2,6 +2,7 @@
 import { clients, currencies } from "@/database/index";
 import profile from "@/utils/profile";
 import type { Clients } from "@/database/entities/Clients";
+import CaptchaWidget from "@/components/CaptchaWidget.astro";
 
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
@@ -99,6 +100,7 @@ const allCurrencies = await currencies.find();
                             required
                         />
                     </div>
+                    <CaptchaWidget />
                     <div class="form-group">
                         <div class="alert alert-info">Changing the account password will also change the panel password.</div>
                     </div>

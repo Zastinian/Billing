@@ -25,6 +25,15 @@ const turnstile_secret_key = await settings.findOneBy({
 const google_analytics_id = await settings.findOneBy({
     key: "google_analytics_id",
 });
+const captcha_provider = await settings.findOneBy({
+    key: "captcha_provider",
+});
+const hcaptcha_site_key = await settings.findOneBy({
+    key: "hcaptcha_site_key",
+});
+const hcaptcha_secret_key = await settings.findOneBy({
+    key: "hcaptcha_secret_key",
+});
 ---
 
 <div class="row">
@@ -165,31 +174,6 @@ const google_analytics_id = await settings.findOneBy({
                             />
                         </div>
                         <div class="form-group">
-                            <label for="hCaptchaSiteKeyInput"
-                                >hCaptcha Site Key</label
-                            >
-                            <input
-                                type="text"
-                                name="turnstile_site_key"
-                                value={turnstile_site_key?.value ?? ""}
-                                class="form-control"
-                                id="hCaptchaSiteKeyInput"
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label for="hCaptchaSecretKeyInput"
-                                >hCaptcha Secret Key</label
-                            >
-                            <input
-                                type="text"
-                                name="turnstile_secret_key"
-                                value={(await turnstile_secret_key?.getValue()) ??
-                                    ""}
-                                class="form-control"
-                                id="hCaptchaSecretKeyInput"
-                            />
-                        </div>
-                        <div class="form-group">
                             <label for="analyticsIdInput"
                                 >Google Analytics</label
                             >
@@ -200,6 +184,91 @@ const google_analytics_id = await settings.findOneBy({
                                 class="form-control"
                                 id="analyticsIdInput"
                                 placeholder="UA-XXXXXX or G-XXXXXX"
+                            />
+                        </div>
+                        <hr />
+                        <h5>CAPTCHA Configuration</h5>
+                        <div class="form-group">
+                            <label for="captchaProviderInput"
+                                >CAPTCHA Provider</label
+                            >
+                            <select
+                                class="form-control"
+                                name="captcha_provider"
+                                id="captchaProviderInput"
+                            >
+                                <option
+                                    value="disabled"
+                                    selected={captcha_provider?.value ===
+                                        "disabled" || !captcha_provider}>Disabled</option
+                                >
+                                <option
+                                    value="hcaptcha"
+                                    selected={captcha_provider?.value ===
+                                        "hcaptcha"}>hCaptcha</option
+                                >
+                                <option
+                                    value="turnstile"
+                                    selected={captcha_provider?.value ===
+                                        "turnstile"}>Cloudflare Turnstile</option
+                                >
+                            </select>
+                            <small class="form-text text-muted">
+                                Select CAPTCHA provider for registration and login forms
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="hCaptchaSiteKeyInput"
+                                >hCaptcha Site Key</label
+                            >
+                            <input
+                                type="text"
+                                name="hcaptcha_site_key"
+                                value={hcaptcha_site_key?.value ?? ""}
+                                class="form-control"
+                                id="hCaptchaSiteKeyInput"
+                                placeholder="Required if hCaptcha is selected"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="hCaptchaSecretKeyInput"
+                                >hCaptcha Secret Key</label
+                            >
+                            <input
+                                type="text"
+                                name="hcaptcha_secret_key"
+                                value={(await hcaptcha_secret_key?.getValue()) ??
+                                    ""}
+                                class="form-control"
+                                id="hCaptchaSecretKeyInput"
+                                placeholder="Required if hCaptcha is selected"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="turnstileSiteKeyInput"
+                                >Cloudflare Turnstile Site Key</label
+                            >
+                            <input
+                                type="text"
+                                name="turnstile_site_key"
+                                value={turnstile_site_key?.value ?? ""}
+                                class="form-control"
+                                id="turnstileSiteKeyInput"
+                                placeholder="Required if Turnstile is selected"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="turnstileSecretKeyInput"
+                                >Cloudflare Turnstile Secret Key</label
+                            >
+                            <input
+                                type="text"
+                                name="turnstile_secret_key"
+                                value={(await turnstile_secret_key?.getValue()) ??
+                                    ""}
+                                class="form-control"
+                                id="turnstileSecretKeyInput"
+                                placeholder="Required if Turnstile is selected"
                             />
                         </div>
                     </div>

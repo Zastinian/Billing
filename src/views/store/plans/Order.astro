@@ -1,19 +1,19 @@
 ---
-import profile from "@/utils/profile";
-import type { Plans } from "@/database/entities/Plans";
-import type { Clients } from "@/database/entities/Clients";
 import type { Categories } from "@/database/entities/Categories";
+import type { Clients } from "@/database/entities/Clients";
 import type { Currencies } from "@/database/entities/Currencies";
+import type { Plans } from "@/database/entities/Plans";
+import { clients, currencies, planCycles } from "@/database/index";
 import convertCurrency from "@/utils/convertCurrency";
-import { planCycles, currencies, clients } from "@/database/index";
-import { cycleTypeName } from "@/utils/status";
 import parseEntities from "@/utils/parseEntities";
+import profile from "@/utils/profile";
+import { cycleTypeName } from "@/utils/status";
 
 interface Props {
-    plan: Plans;
-    category: Categories;
-    panelUrl: string;
-    panelAppApiKey: string;
+  plan: Plans;
+  category: Categories;
+  panelUrl: string;
+  panelAppApiKey: string;
 }
 
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
@@ -21,14 +21,14 @@ const c = profile(cookie);
 
 let client: Clients | null = null;
 if (c.success === true && c.clientId !== null) {
-    client = await clients.findOneBy({ id: c.clientId });
+  client = await clients.findOneBy({ id: c.clientId });
 }
 
 const { plan, category, panelUrl, panelAppApiKey } = Astro.props;
 
 const planCyclesData = await planCycles.find({
-    order: { id: "ASC" },
-    select: ["id", "initPrice", "renewPrice", "cycleType", "cycleLength"],
+  order: { id: "ASC" },
+  select: ["id", "initPrice", "renewPrice", "cycleType", "cycleLength"],
 });
 
 const clientCurrency = await currencies.findOneBy({ id: client?.currency });

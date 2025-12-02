@@ -1,0 +1,160 @@
+---
+import type { Clients } from "@/database/entities/Clients";
+import type { Invoices } from "@/database/entities/Invoices";
+import { currencies, extensions } from "@/database/index";
+import convertCurrency from "@/utils/convertCurrency";
+import { invoiceStatus } from "@/utils/status";
+
+interface Props {
+  invoice: Invoices;
+  client: Clients;
+}
+
+const { invoice, client } = Astro.props;
+
+const clientCurrency = await currencies.findOneBy({ id: client.currency });
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+
+const isPaid = invoice.paid === invoiceStatus.paid;
+const isPending = invoice.paid === invoiceStatus.pending;
+
+let paymentUrl: string | null = invoice.paymentLink;
+if (invoice.paymentMethod === "PayPal" && invoice.paymentLink) {
+  const mode = await extensions.findOneBy({ extension: "PayPal", key: "mode" });
+  const baseUrl =
+    mode?.value === "sandbox" ? "https://www.sandbox.paypal.com" : "https://www.paypal.com";
+  paymentUrl = `${baseUrl}/checkoutnow?token=${invoice.paymentLink}`;
+}
+---
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Invoice #{invoice.id}</h3>
+        <div class="card-tools">
+          {isPaid && <span class="badge badge-success">Paid</span>}
+          {isPending && <span class="badge badge-warning">Pending</span>}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-6">
+            <h5>Invoice Information</h5>
+            <p>
+              <strong>Invoice ID:</strong> #{invoice.id}<br />
+              <strong>Type:</strong> {invoice.credit ? "Credit Purchase" : "Server Purchase"}<br />
+              <strong>Created:</strong> {invoice.createdAt?.toLocaleDateString()} {invoice.createdAt?.toLocaleTimeString()}<br />
+              <strong>Due Date:</strong> {invoice.dueDate?.toLocaleDateString()}<br />
+            </p>
+          </div>
+          <div class="col-sm-6">
+            <h5>Payment Details</h5>
+            <p>
+              <strong>Amount:</strong> {clientCurrency?.symbol}{convertCurrency(invoice.total, defaultCurrency as any, clientCurrency as any)} {clientCurrency?.name}<br />
+              <strong>Payment Method:</strong> {invoice.paymentMethod || "Not set"}<br />
+              <strong>Status:</strong> {isPaid ? "Paid" : "Pending"}<br />
+            </p>
+          </div>
+        </div>
+
+        {invoice.credit && (
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i> This invoice is for a credit purchase of {clientCurrency?.symbol}{convertCurrency(invoice.credit, defaultCurrency as any, clientCurrency as any)} {clientCurrency?.name}
+          </div>
+        )}
+
+        {invoice.serverId && (
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-server"></i> This invoice is for a server purchase. Server ID: {invoice.serverId}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card card-primary">
+      <div class="card-header">
+        <h3 class="card-title">Payment Options</h3>
+      </div>
+      <div class="card-body">
+        {isPaid ? (
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> This invoice has been paid
+          </div>
+        ) : (
+          <>
+            <p class="text-muted">Choose how you want to pay for this invoice:</p>
+
+            <!-- Pay with Credits -->
+            <form action={`/api/client/invoices/${invoice.id}/pay-with-credits`} method="POST">
+              <button
+                type="submit"
+                class="btn btn-success btn-block mb-3"
+                disabled={client.credit < invoice.total}
+              >
+                <i class="fas fa-coins"></i> Pay with Credits
+                {client.credit < invoice.total && " (Insufficient Balance)"}
+              </button>
+            </form>
+
+            {client.credit < invoice.total && (
+              <small class="text-muted d-block mb-3">
+                Your balance: {clientCurrency?.symbol}{convertCurrency(client.credit || 0, defaultCurrency as any, clientCurrency as any)} {clientCurrency?.name}<br />
+                Required: {clientCurrency?.symbol}{convertCurrency(invoice.total, defaultCurrency as any, clientCurrency as any)} {clientCurrency?.name}
+              </small>
+            )}
+
+            <hr />
+
+            <!-- Pay with Gateway -->
+            {paymentUrl ? (
+              <>
+                <a href={paymentUrl} class="btn btn-primary btn-block mb-3">
+                  <i class="fas fa-external-link-alt"></i> Pay with {invoice.paymentMethod}
+                </a>
+                
+                <form action={`/api/client/invoices/${invoice.id}/regenerate-link`} method="POST">
+                  <button type="submit" class="btn btn-secondary btn-block btn-sm">
+                    <i class="fas fa-sync"></i> Regenerate Payment Link
+                  </button>
+                </form>
+                <small class="text-muted d-block mt-2">
+                  Click here if the payment link expired or doesn't work
+                </small>
+              </>
+            ) : (
+              <form action={`/api/client/invoices/${invoice.id}/regenerate-link`} method="POST">
+                <button type="submit" class="btn btn-primary btn-block">
+                  <i class="fas fa-link"></i> Generate Payment Link
+                </button>
+              </form>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Actions</h3>
+      </div>
+      <div class="card-body">
+        <a href="/client/invoices" class="btn btn-default btn-block">
+          <i class="fas fa-arrow-left"></i> Back to Invoices
+        </a>
+        {invoice.credit && (
+          <a href="/client/credits" class="btn btn-info btn-block mt-2">
+            <i class="fas fa-wallet"></i> View Credits
+          </a>
+        )}
+        {invoice.serverId && (
+          <a href={`/client/servers/${invoice.serverId}`} class="btn btn-info btn-block mt-2">
+            <i class="fas fa-server"></i> View Server
+          </a>
+        )}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,8 @@
 ---
-import { invoices } from "@/database/index";
+import { invoices, clients, servers, currencies } from "@/database/index";
 import { invoiceStatus } from "@/src/utils/status";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
 
 const invoicesData = await invoices.find();
 
@@ -32,16 +34,25 @@ const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
                     <tr>
                         <th>ID</th>
                         <th>Client</th>
+                        <th>Item</th>
                         <th>Amount</th>
                         <th>Invoice Date</th>
                         <th>Due Date</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        {
-                            unpaidInvoices.map((i) => (
-                                <>
+                    {
+                        await Promise.all(unpaidInvoices.map(async (i) => {
+                            const client = await clients.findOneBy({ id: i.clientId });
+                            const currency = client?.currency ? await currencies.findOneBy({ id: client.currency }) : null;
+                            const defaultCurrency = await currencies.findOneBy({ id: 1 });
+                            const formatPrice = (amount: number) => {
+                                const converted = convertCurrency(amount, defaultCurrency as Currencies, currency as Currencies);
+                                return `${currency?.symbol}${converted.toFixed(2)} ${currency?.name}`;
+                            };
+                            
+                            return (
+                                <tr>
                                     <td>
                                         <a href={`/admin/invoices/${i.id}`}>
                                             {i.id}
@@ -52,10 +63,17 @@ const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
                                             href={`/admin/clients/${i.clientId}`}
                                             target="_blank"
                                         >
-                                            {i.clientId}
+                                            {client?.email || i.clientId}
                                         </a>
                                     </td>
-                                    <td>{i.total}</td>
+                                    <td>
+                                        {i.serverId ? (
+                                            `Server #${i.serverId}`
+                                        ) : i.credit ? (
+                                            `${formatPrice(i.credit)} Credit`
+                                        ) : "N/A"}
+                                    </td>
+                                    <td>{formatPrice(i.total)}</td>
                                     <td>
                                         {i.createdAt?.toLocaleDateString()} -{" "}
                                         {i.createdAt?.toLocaleTimeString(
@@ -78,15 +96,16 @@ const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
                                             },
                                         )}
                                     </td>
-                                </>
-                            ))
-                        }
-                    </tr>
+                                </tr>
+                            );
+                        }))
+                    }
                 </tbody>
                 <tfoot>
                     <tr>
                         <th>ID</th>
                         <th>Client</th>
+                        <th>Item</th>
                         <th>Amount</th>
                         <th>Invoice Date</th>
                         <th>Due Date</th>
@@ -116,16 +135,25 @@ const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
                     <tr>
                         <th>ID</th>
                         <th>Client</th>
+                        <th>Item</th>
                         <th>Amount</th>
                         <th>Invoice Date</th>
                         <th>Paid Date</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        {
-                            paidInvoices.map((i) => (
-                                <>
+                    {
+                        await Promise.all(paidInvoices.map(async (i) => {
+                            const client = await clients.findOneBy({ id: i.clientId });
+                            const currency = client?.currency ? await currencies.findOneBy({ id: client.currency }) : null;
+                            const defaultCurrency = await currencies.findOneBy({ id: 1 });
+                            const formatPrice = (amount: number) => {
+                                const converted = convertCurrency(amount, defaultCurrency as Currencies, currency as Currencies);
+                                return `${currency?.symbol}${converted.toFixed(2)} ${currency?.name}`;
+                            };
+                            
+                            return (
+                                <tr>
                                     <td>
                                         <a href={`/admin/invoices/${i.id}`}>
                                             {i.id}
@@ -136,10 +164,17 @@ const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
                                             href={`/admin/clients/${i.clientId}`}
                                             target="_blank"
                                         >
-                                            {i.clientId}
+                                            {client?.email || i.clientId}
                                         </a>
                                     </td>
-                                    <td>{i.total}</td>
+                                    <td>
+                                        {i.serverId ? (
+                                            `Server #${i.serverId}`
+                                        ) : i.credit ? (
+                                            `${formatPrice(i.credit)} Credit`
+                                        ) : "N/A"}
+                                    </td>
+                                    <td>{formatPrice(i.total)}</td>
                                     <td>
                                         {i.createdAt?.toLocaleDateString()} -{" "}
                                         {i.createdAt?.toLocaleTimeString(
@@ -162,15 +197,16 @@ const paidInvoices = invoicesData.filter((i) => i.paid === invoiceStatus.paid);
                                             },
                                         )}
                                     </td>
-                                </>
-                            ))
-                        }
-                    </tr>
+                                </tr>
+                            );
+                        }))
+                    }
                 </tbody>
                 <tfoot>
                     <tr>
                         <th>ID</th>
                         <th>Client</th>
+                        <th>Item</th>
                         <th>Amount</th>
                         <th>Invoice Date</th>
                         <th>Paid Date</th>

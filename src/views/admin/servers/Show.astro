@@ -1,0 +1,172 @@
+---
+import { servers, plans, planCycles, clients, currencies, settings } from "@/database/index";
+import { serverStatus, cycleTypeName } from "@/utils/status";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+
+const server = await servers.findOneBy({ id: Number(id) });
+if (!server) {
+  return Astro.redirect("/admin/servers/active");
+}
+
+const plan = server.planId ? await plans.findOneBy({ id: server.planId }) : null;
+const planCycle = server.planCycle ? await planCycles.findOneBy({ id: server.planCycle }) : null;
+const client = server.clientId ? await clients.findOneBy({ id: server.clientId }) : null;
+const currency = client?.currency ? await currencies.findOneBy({ id: client.currency }) : null;
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+const panelUrl = await settings.findOneBy({ key: "panel_url" }).then((setting) => setting?.value);
+
+const formatPrice = (amount: number) => {
+  const converted = convertCurrency(amount, defaultCurrency as Currencies, currency as Currencies);
+  return `${currency?.symbol}${converted.toFixed(2)} ${currency?.name}`;
+};
+
+const getCycleName = (length: number, type: number): string => {
+  const typeName = cycleTypeName[type] || "Unknown";
+  return length > 1 ? `${length} ${typeName}` : typeName;
+};
+---
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title m-0">Server Information</h5>
+            </div>
+            <div class="card-body text-nowrap row">
+                <p class="card-text col-5">
+                    <b>Panel ID</b><br>
+                    <b>Server Identifier</b><br>
+                    <b>Plan Name</b><br>
+                </p>
+                <p class="card-text col-7">
+                    {server.serverId ? (
+                        <a href={new URL(`/admin/servers/view/${server.serverId}`, panelUrl ?? "").toString()} target="_blank">
+                            {server.serverId}
+                        </a>
+                    ) : "N/A"}
+                    <br>
+                    {server.identifier ? (
+                        <a href={new URL(`/server/${server.identifier}`, panelUrl ?? "").toString()} target="_blank">
+                            {server.identifier}
+                        </a>
+                    ) : "N/A"}
+                    <br>
+                    {plan ? (
+                        <a href={`/admin/plans/${plan.id}`} target="_blank">
+                            {plan.name}
+                        </a>
+                    ) : "N/A"}
+                    <br>
+                </p>
+                {server.status === serverStatus.suspended ? (
+                    <form action={`/api/admin/server/${server.id}/unsuspend`} method="POST" data-callback="suspendForm" class="col-12">
+                        <button type="submit" class="btn btn-warning btn-sm col-12">
+                            Unsuspend Server <i class="fas fa-arrow-circle-right"></i>
+                        </button>
+                    </form>
+                ) : server.status !== serverStatus.canceled && server.status !== serverStatus.terminated && (
+                    <form action={`/api/admin/server/${server.id}/suspend`} method="POST" data-callback="suspendForm" class="col-12">
+                        <button type="submit" class="btn btn-danger btn-sm col-12">
+                            Suspend Server <i class="fas fa-arrow-circle-right"></i>
+                        </button>
+                    </form>
+                )}
+                {server.status !== serverStatus.pending && server.status !== serverStatus.terminated && (
+                    <form action={`/api/admin/server/${server.id}/delete`} method="POST" data-callback="deleteForm" class="col-12 mt-2">
+                        <button type="submit" class="btn btn-danger btn-sm col-12">
+                            Delete/Cancel Server <i class="fas fa-arrow-circle-right"></i>
+                        </button>
+                    </form>
+                )}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title m-0">Plan Information</h5>
+            </div>
+            <div class="card-body text-nowrap row">
+                <p class="card-text col-6">
+                    <b>Renew Price</b><br>
+                    <b>RAM</b><br>
+                    <b>CPU</b><br>
+                    <b>Disk</b><br>
+                    <b>Databases</b><br>
+                    <b>Backups</b><br>
+                    <b>Extra Ports</b>
+                </p>
+                <p class="card-text col-6">
+                    {planCycle ? formatPrice(planCycle.renewPrice) : "N/A"}<br>
+                    {plan?.ram} MB<br>
+                    {plan?.cpu}%<br>
+                    {plan?.disk} MB<br>
+                    {plan?.databases}<br>
+                    {plan?.backups}<br>
+                    {plan?.extraPorts}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title m-0">Billing Overview</h5>
+            </div>
+            <div class="card-body text-nowrap row">
+                <p class="card-text col-7">
+                    <b>Recurring Amount</b><br>
+                    <b>Billing Cycle</b><br>
+                    <b>Server Creation Date</b><br>
+                    <b>Next Due Date</b><br>
+                    <b>Payment Method</b>
+                </p>
+                <p class="card-text col-5">
+                    {planCycle ? formatPrice(planCycle.renewPrice) : "N/A"}<br>
+                    {planCycle ? getCycleName(planCycle.cycleLength, planCycle.cycleType) : "N/A"}<br>
+                    {server.createdAt?.toLocaleDateString()} - {server.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br>
+                    {server.dueDate ? (
+                        <>
+                            {server.dueDate.toLocaleDateString()} - {server.dueDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
+                        </>
+                    ) : "N/A"}
+                    <br>
+                    N/A
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script is:inline>
+    function suspendForm(data) {
+        if (data.success) {
+            toastr.info(data.success);
+            setTimeout(() => window.location.reload(), 1500);
+        } else if (data.error) {
+            toastr.error(data.error);
+        } else if (data.errors) {
+            data.errors.forEach(error => { toastr.error(error); });
+        } else {
+            wentWrong();
+        }
+    }
+    
+    function deleteForm(data) {
+        if (data.success) {
+            toastr.info(data.success);
+            setTimeout(() => window.location.href = '/admin/servers/active', 1500);
+        } else if (data.error) {
+            toastr.error(data.error);
+        } else if (data.errors) {
+            data.errors.forEach(error => { toastr.error(error); });
+        } else {
+            wentWrong();
+        }
+    }
+</script>

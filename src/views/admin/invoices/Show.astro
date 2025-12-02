@@ -1,0 +1,117 @@
+---
+import { invoices, clients, servers, currencies, settings } from "@/database/index";
+import { invoiceStatus } from "@/utils/status";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+
+const invoice = await invoices.findOneBy({ id: Number(id) });
+if (!invoice) {
+  return Astro.redirect("/admin/invoices");
+}
+
+const client = invoice.clientId ? await clients.findOneBy({ id: invoice.clientId }) : null;
+const server = invoice.serverId ? await servers.findOneBy({ id: invoice.serverId }) : null;
+const currency = client?.currency ? await currencies.findOneBy({ id: client.currency }) : null;
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+const companyName = await settings.findOneBy({ key: "company_name" }).then((s) => s?.value || "Demo Company");
+const logoPath = await settings.findOneBy({ key: "logo_file_path" }).then((s) => s?.value || "/logo.png");
+
+const formatPrice = (amount: number) => {
+  const converted = convertCurrency(amount, defaultCurrency as Currencies, currency as Currencies);
+  return `${currency?.symbol}${converted.toFixed(2)} ${currency?.name}`;
+};
+---
+
+<div class="row" id="invoice_content">
+    <div class="col-12">
+        <div class="invoice p-3 mb-3">
+            <div class="row">
+                <div class="col-12">
+                    <h4>
+                        <img src={logoPath} height="50px" alt={`${companyName} Logo`} /> {companyName}
+                        <span class="float-right">
+                            Status:
+                            {invoice.paid === invoiceStatus.paid ? "Paid" : "Unpaid"}
+                        </span>
+                    </h4>
+                </div>
+            </div>
+            <div class="row invoice-info">
+                <div class="col-sm-4 invoice-col">
+                    From
+                    <address>
+                        <strong>{companyName}</strong>
+                    </address>
+                </div>
+                <div class="col-sm-4 invoice-col">
+                    To
+                    <address>
+                        <strong>
+                            <a href={`/admin/clients/${invoice.clientId}`} target="_blank">
+                                {client?.email || invoice.clientId}
+                            </a>
+                        </strong>
+                    </address>
+                </div>
+                <div class="col-sm-4 invoice-col">
+                    <b>Invoice #{invoice.id}</b><br>
+                    <b>Invoice Date:</b> {invoice.createdAt?.toLocaleDateString()} - {invoice.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br>
+                    <b>Due Date:</b> {invoice.dueDate?.toLocaleDateString()} - {invoice.dueDate?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}<br>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12 table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Products</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {invoice.serverId ? (
+                                        <a href={`/admin/servers/${invoice.serverId}`}>
+                                            Server #{invoice.serverId}
+                                        </a>
+                                    ) : invoice.credit ? (
+                                        `${formatPrice(invoice.credit)} Credit`
+                                    ) : "N/A"}
+                                </td>
+                                <td>{formatPrice(invoice.total)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-3 col-5 offset-lg-4">
+                    <p class="lead">Payment Method</p>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tr><th>{invoice.paymentMethod || "N/A"}</th></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-5 offset-1">
+                    <p class="lead">Amount Due</p>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tr><th>{formatPrice(invoice.total)}</th></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
