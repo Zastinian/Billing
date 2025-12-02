@@ -1,14 +1,14 @@
 ---
-import { clients, currencies, invoices, servers, tickets } from "@/database/index";
-import { invoiceStatus, serverStatus, ticketStatus } from "@/utils/status";
-import profile from "@/utils/profile";
+import { In, MoreThan } from "typeorm";
 import type { Clients } from "@/database/entities/Clients";
 import type { Currencies } from "@/database/entities/Currencies";
-import convertCurrency from "@/utils/convertCurrency";
-import pkg from "@/package.json";
-import { MoreThan, In } from "typeorm";
 import type { Invoices } from "@/database/entities/Invoices";
 import type { Servers } from "@/database/entities/Servers";
+import { clients, currencies, invoices, servers, tickets } from "@/database/index";
+import pkg from "@/package.json";
+import convertCurrency from "@/utils/convertCurrency";
+import profile from "@/utils/profile";
+import { invoiceStatus, serverStatus, ticketStatus } from "@/utils/status";
 
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
@@ -197,10 +197,7 @@ const last30DaysClientsRegisteredSecure = aggregateDataByDate(last30DaysClientsR
     $.ajax({'url': 'https://api.github.com/repos/Zastinian/Billing/releases/latest', 'success': function (data) {
         const latestVersion = data.tag_name;
         const versionInfoElement = document.getElementById('version-info');
-        if (currentVersion.includes('develop')) {
-            versionInfoElement.classList.add('callout-warning');
-            $('#latest-version').html(`is in development <b>${currentVersion}</b>`);
-        } else if (currentVersion === latestVersion) {
+        if (currentVersion === latestVersion) {
             versionInfoElement.classList.add('callout-success');
             $('#latest-version').html(`is the latest <b>${latestVersion}</b>`);
         } else {
