@@ -1,9 +1,9 @@
 ---
-import Layout from "@/layouts/admin/Layout.astro";
-import View from "@/views/admin/plans/Create.astro";
-import type Nests from "@/types/nests";
-import type Locations from "@/types/locations";
 import { settings } from "@/database/index";
+import Layout from "@/layouts/admin/Layout.astro";
+import type Locations from "@/types/locations";
+import type Nests from "@/types/nests";
+import View from "@/views/admin/plans/Create.astro";
 
 const panelUrl = await settings
   .findOneBy({ key: "panel_url" })
@@ -11,7 +11,9 @@ const panelUrl = await settings
   .catch(() => null);
 const panelAppApiKey = await settings
   .findOneBy({ key: "panel_app_api_key" })
-  .then((panelAppApiKey) => panelAppApiKey?.getValue())
+  .then((panelAppApiKey) => {
+    return panelAppApiKey?.getValue();
+  })
   .catch(() => null);
 
 if (!panelUrl) {
@@ -22,8 +24,7 @@ if (!panelAppApiKey) {
 }
 
 let allDone = false;
-let nextPageUrl =
-  "/api/application/locations?include=nodes&page=1&per_page=5000";
+let nextPageUrl = "/api/application/locations?include=nodes&page=1&per_page=5000";
 const locationsData: Locations = { data: [] };
 while (!allDone) {
   const locations = await fetch(new URL(nextPageUrl, panelUrl), {
@@ -43,8 +44,7 @@ while (!allDone) {
   const locationsDataTemp = await locations.json();
   locationsData.data.push(...locationsDataTemp.data);
   if (
-    locationsDataTemp.meta.pagination.current_page ===
-    locationsDataTemp.meta.pagination.total_pages
+    locationsDataTemp.meta.pagination.current_page === locationsDataTemp.meta.pagination.total_pages
   ) {
     allDone = true;
   } else {
@@ -65,21 +65,14 @@ while (!allDone) {
     },
   });
   if (nests.status !== 200) {
-    return Astro.redirect(
-      "/admin?type=danger&msg=admin.error&error=panel.api.error",
-    );
+    return Astro.redirect("/admin?type=danger&msg=admin.error&error=panel.api.error");
   }
   if (!nests.ok) {
-    return Astro.redirect(
-      "/admin?type=danger&msg=admin.error&error=panel.api.error",
-    );
+    return Astro.redirect("/admin?type=danger&msg=admin.error&error=panel.api.error");
   }
   const nestsDataTemp = await nests.json();
   nestsData.data.push(...nestsDataTemp.data);
-  if (
-    nestsDataTemp.meta.pagination.current_page ===
-    nestsDataTemp.meta.pagination.total_pages
-  ) {
+  if (nestsDataTemp.meta.pagination.current_page === nestsDataTemp.meta.pagination.total_pages) {
     allDone = true;
   } else {
     nextPageUrl = `/api/application/nests?include=eggs&page=${nestsDataTemp.meta.pagination.current_page + 1}&per_page=5000`;
