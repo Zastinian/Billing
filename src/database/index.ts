@@ -16,6 +16,7 @@ import { Credits } from "./entities/Credits";
 import { Currencies } from "./entities/Currencies";
 import { Discounts } from "./entities/Discounts";
 import { Emails } from "./entities/Emails";
+import { Extensions } from "./entities/Extensions";
 import { FailedJobs } from "./entities/FailedJobs";
 import { Invoices } from "./entities/Invoices";
 import { Jobs } from "./entities/Jobs";
@@ -33,7 +34,6 @@ import { Tickets } from "./entities/Tickets";
 import { UsedCoupons } from "./entities/UsedCoupons";
 
 // Entities
-
 export const announcements = AppDataSource.getRepository(Announcements);
 export const categories = AppDataSource.getRepository(Categories);
 export const clients = AppDataSource.getRepository(Clients);
@@ -42,6 +42,7 @@ export const credits = AppDataSource.getRepository(Credits);
 export const currencies = AppDataSource.getRepository(Currencies);
 export const discounts = AppDataSource.getRepository(Discounts);
 export const emails = AppDataSource.getRepository(Emails);
+export const extensions = AppDataSource.getRepository(Extensions);
 export const failedJobs = AppDataSource.getRepository(FailedJobs);
 export const invoices = AppDataSource.getRepository(Invoices);
 export const jobs = AppDataSource.getRepository(Jobs);
