@@ -1,0 +1,18 @@
+---
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/servers/Show.astro";
+
+const { id } = Astro.params;
+---
+
+<Layout
+	title={`Server #${id}`}
+	route="admin.servers.active"
+	items={[
+		{ title: "Dashboard", url: "/admin" },
+		{ title: "Servers", url: "/admin/servers/active" },
+		{ title: `Server #${id}`, url: `/admin/servers/${id}` },
+	]}
+>
+	<View id={id!} />
+</Layout>
