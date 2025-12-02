@@ -1,18 +1,13 @@
 ---
+import Alerts from "@/components/alerts/index.astro";
+import FooterStore from "@/components/footer/store/Footer.astro";
 import MainHeader from "@/components/header/Header.astro";
 import StoreHeader from "@/components/header/store/Header.astro";
-
-import MainScripts from "@/components/scripts/Scripts.astro";
-
-import Modals from "@/components/modals/Modals.astro";
-
-import NavStore from "@/components/nav/store/Nav.astro";
-
-import FooterStore from "@/components/footer/store/Footer.astro";
-
-import Alerts from "@/components/alerts/index.astro";
-
 import Messages from "@/components/messages/index.astro";
+import Modals from "@/components/modals/Modals.astro";
+import NavStore from "@/components/nav/store/Nav.astro";
+import CaptchaScripts from "@/components/scripts/CaptchaScripts.astro";
+import MainScripts from "@/components/scripts/Scripts.astro";
 
 interface Props {
   title: string;
@@ -33,6 +28,7 @@ const companyName = await settings
     <MainHeader title={title} />
     <body class="hold-transition layout-top-nav dark-mode">
         <MainScripts />
+        <CaptchaScripts />
         <div class="wrapper">
             <div class="preloader flex-column justify-content-center align-items-center">
                 <img class="animation__shake" src={logoPath} alt={`${companyName} Logo`} height="100" width="100" />
