@@ -211,6 +211,9 @@ switch (msg) {
   case "order.needs_login":
     message = "Please login to be able to purchase a product";
     break;
+  case "captcha.invalid":
+    message = "CAPTCHA verification failed. Please try again";
+    break;
 }
 ---
 

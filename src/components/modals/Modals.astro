@@ -1,3 +1,7 @@
+---
+import CaptchaWidget from "@/components/CaptchaWidget.astro";
+---
+
 <div class="modal fade" id="login-modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -23,7 +27,7 @@
                             <label class="custom-control-label" for="checkboxInput">Remember Me</label>
                         </div>
                     </div>
-                    <!-- @include('layouts.store.hcaptcha') -->
+                    <CaptchaWidget />
                     <div class="form-group mb-0">
                         <a href="javascript:void(0);" data-dismiss="modal" data-toggle="modal" data-target="#register-modal">Don't have an account?</a
                         >
@@ -70,7 +74,7 @@
                             required
                         />
                     </div>
-                    <!-- @include('layouts.store.hcaptcha') -->
+                    <CaptchaWidget />
                     <div class="form-group mb-0">
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" name="terms" value="yes" class="custom-control-input" id="checkboxInput" checked required />
@@ -108,7 +112,7 @@
                         <label for="emailInput">Email Address</label>
                         <input type="email" name="email" class="form-control" id="emailInput" placeholder="Email Address" required />
                     </div>
-                    <!-- @include('layouts.store.hcaptcha') -->
+                    <CaptchaWidget />
                     <div class="form-group mb-0">
                         <a href="javascript:void(0);" data-dismiss="modal" data-toggle="modal" data-target="#login-modal">Go back to login</a>
                     </div>
