@@ -4,7 +4,7 @@ const { id } = Astro.params;
 import { clients, invoices } from "@/database/index";
 import Layout from "@/layouts/clients/Layout.astro";
 import profile from "@/utils/profile";
-import View from "@/views/clients/invoices/View.astro";
+import View from "@/views/clients/invoices/Invoice.astro";
 
 const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
 const c = profile(cookie);
@@ -25,7 +25,7 @@ const invoice = await invoices.findOneBy({ id: Number(id) }).then((invoice) => {
   }
 });
 
-if (!invoice) {
+if (!invoice || !client) {
   return Astro.redirect("/client/invoices");
 }
 ---
@@ -38,5 +38,5 @@ if (!invoice) {
 		{ title: "Invoices", url: "/client/invoices" },
 	]}
 >
-	<View invoice={invoice} />
+	<View invoice={invoice} client={client} />
 </Layout>
