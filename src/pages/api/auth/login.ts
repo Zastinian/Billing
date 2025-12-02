@@ -1,16 +1,19 @@
-import { clients } from "@/database/index";
-import jwt from "jsonwebtoken";
+import { APP_KEY } from "astro:env/server";
 import type { APIRoute } from "astro";
-import { APP_KEY, STORE_URL } from "astro:env/server";
+import jwt from "jsonwebtoken";
+import { clients } from "@/database/index";
+import { verifyCaptcha } from "@/utils/captcha";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, redirect, request }) => {
   const data = Object.fromEntries(new URLSearchParams(await request.text()));
+
+  const captchaValid = await verifyCaptcha(
+    data["cf-turnstile-response"] || data["h-captcha-response"] || null,
+  );
+  if (!captchaValid) {
+    return redirect("/?type=danger&msg=captcha.invalid");
+  }
+
   const client = await clients.findOneBy({ email: data.email });
   if (!client) {
     return redirect("/?type=danger&msg=auth.invalid");

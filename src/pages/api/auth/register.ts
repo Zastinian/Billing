@@ -1,21 +1,25 @@
-import { settings, clients } from "@/database/index";
-import { Clients } from "@/database/entities/Clients";
-import jwt from "jsonwebtoken";
+import { APP_KEY } from "astro:env/server";
 import type { APIRoute } from "astro";
-import { APP_KEY, STORE_URL } from "astro:env/server";
+import jwt from "jsonwebtoken";
+import { Clients } from "@/database/entities/Clients";
+import { clients, settings } from "@/database/index";
+import { verifyCaptcha } from "@/utils/captcha";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, redirect, request, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, redirect, request }) => {
   const openRegistration = await settings.findOneBy({ key: "open_registration" });
   if (openRegistration?.value !== "true") {
     return redirect("/?type=danger&msg=auth.register.closed");
   }
+
   const data = Object.fromEntries(new URLSearchParams(await request.text()));
+
+  const captchaValid = await verifyCaptcha(
+    data["cf-turnstile-response"] || data["h-captcha-response"] || null,
+  );
+  if (!captchaValid) {
+    return redirect("/?type=danger&msg=captcha.invalid");
+  }
+
   const checkClient = await clients.findOneBy({ email: data.email });
   if (checkClient) {
     return redirect("/?type=danger&msg=auth.register.already");

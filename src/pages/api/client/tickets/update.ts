@@ -1,18 +1,10 @@
-import { clients } from "@/database/index";
-import { tickets, ticketContents } from "@/database/index";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
-import { ticketStatus } from "@/utils/status";
 import { TicketContents } from "@/database/entities/TicketContents";
-import { STORE_URL } from "astro:env/server";
+import { clients, ticketContents, tickets } from "@/database/index";
+import profile from "@/utils/profile";
+import { ticketStatus } from "@/utils/status";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect, params }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
@@ -25,11 +17,10 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       return redirect("/");
     }
     const data = Object.fromEntries(new URLSearchParams(await request.text()));
-    const params = new URLSearchParams(requestUrl.search);
-    if (params.get("id") === undefined) {
+    if (params.id === undefined) {
       return redirect("/client/tickets?type=danger&msg=client.tickets.error");
     }
-    const ticket = await tickets.findOneBy({ id: Number(params.get("id")) }).then((ticket) => {
+    const ticket = await tickets.findOneBy({ id: Number(params.id) }).then((ticket) => {
       if (ticket?.clientId === client?.id) {
         return ticket;
       }
@@ -37,11 +28,11 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     if (!ticket) {
       return redirect("/client/tickets?type=danger&msg=client.tickets.error");
     }
-    if (Boolean(data.solved)) {
+    if (data.solved) {
       ticket.status = ticketStatus.resolved;
       ticket.updatedAt = new Date();
       await tickets.save(ticket);
-      return redirect(`/client/tickets?type=success&msg=client.tickets.success.solved`);
+      return redirect("/client/tickets?type=success&msg=client.tickets.success.solved");
     }
     if (data.message && data.message.length > 5 && data.message.length <= 500) {
       const newTicketContent = new TicketContents();

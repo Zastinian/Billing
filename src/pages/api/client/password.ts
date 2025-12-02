@@ -1,16 +1,11 @@
+import { APP_KEY } from "astro:env/server";
+import type { APIRoute } from "astro";
 import jwt from "jsonwebtoken";
 import { clients, settings } from "@/database/index";
+import { verifyCaptcha } from "@/utils/captcha";
 import profile from "@/utils/profile";
-import type { APIRoute } from "astro";
-import { APP_KEY, STORE_URL } from "astro:env/server";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
   if (c.success === true && c.clientId !== null) {
@@ -22,6 +17,14 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       return redirect("/");
     }
     const data = Object.fromEntries(new URLSearchParams(await request.text()));
+
+    const captchaValid = await verifyCaptcha(
+      data["cf-turnstile-response"] || data["h-captcha-response"] || null,
+    );
+    if (!captchaValid) {
+      return redirect("/client/settings?type=danger&msg=captcha.invalid");
+    }
+
     if (!data.current || !data.password || !data.password_confirmation) {
       return redirect("/client/settings?type=danger&msg=client.settings.password.error");
     }

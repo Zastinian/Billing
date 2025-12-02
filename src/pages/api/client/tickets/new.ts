@@ -1,18 +1,10 @@
-import { clients } from "@/database/index";
-import { tickets, ticketContents } from "@/database/index";
-import { Tickets } from "@/database/entities/Tickets";
-import { TicketContents } from "@/database/entities/TicketContents";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
-import { STORE_URL } from "astro:env/server";
+import { TicketContents } from "@/database/entities/TicketContents";
+import { Tickets } from "@/database/entities/Tickets";
+import { clients, ticketContents, tickets } from "@/database/index";
+import profile from "@/utils/profile";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
