@@ -1,0 +1,105 @@
+---
+import type { Clients } from "@/database/entities/Clients";
+import { currencies, credits } from "@/database/index";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+interface Props {
+  client: Clients;
+}
+
+const { client } = Astro.props;
+
+const clientCredit = client?.credit;
+const clientCurrency = await currencies
+  .findOneBy({ id: client?.currency });
+
+const clientCreditsHistory = await credits.find({ where: { clientId: client?.id } });
+
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+---
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex p-0">
+                <ul class="nav ml-auto p-2">
+                    <li class="nav-item"><a class="nav-link"
+                            href={`/admin/clients/${client?.id}`}>Settings</a></li>
+                    <li class="nav-item"><a class="nav-link active"
+                            href="#">Credits</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(clientCredit ?? 0, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Account Credit</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Edit Credit Balance</h3>
+            </div>
+            <form action={`/api/admin/client/${client?.id}/credits`} method="POST"
+                data-callback="creditForm">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="creditInput">Credit Amount</label>
+                        <input type="number" name="credit" class="form-control" id="creditInput"
+                            placeholder="Credit Amount" min="0" max="999999.99" step="0.01" required>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Edit Balance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Credit Transactions</h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th style="width:10%">ID</th>
+                            <th style="width:30%">Details</th>
+                            <th style="width:15%">Change</th>
+                            <th style="width:15%">Balance</th>
+                            <th style="width:30%">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {clientCreditsHistory.sort((a, b) => new Date(Number(b.createdAt)).getTime() - new
+                        Date(Number(a.createdAt)).getTime()).map((credit) => (
+                        <tr>
+                            <td>{credit.id}</td>
+                            <td>{credit.details}</td>
+                            <td>{credit.change > 0 ? "+" : "-"}{clientCurrency?.symbol}{`${convertCurrency(credit.change, defaultCurrency as Currencies,
+                                clientCurrency as Currencies)}`.replace("-", "")} {clientCurrency?.name}</td>
+                            <td>{clientCurrency?.symbol}{convertCurrency(credit.balance, defaultCurrency as Currencies,
+                                clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                            <td>{credit.createdAt?.toLocaleDateString()} -
+                                {credit.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit',
+                                hour12: false })}</td>
+                        </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

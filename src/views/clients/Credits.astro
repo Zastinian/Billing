@@ -1,0 +1,146 @@
+---
+import type { Clients } from "@/database/entities/Clients";
+import type { Currencies } from "@/database/entities/Currencies";
+import { clients, credits, currencies, extensions } from "@/database/index";
+import convertCurrency from "@/utils/convertCurrency";
+import profile from "@/utils/profile";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const clientCredit = client?.credit;
+const clientCurrency = await currencies.findOneBy({ id: client?.currency });
+
+const clientCreditsHistory = await credits.find({
+  where: { clientId: client?.id },
+  order: { createdAt: "DESC" },
+});
+
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+
+const enabledGateways: { name: string; displayName: string }[] = [];
+
+const paypalEnabled = await extensions.findOneBy({ extension: "PayPal", key: "enabled" });
+if (paypalEnabled?.value === "1") {
+  enabledGateways.push({ name: "PayPal", displayName: "PayPal" });
+}
+
+// const mercadopagoEnabled = await extensions.findOneBy({ extension: "MercadoPago", key: "enabled" });
+// if (mercadopagoEnabled?.value === "1") {
+//   enabledGateways.push({ name: "MercadoPago", displayName: "Mercado Pago" });
+// }
+---
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{clientCurrency?.symbol}{convertCurrency(clientCredit ?? 0, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</h3>
+                <p>Account Credit</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Add Fund</h3>
+            </div>
+            <form action="/api/client/credits/purchase" method="POST">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="creditInput">Credit Amount</label>
+                        <input type="number" name="credit" class="form-control" id="creditInput" placeholder="Credit Amount" min="0.01" max="999999.99" step="0.01" required />
+                        <small class="form-text text-muted">
+                            Minimum: $0.01 USD | Maximum: $999,999.99 USD
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">Payment Method</label>
+                        {enabledGateways.length > 0 ? (
+                            <select name="gateway" class="form-control">
+                                {enabledGateways.map((gateway) => (
+                                    <option value={gateway.name}>{gateway.displayName}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <>
+                                <select name="gateway" class="form-control" disabled>
+                                    <option>No payment methods available</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    Contact administrator to enable payment gateways
+                                </small>
+                            </>
+                        )}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Purchase Credit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Credit Transactions</h3>
+            </div>
+            <div class="card-body table-responsive">
+                <table id="credit-transactions" class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Details</th>
+                            <th>Change</th>
+                            <th>Balance</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {clientCreditsHistory.map((credit) => (
+                            <tr>
+                                <td>{credit.id}</td>
+                                <td>{credit.details}</td>
+                                <td>{credit.change > 0 ? "+" : "-"}{clientCurrency?.symbol}{`${convertCurrency(credit.change, defaultCurrency as Currencies,
+                                clientCurrency as Currencies)}`.replace("-", "")} {clientCurrency?.name}</td>
+                                <td>{clientCurrency?.symbol}{convertCurrency(credit.balance, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                <td>{credit.createdAt?.toLocaleDateString()} - {credit.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>ID</th>
+                            <th>Details</th>
+                            <th>Change</th>
+                            <th>Balance</th>
+                            <th>Date</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script is:inline>
+    lazyLoadCss("/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css");
+</script>
+
+<script src="/plugins/datatables/jquery.dataTables.min.js" is:inline></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" is:inline></script>
+
+<script is:inline>
+    $(function () {
+        $("#credit-transactions").DataTable({ "responsive": false, "lengthChange": false, "autoWidth": false });
+    });
+</script>

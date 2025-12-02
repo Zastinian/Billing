@@ -1,0 +1,805 @@
+---
+import { settings, clients } from "@/database/index";
+import { Clients } from "@/database/entities/Clients";
+import { Settings } from "@/database/entities/Settings";
+import { fileURLToPath } from "url";
+import fs from "fs";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+if (await existsInstallLock()) {
+    return Astro.rewrite("/404");
+}
+
+async function existsInstallLock() {
+    const exists = fs.existsSync(
+        path.join(__dirname, "..", "..", "..", "install.lock"),
+    );
+    return exists;
+}
+
+if (
+    Astro.request.method === "POST" &&
+    Astro.request.headers.get("Content-Type")?.includes("application/json")
+) {
+    type StageTypes =
+        | { step: 2; panel?: string; app?: string; client?: string }
+        | { step: 3; panel?: string; app?: string; userId?: number }
+        | {
+              step: 4;
+              companyName?: string;
+              tickets?: boolean;
+              panel?: string;
+              app?: string;
+              client?: string;
+              email?: string;
+              username?: string;
+              password?: string;
+              userId?: number;
+          };
+    const data = (await Astro.request.json()) as StageTypes;
+    switch (data.step) {
+        case 2:
+            if (data.panel && data?.app && data?.client) {
+                try {
+                    const clientResponse = await fetch(
+                        new URL("/api/client/account", data.panel),
+                        {
+                            headers: {
+                                Authorization: `Bearer ${data.client}`,
+                            },
+                        },
+                    );
+                    if (!clientResponse.ok)
+                        return new Response(null, {
+                            status: 401,
+                            statusText: "Invalid CLIENT key provided",
+                        });
+                    const appResponse = await fetch(
+                        new URL("/api/application/users", data.panel),
+                        {
+                            headers: { Authorization: `Bearer ${data.app}` },
+                        },
+                    );
+                    if (!appResponse.ok)
+                        return new Response(null, {
+                            status: 401,
+                            statusText: "Invalid APP key provided",
+                        });
+                    return new Response(null, {
+                        status: 200,
+                        statusText: "Ok",
+                    });
+                } catch {
+                    return new Response(null, {
+                        status: 500,
+                        statusText: "An unknown error occurred",
+                    });
+                }
+            }
+            break;
+        case 3:
+            if (data?.panel && data?.app && data?.userId) {
+                try {
+                    const response = await fetch(
+                        new URL(
+                            `/api/application/users/${data.userId}`,
+                            data.panel,
+                        ),
+                        {
+                            headers: { Authorization: `Bearer ${data.app}` },
+                        },
+                    );
+                    if (!response.ok)
+                        return new Response(null, {
+                            status: 404,
+                            statusText: "User not found",
+                        });
+                    return new Response(null, {
+                        status: 200,
+                        statusText: "Ok",
+                    });
+                } catch {
+                    return new Response(null, {
+                        status: 500,
+                        statusText: "An unknown error occurred",
+                    });
+                }
+            }
+            break;
+        case 4:
+            if (
+                data?.companyName &&
+                data?.panel &&
+                data?.app &&
+                data?.client &&
+                data?.email &&
+                data?.username &&
+                data?.password &&
+                data?.userId
+            ) {
+                try {
+                    const checkClient = await clients.findOneBy({
+                        email: data.email,
+                    });
+                    if (checkClient)
+                        return new Response(null, {
+                            status: 500,
+                            statusText: "User already exists",
+                        });
+
+                    const newClient = new Clients();
+                    newClient.email = data.email;
+                    newClient.userId = data.userId;
+                    newClient.isAdmin = 1;
+                    newClient.setPassword(data.password);
+                    newClient.setSessionToken();
+                    await clients.save(newClient);
+                    const client = await clients.findOneBy({
+                        email: data.email,
+                    });
+                    if (!client)
+                        return new Response(null, {
+                            status: 500,
+                            statusText: "Fail to create user",
+                        });
+                    const setting_model = await settings.findOneBy({
+                        key: "company_name",
+                    });
+                    if (!setting_model) {
+                        const newSetting = new Settings();
+                        newSetting.key = "company_name";
+                        newSetting.value = data.companyName;
+                        await settings.save(newSetting);
+                    } else {
+                        setting_model.value = data.companyName;
+                        await settings.save(setting_model);
+                    }
+                    const panel_url = await settings.findOneBy({
+                        key: "panel_url",
+                    });
+                    if (!panel_url) {
+                        const newSetting = new Settings();
+                        newSetting.key = "panel_url";
+                        newSetting.value = data.panel;
+                        await settings.save(newSetting);
+                    } else {
+                        panel_url.value = data.panel;
+                        await settings.save(panel_url);
+                    }
+                    const panel_client_api_key = await settings.findOneBy({
+                        key: "panel_client_api_key",
+                    });
+                    if (!panel_client_api_key) {
+                        const newSetting = new Settings();
+                        newSetting.key = "panel_client_api_key";
+                        newSetting.setValue(data.client);
+                        await settings.save(newSetting);
+                    } else {
+                        panel_client_api_key.setValue(data.client);
+                        await settings.save(panel_client_api_key);
+                    }
+                    const panel_app_api_key = await settings.findOneBy({
+                        key: "panel_app_api_key",
+                    });
+                    if (!panel_app_api_key) {
+                        const newSetting = new Settings();
+                        newSetting.key = "panel_app_api_key";
+                        newSetting.setValue(data.app);
+                        await settings.save(newSetting);
+                    } else {
+                        panel_app_api_key.setValue(data.app);
+                        await settings.save(panel_app_api_key);
+                    }
+                    const tickets_enabled = await settings.findOneBy({
+                        key: "tickets_enabled",
+                    });
+                    if (!tickets_enabled) {
+                        const newSetting = new Settings();
+                        newSetting.key = "tickets_enabled";
+                        newSetting.value = `${data.tickets ?? false}`;
+                        await settings.save(newSetting);
+                    } else {
+                        tickets_enabled.value = `${data.tickets ?? false}`;
+                        await settings.save(tickets_enabled);
+                    }
+                    fs.writeFileSync(
+                        path.join(__dirname, "..", "..", "..", "install.lock"),
+                        "true",
+                    );
+                    return new Response(null, {
+                        status: 200,
+                        statusText: "Ok",
+                    });
+                } catch {
+                    return new Response(null, {
+                        status: 500,
+                        statusText: "An unknown error occurred",
+                    });
+                }
+            }
+            break;
+    }
+    return new Response(null, {
+        status: 400,
+        statusText: "Invalid step provided",
+    });
+}
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>System Installation</title>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
+        ></script>
+        <style>
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .step {
+                opacity: 0;
+                transform: translateZ(0);
+                pointer-events: none;
+                transition: opacity 0.3s ease-out;
+                display: none;
+            }
+
+            .step.active {
+                opacity: 1;
+                pointer-events: all;
+                display: block;
+                animation: fadeIn 0.4s ease-out;
+            }
+
+            .toast {
+                animation: toastSlideIn 0.3s ease-out;
+            }
+
+            @keyframes toastSlideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .progress-step.completed:after {
+                content: "✓";
+            }
+        </style>
+    </head>
+    <body
+        class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center p-4"
+    >
+        <div class="fixed top-4 right-4 space-y-3 z-50 w-80"></div>
+
+        <div
+            class="bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-2xl w-full max-w-2xl p-8 space-y-6 border border-white/10"
+        >
+            <div class="flex justify-between items-center relative">
+                <div
+                    class="absolute top-1/2 left-0 w-full h-1 bg-gray-700 -z-10 rounded-full"
+                >
+                    <div
+                        class="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out rounded-full"
+                        style="width: calc((100% / 3) * (var(--current-step) - 1))"
+                    >
+                    </div>
+                </div>
+                <div
+                    class="progress-step w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium border-2 border-gray-600 bg-gray-800 text-gray-400 transition-all duration-300"
+                >
+                    1
+                </div>
+                <div
+                    class="progress-step w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium border-2 border-gray-600 bg-gray-800 text-gray-400 transition-all duration-300"
+                >
+                    2
+                </div>
+                <div
+                    class="progress-step w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium border-2 border-gray-600 bg-gray-800 text-gray-400 transition-all duration-300"
+                >
+                    3
+                </div>
+                <div
+                    class="progress-step w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium border-2 border-gray-600 bg-gray-800 text-gray-400 transition-all duration-300"
+                >
+                    4
+                </div>
+            </div>
+
+            <div class="step active" data-step="1">
+                <h2 class="text-2xl font-bold text-white mb-6">
+                    Initial Setup
+                </h2>
+                <div class="space-y-5">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Company Name</label
+                        >
+                        <input
+                            type="text"
+                            id="company_name"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <input
+                            type="checkbox"
+                            id="tickets_enabled"
+                            class="w-5 h-5 rounded border-gray-600 bg-gray-700/50 checked:bg-blue-500 focus:ring-blue-500"
+                        />
+                        <label class="text-sm text-white/80"
+                            >Enable Ticket System</label
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="step" data-step="2">
+                <h2 class="text-2xl font-bold text-white mb-6">
+                    Pterodactyl Connection
+                </h2>
+                <div class="space-y-5">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Panel URL</label
+                        >
+                        <input
+                            type="url"
+                            id="panel_url"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Client API Key</label
+                        >
+                        <input
+                            type="password"
+                            id="panel_client_api_key"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Application API Key</label
+                        >
+                        <input
+                            type="password"
+                            id="panel_app_api_key"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class="step" data-step="3">
+                <h2 class="text-2xl font-bold text-white mb-6">Admin Setup</h2>
+                <div class="space-y-5">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Email Address</label
+                        >
+                        <input
+                            type="email"
+                            id="admin_email"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Username</label
+                        >
+                        <input
+                            type="text"
+                            id="admin_username"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Password</label
+                        >
+                        <input
+                            type="password"
+                            id="admin_password"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-white/80 mb-2"
+                            >Pterodactyl User ID</label
+                        >
+                        <input
+                            type="text"
+                            id="pterodactyl_user_id"
+                            required
+                            class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class="step" data-step="4">
+                <h2 class="text-2xl font-bold text-white mb-6">
+                    Complete Installation
+                </h2>
+                <div class="space-y-5">
+                    <p class="text-white/80">
+                        All configurations are validated and ready.
+                    </p>
+                    <div class="text-center py-4">
+                        <div
+                            id="loadingSpinner"
+                            class="hidden inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"
+                        >
+                        </div>
+                        <p id="loadingText" class="hidden text-blue-400 mt-2">
+                            Installing system...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between gap-4 mt-8">
+                <button
+                    id="backBtn"
+                    type="button"
+                    class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-3 rounded-xl transition-all disabled:opacity-40 disabled:pointer-events-none disabled:hover:bg-gray-700 flex items-center gap-2 group"
+                >
+                    ← Back
+                    <div id="backSpinner" class="hidden ml-2">
+                        <div
+                            class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"
+                        >
+                        </div>
+                    </div>
+                </button>
+                <button
+                    id="nextBtn"
+                    type="button"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl transition-all font-medium shadow-lg relative disabled:opacity-70 disabled:pointer-events-none"
+                >
+                    <span id="buttonText">Continue</span>
+                    <div
+                        id="buttonSpinner"
+                        class="hidden absolute inset-0 flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl"
+                    >
+                        <div
+                            class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
+                        >
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <script is:inline>
+            let currentStep = 1;
+            const totalSteps = 4;
+            let isProcessing = false;
+            const formData =
+                JSON.parse(localStorage.getItem("installData")) || {};
+
+            const elements = {
+                nextBtn: document.getElementById("nextBtn"),
+                backBtn: document.getElementById("backBtn"),
+                buttonText: document.getElementById("buttonText"),
+                buttonSpinner: document.getElementById("buttonSpinner"),
+                backSpinner: document.getElementById("backSpinner"),
+                loadingSpinner: document.getElementById("loadingSpinner"),
+                loadingText: document.getElementById("loadingText"),
+            };
+
+            const toggleProcessingState = (isLoading) => {
+                isProcessing = isLoading;
+                elements.nextBtn.disabled = isLoading;
+                elements.backBtn.disabled = isLoading;
+                elements.nextBtn.style.cursor = isLoading
+                    ? "not-allowed"
+                    : "pointer";
+                elements.backBtn.style.cursor = isLoading
+                    ? "not-allowed"
+                    : "pointer";
+
+                elements.buttonSpinner.classList.toggle("hidden", !isLoading);
+                elements.buttonText.classList.toggle("opacity-0", isLoading);
+
+                elements.backSpinner.classList.toggle("hidden", !isLoading);
+            };
+
+            const showToast = (message, type = "info") => {
+                const toast = document.createElement("div");
+                toast.className = `toast p-4 rounded-lg text-sm font-medium flex items-center ${
+                    {
+                        error: "bg-red-500/90 text-white",
+                        success: "bg-green-500/90 text-white",
+                        warning: "bg-yellow-500/90 text-white",
+                        info: "bg-blue-500/90 text-white",
+                    }[type]
+                }`;
+
+                toast.textContent = message;
+                const container = document.querySelector(
+                    ".fixed.top-4.right-4",
+                );
+                if (container) container.appendChild(toast);
+
+                setTimeout(() => toast.remove(), 3000);
+            };
+
+            const updateProgress = () => {
+                document.documentElement.style.setProperty(
+                    "--current-step",
+                    currentStep,
+                );
+                document
+                    .querySelectorAll(".progress-step")
+                    .forEach((step, index) => {
+                        const isCompleted = index + 1 < currentStep;
+                        const isActive = index + 1 === currentStep;
+
+                        step.classList.toggle("completed", isCompleted);
+                        step.classList.toggle("border-purple-500", isActive);
+                        step.classList.toggle("bg-gradient-to-br", isActive);
+                        step.classList.toggle("from-blue-500", isActive);
+                        step.classList.toggle("to-purple-500", isActive);
+                        step.classList.toggle(
+                            "text-white",
+                            isActive || isCompleted,
+                        );
+                        step.textContent = isCompleted ? "" : index + 1;
+                    });
+            };
+
+            const stepTransition = async (direction) => {
+                if (isProcessing) return;
+                toggleProcessingState(true);
+
+                const currentElement = document.querySelector(
+                    `[data-step="${currentStep}"]`,
+                );
+                if (currentElement) currentElement.classList.remove("active");
+
+                await new Promise((r) => setTimeout(r, 300));
+
+                direction === "next" ? currentStep++ : currentStep--;
+
+                if (direction === "next") {
+                    showToast("Validation successful", "success");
+                }
+
+                const nextElement = document.querySelector(
+                    `[data-step="${currentStep}"]`,
+                );
+                if (nextElement) nextElement.classList.add("active");
+
+                updateProgress();
+                updateButtons();
+                toggleProcessingState(false);
+            };
+
+            const updateButtons = () => {
+                elements.backBtn.disabled = currentStep === 1;
+                elements.nextBtn.textContent =
+                    currentStep === totalSteps
+                        ? "Complete Installation"
+                        : "Continue";
+            };
+
+            const saveData = () => {
+                document.querySelectorAll("input").forEach((input) => {
+                    formData[input.id] =
+                        input.type === "checkbox" ? input.checked : input.value;
+                });
+                localStorage.setItem("installData", JSON.stringify(formData));
+            };
+
+            const validateStep = async (step) => {
+                toggleProcessingState(true);
+
+                const inputs = Array.from(
+                    document.querySelectorAll(`[data-step="${step}"] input`),
+                );
+                const invalid = inputs.some(
+                    (input) => input.required && !input.value.trim(),
+                );
+
+                if (invalid) {
+                    showToast("Please fill all required fields", "error");
+                    toggleProcessingState(false);
+                    return false;
+                }
+
+                if (step === 2) {
+                    const panelUrl = document.getElementById("panel_url").value;
+                    const clientKey = document.getElementById(
+                        "panel_client_api_key",
+                    ).value;
+                    const appKey =
+                        document.getElementById("panel_app_api_key").value;
+
+                    try {
+                        const normalizedUrl = panelUrl.endsWith("/")
+                            ? panelUrl
+                            : panelUrl + "/";
+
+                        const data = await fetch(window.location.href, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                step: 2,
+                                panel: normalizedUrl,
+                                client: clientKey,
+                                app: appKey,
+                            }),
+                        });
+
+                        if (!data.ok) throw new Error(data.statusText);
+                    } catch (error) {
+                        showToast(
+                            `Pterodactyl Connection Error: ${error.message}`,
+                            "error",
+                        );
+                        toggleProcessingState(false);
+                        return false;
+                    }
+                }
+
+                if (step === 3) {
+                    const panelUrl = formData.panel_url;
+                    const appKey = formData.panel_app_api_key;
+                    const userId = document.getElementById(
+                        "pterodactyl_user_id",
+                    ).value;
+
+                    try {
+                        const normalizedUrl = panelUrl.endsWith("/")
+                            ? panelUrl
+                            : panelUrl + "/";
+
+                        const data = await fetch(window.location.href, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                step: 3,
+                                panel: normalizedUrl,
+                                app: appKey,
+                                userId,
+                            }),
+                        });
+
+                        if (!data.ok) throw new Error(data.statusText);
+                    } catch (error) {
+                        showToast(
+                            `User Validation Error: ${error.message}`,
+                            "error",
+                        );
+                        toggleProcessingState(false);
+                        return false;
+                    }
+                }
+
+                toggleProcessingState(false);
+                return true;
+            };
+
+            const submitForm = async () => {
+                try {
+                    toggleProcessingState(true);
+                    elements.loadingSpinner.classList.remove("hidden");
+                    elements.loadingText.classList.remove("hidden");
+
+                    const response = await fetch(window.location.href, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            step: 4,
+                            companyName: formData.company_name,
+                            tickets: formData.tickets_enabled,
+                            panel: formData.panel_url,
+                            app: formData.panel_app_api_key,
+                            client: formData.panel_client_api_key,
+                            email: formData.admin_email,
+                            username: formData.admin_username,
+                            password: formData.admin_password,
+                            userId: formData.pterodactyl_user_id,
+                        }),
+                    });
+
+                    if (!response.ok) throw new Error(await response.text());
+
+                    localStorage.removeItem("installData");
+                    showToast(
+                        "Installation completed successfully!",
+                        "success",
+                    );
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+                } catch (error) {
+                    showToast(`Installation Error: ${error.message}`, "error");
+                } finally {
+                    toggleProcessingState(false);
+                    elements.loadingSpinner.classList.add("hidden");
+                    elements.loadingText.classList.add("hidden");
+                }
+            };
+
+            elements.nextBtn?.addEventListener("click", async () => {
+                if (!(await validateStep(currentStep))) return;
+                saveData();
+                if (currentStep === totalSteps) return submitForm();
+                await stepTransition("next");
+            });
+
+            elements.backBtn?.addEventListener("click", async () => {
+                if (currentStep <= 1) return;
+                await stepTransition("prev");
+            });
+
+            const addHoverEffects = () => {
+                [elements.nextBtn, elements.backBtn].forEach((btn) => {
+                    if (!btn) return;
+
+                    btn.addEventListener("mouseenter", () => {
+                        if (!btn.disabled) {
+                            btn.style.transform = "scale(1.02)";
+                            btn.style.transition = "transform 0.2s ease";
+                        }
+                    });
+
+                    btn.addEventListener("mouseleave", () => {
+                        btn.style.transform = "scale(1)";
+                    });
+                });
+            };
+
+            document.addEventListener("DOMContentLoaded", () => {
+                Object.entries(formData).forEach(([key, value]) => {
+                    const element = document.getElementById(key);
+                    if (element) element.value = value;
+                });
+                updateProgress();
+                updateButtons();
+                addHoverEffects();
+            });
+        </script>
+    </body>
+</html>

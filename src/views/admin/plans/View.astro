@@ -1,0 +1,1140 @@
+---
+import type Nests from "@/types/nests";
+import type Locations from "@/types/locations";
+import type { Plans } from "@/database/entities/Plans";
+import type { PlanCycles } from "@/database/entities/PlanCycles";
+import { categories, coupons, discounts } from "@/database/index";
+import { IsNull, MoreThanOrEqual } from "typeorm";
+
+interface Props {
+    nests: Nests;
+    locations: Locations;
+    plan: Plans;
+    cycles: PlanCycles[];
+}
+
+const { nests, locations, plan, cycles } = Astro.props;
+
+const categoriesData = await categories.find({
+    order: { order: "ASC" },
+    select: ["id", "name"],
+});
+const couponsData = await coupons.find({
+    where: [{ endDate: MoreThanOrEqual(new Date()) }, { endDate: IsNull() }],
+    order: { updatedAt: "DESC" },
+    select: ["id", "code", "percentOff"],
+});
+const discountsData = await discounts.find({
+    where: {
+        endDate: MoreThanOrEqual(new Date()),
+    },
+    order: { updatedAt: "DESC" },
+    select: ["id", "name", "percentOff"],
+});
+const planCouponsMap = plan.coupons?.split(",");
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <form
+                action={`/api/admin/plan/${plan.id}`}
+                method="POST"
+                id="updateForm"
+            >
+                <div class="card-body row">
+                    <div class="form-group col-lg-4">
+                        <label for="nameInput">Server Plan Name</label>
+                        <input
+                            value={plan?.name}
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            id="nameInput"
+                            placeholder="Server Plan Name"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-5">
+                        <label for="descriptionInput"
+                            >Short Description (Optional)</label
+                        >
+                        <textarea
+                            name="description"
+                            class="form-control"
+                            id="descriptionInput"
+                            placeholder="Around 10 words recommended"
+                            >{plan?.description}</textarea
+                        >
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="orderInput"
+                            >Order (smaller = higher display priority)</label
+                        >
+                        <input
+                            value={plan?.order}
+                            type="text"
+                            name="order"
+                            value="1000"
+                            class="form-control"
+                            id="orderInput"
+                            placeholder="Order"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label>Category</label>
+                        <select
+                            class="form-control"
+                            name="category"
+                            id="categorySelect"
+                        >
+                            <option value="" disabled
+                                >Select a category...</option
+                            >
+                            {
+                                categoriesData?.map((category) => (
+                                    <option
+                                        value={category.id}
+                                        selected={
+                                            plan?.categoryId === category.id
+                                        }
+                                    >
+                                        {category.name}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="ramInput">RAM (MB)</label>
+                        <input
+                            value={plan?.ram}
+                            type="number"
+                            name="ram"
+                            min="0"
+                            class="form-control"
+                            id="ramInput"
+                            placeholder="0 = unlimited"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="cpuInput">CPU (%)</label>
+                        <input
+                            value={plan?.cpu}
+                            type="number"
+                            name="cpu"
+                            min="0"
+                            class="form-control"
+                            id="cpuInput"
+                            placeholder="0 = unlimited"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="diskInput">Disk (MB)</label>
+                        <input
+                            value={plan?.disk}
+                            type="number"
+                            name="disk"
+                            min="0"
+                            class="form-control"
+                            id="diskInput"
+                            placeholder="0 = unlimited"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="swapInput">Swap (MB)</label>
+                        <input
+                            value={plan?.swap}
+                            type="number"
+                            name="swap"
+                            min="-1"
+                            class="form-control"
+                            id="swapInput"
+                            placeholder="0 = disable, -1 = unlimited"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="ioInput">Block IO</label>
+                        <input
+                            value={plan?.io}
+                            type="number"
+                            name="io"
+                            min="10"
+                            max="1000"
+                            value="500"
+                            class="form-control"
+                            id="ioInput"
+                            placeholder="Within 10 and 1000"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="databasesInput">Databases</label>
+                        <input
+                            value={plan?.databases}
+                            type="number"
+                            name="databases"
+                            min="0"
+                            class="form-control"
+                            id="databasesInput"
+                            placeholder="Databases"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label for="backupsInput">Backups</label>
+                        <input
+                            value={plan?.backups}
+                            type="number"
+                            name="backups"
+                            min="0"
+                            class="form-control"
+                            id="backupsInput"
+                            placeholder="Backups"
+                            required
+                        />
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label>Locations / Nodes</label>
+                            <div class="mb-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-xs btn-primary select-all-nodes mr-1"
+                                >
+                                    <i class="fas fa-check-square"></i> Select All
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-xs btn-danger clear-all-nodes"
+                                >
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            <div class="selected-nodes d-flex flex-wrap mb-2">
+                                {
+                                    plan?.locationsNodesId
+                                        .split(",")
+                                        .map((locationNodeId) => (
+                                            <div
+                                                class="badge badge-info d-flex align-items-center m-1 p-2"
+                                                data-value={locationNodeId}
+                                                style="position: relative;"
+                                            >
+                                                <div class="d-flex flex-column">
+                                                    <small class="text-white-50">
+                                                        {
+                                                            locations?.data.find(
+                                                                (location) =>
+                                                                    location
+                                                                        .attributes
+                                                                        .id ===
+                                                                    Number(
+                                                                        locationNodeId.split(
+                                                                            ":",
+                                                                        )[0],
+                                                                    ),
+                                                            )?.attributes.short
+                                                        }
+                                                    </small>
+                                                    <span>
+                                                        {
+                                                            locations?.data
+                                                                .find(
+                                                                    (
+                                                                        location,
+                                                                    ) =>
+                                                                        location
+                                                                            .attributes
+                                                                            .id ===
+                                                                        Number(
+                                                                            locationNodeId.split(
+                                                                                ":",
+                                                                            )[0],
+                                                                        ),
+                                                                )
+                                                                ?.attributes.relationships.nodes.data.find(
+                                                                    (node) =>
+                                                                        node
+                                                                            .attributes
+                                                                            .id ===
+                                                                        Number(
+                                                                            locationNodeId.split(
+                                                                                ":",
+                                                                            )[1],
+                                                                        ),
+                                                                )?.attributes
+                                                                .name
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-xs btn-tool tag-remove ml-2"
+                                                >
+                                                    <i class="fas fa-times" />
+                                                </button>
+                                            </div>
+                                        ))
+                                }
+                            </div>
+                            <input
+                                type="hidden"
+                                name="nodes"
+                                id="nodesInput"
+                                value={plan?.locationsNodesId}
+                            />
+                            <select class="form-control node-select">
+                                <option value="" selected disabled
+                                    >Select a node...</option
+                                >
+                                {
+                                    locations?.data?.map((location) => (
+                                        <>
+                                            <option
+                                                disabled
+                                                style="font-weight: bold; background-color: #f8f9fa"
+                                            >
+                                                {location.attributes.short}
+                                            </option>
+                                            {location.attributes.relationships.nodes.data.map(
+                                                (node) => (
+                                                    <option
+                                                        value={`${location.attributes.id}:${node.attributes.id}`}
+                                                        data-location={
+                                                            location.attributes
+                                                                .short
+                                                        }
+                                                        data-node={
+                                                            node.attributes.name
+                                                        }
+                                                    >
+                                                        &nbsp;&nbsp;&nbsp;
+                                                        {node.attributes.name}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Nests / Eggs</label>
+                            <div class="mb-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-xs btn-primary select-all-eggs mr-1"
+                                >
+                                    <i class="fas fa-check-square"></i> Select All
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-xs btn-danger clear-all-eggs"
+                                >
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            <div class="selected-eggs d-flex flex-wrap mb-2">
+                                {
+                                    plan?.nestsEggsId
+                                        .split(",")
+                                        .map((nestEggId) => (
+                                            <div
+                                                class="badge badge-info d-flex align-items-center m-1 p-2"
+                                                data-value={nestEggId}
+                                                style="position: relative;"
+                                            >
+                                                <div class="d-flex flex-column">
+                                                    <small class="text-white-50">
+                                                        {
+                                                            nests?.data.find(
+                                                                (nest) =>
+                                                                    nest
+                                                                        .attributes
+                                                                        .id ===
+                                                                    Number(
+                                                                        nestEggId.split(
+                                                                            ":",
+                                                                        )[0],
+                                                                    ),
+                                                            )?.attributes.name
+                                                        }
+                                                    </small>
+                                                    <span>
+                                                        {
+                                                            nests?.data
+                                                                .find(
+                                                                    (nest) =>
+                                                                        nest
+                                                                            .attributes
+                                                                            .id ===
+                                                                        Number(
+                                                                            nestEggId.split(
+                                                                                ":",
+                                                                            )[0],
+                                                                        ),
+                                                                )
+                                                                ?.attributes.relationships.eggs.data.find(
+                                                                    (egg) =>
+                                                                        egg
+                                                                            .attributes
+                                                                            .id ===
+                                                                        Number(
+                                                                            nestEggId.split(
+                                                                                ":",
+                                                                            )[1],
+                                                                        ),
+                                                                )?.attributes
+                                                                .name
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-xs btn-tool tag-remove ml-2"
+                                                >
+                                                    <i class="fas fa-times" />
+                                                </button>
+                                            </div>
+                                        ))
+                                }
+                            </div>
+                            <input
+                                type="hidden"
+                                name="eggs"
+                                id="eggsInput"
+                                value={plan?.nestsEggsId}
+                            />
+                            <select class="form-control egg-select">
+                                <option value="" selected disabled
+                                    >Select an egg...</option
+                                >
+                                {
+                                    nests?.data?.map((nest) => (
+                                        <>
+                                            <option
+                                                disabled
+                                                style="font-weight: bold; background-color: #f8f9fa"
+                                            >
+                                                {nest.attributes.name}
+                                            </option>
+                                            {nest.attributes.relationships.eggs.data.map(
+                                                (egg) => (
+                                                    <option
+                                                        value={`${nest.attributes.id}:${egg.attributes.id}`}
+                                                        data-nest={
+                                                            nest.attributes.name
+                                                        }
+                                                        data-egg={
+                                                            egg.attributes.name
+                                                        }
+                                                    >
+                                                        &nbsp;&nbsp;&nbsp;
+                                                        {egg.attributes.name}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-8 row">
+                        <div class="form-group col-lg-4">
+                            <label for="extraPortsInput">Extra Ports</label>
+                            <input
+                                value={plan?.extraPorts}
+                                type="number"
+                                name="extra_ports"
+                                min="0"
+                                class="form-control"
+                                id="extraPortsInput"
+                                placeholder="Extra Ports"
+                                required
+                            />
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <label for="serverDescriptionInput"
+                                >Server Description (Optional)</label
+                            >
+                            <textarea
+                                value={plan?.serverDescription}
+                                name="server_description"
+                                class="form-control"
+                                id="serverDescriptionInput"
+                                placeholder="Only displayed on Pterodactyl panel"
+                            ></textarea>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label>Discount (Optional)</label>
+                            <select class="form-control" name="discount">
+                                <option value="">Select a discount...</option>
+                                {
+                                    discountsData?.map((discount) => (
+                                        <option
+                                            value={discount.id}
+                                            selected={
+                                                plan?.discount === discount.id
+                                            }
+                                        >
+                                            {discount.name} -{" "}
+                                            {discount.percentOff}% OFF
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label>Coupons (Optional)</label>
+                            <div class="mb-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-xs btn-primary select-all-coupons mr-1"
+                                >
+                                    <i class="fas fa-check-square"></i> Select All
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-xs btn-danger clear-all-coupons"
+                                >
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            <div class="selected-coupons d-flex flex-wrap mb-2">
+                                {
+                                    planCouponsMap?.map((couponCode) => {
+                                        if (!couponCode) return;
+                                        return (
+                                            <div
+                                                class="badge badge-info d-flex align-items-center m-1 p-2"
+                                                data-value={couponCode}
+                                                style="position: relative;"
+                                            >
+                                                <div class="d-flex flex-column">
+                                                    <small class="text-white-50">
+                                                        {
+                                                            couponsData?.find(
+                                                                (coupon) =>
+                                                                    coupon.id ===
+                                                                    Number(
+                                                                        couponCode,
+                                                                    ),
+                                                            )?.code
+                                                        }
+                                                    </small>
+                                                    <span
+                                                        set:text={`${
+                                                            couponsData?.find(
+                                                                (coupon) =>
+                                                                    coupon.id ===
+                                                                    Number(
+                                                                        couponCode,
+                                                                    ),
+                                                            )?.percentOff
+                                                        }% OFF`}
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-xs btn-tool tag-remove ml-2"
+                                                >
+                                                    <i class="fas fa-times" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })
+                                }
+                            </div>
+                            <input
+                                type="hidden"
+                                name="coupons"
+                                id="couponsInput"
+                                value={plan?.coupons}
+                            />
+                            <select class="form-control coupon-select">
+                                <option value="" selected disabled
+                                    >Select a coupon...</option
+                                >
+                                {
+                                    couponsData?.map((coupon) => (
+                                        <option
+                                            value={coupon.id}
+                                            data-code={coupon.code}
+                                            data-discount={coupon.percentOff}
+                                            disabled={planCouponsMap?.includes(
+                                                String(coupon.id),
+                                            )}
+                                        >
+                                            {coupon.code} - {coupon.percentOff}%
+                                            OFF
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label for="daysSuspendInput"
+                                >Days before server suspension</label
+                            >
+                            <input
+                                value={plan?.daysBeforeSuspend}
+                                type="number"
+                                name="days_before_suspend"
+                                class="form-control"
+                                id="daysSuspendInput"
+                                placeholder="0 = Instantly suspended when overdue"
+                                required
+                            />
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label for="daysDeleteInput"
+                                >Days before server deletion</label
+                            >
+                            <input
+                                value={plan?.daysBeforeDelete}
+                                type="number"
+                                name="days_before_delete"
+                                class="form-control"
+                                id="daysDeleteInput"
+                                placeholder="0 = Instantly deleted when overdue"
+                                required
+                            />
+                        </div>
+                        <div class="form-group col-lg-4">
+                            <label for="globalLimitInput"
+                                >Global Limit (Optional)</label
+                            >
+                            <input
+                                value={plan?.globalLimit}
+                                type="number"
+                                name="global_limit"
+                                class="form-control"
+                                id="globalLimitInput"
+                                placeholder="0 = No servers can be created"
+                            />
+                        </div>
+                        <div class="form-group col-lg-4">
+                            <label for="perClientInput"
+                                >Per Client Limit (Optional)</label
+                            >
+                            <input
+                                value={plan?.perClientLimit}
+                                type="number"
+                                name="per_client_limit"
+                                class="form-control"
+                                id="perClientInput"
+                                placeholder="0 = No servers can be created"
+                            />
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-12">
+                        <hr />
+                        <h5>Default Billing Cycle</h5>
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label>Cycle Length</label>
+                        <input
+                            value={cycles[0]?.cycleLength}
+                            type="number"
+                            name={`cycle[${cycles[0]?.id}][cycle_length]`}
+                            class="form-control"
+                            placeholder="e.g. enter '3', choose 'Monthly'"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label>Cycle Type</label>
+                        <select
+                            class="form-control"
+                            name={`cycle[${cycles[0]?.id}][cycle_type]`}
+                        >
+                            <option
+                                value="0"
+                                selected={cycles[0]?.cycleType === 0}
+                                >One-time</option
+                            >
+                            <option
+                                value="1"
+                                selected={cycles[0]?.cycleType === 1}
+                                >Hourly</option
+                            >
+                            <option
+                                value="2"
+                                selected={cycles[0]?.cycleType === 2}
+                                >Daily</option
+                            >
+                            <option
+                                value="3"
+                                selected={cycles[0]?.cycleType === 3}
+                                >Monthly</option
+                            >
+                            <option
+                                value="4"
+                                selected={cycles[0]?.cycleType === 4}
+                                >Yearly</option
+                            >
+                        </select>
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label>Initial Price</label>
+                        <input
+                            value={cycles[0]?.initPrice}
+                            type="text"
+                            name={`cycle[${cycles[0]?.id}][init_price]`}
+                            class="form-control"
+                            placeholder="Use default currency"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label>Renewal Price</label>
+                        <input
+                            value={cycles[0]?.renewPrice}
+                            type="text"
+                            name={`cycle[${cycles[0]?.id}][renew_price]`}
+                            class="form-control"
+                            placeholder="Use default currency"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-3">
+                        <label>Setup fee</label>
+                        <input
+                            value={cycles[0]?.setupFee}
+                            type="text"
+                            name={`cycle[${cycles[0]?.id}][setup_fee]`}
+                            class="form-control"
+                            placeholder="Use default currency"
+                            required
+                        />
+                    </div>
+                    <div class="form-group col-lg-12">
+                        <hr />
+                        <h5>Additional Billing Cycles</h5>
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            id="add-cycle"
+                            ><i class="fas fa-plus"></i> Add Billing Cycle</button
+                        >
+                    </div>
+                    <div class="col-lg-12 row" id="additional-cycles">
+                        {
+                            cycles.slice(1).map((cycle) => (
+                                <div class="row col-12">
+                                    <div class="form-group col-lg-3">
+                                        <label>Cycle Length</label>
+                                        <input
+                                            value={cycle.cycleLength}
+                                            type="number"
+                                            name={`cycle[${cycle.id}][cycle_length]`}
+                                            class="form-control"
+                                            placeholder="e.g. enter '3', choose 'Monthly'"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Cycle Type</label>
+                                        <select
+                                            class="form-control"
+                                            name={`cycle[${cycle.id}][cycle_type]`}
+                                        >
+                                            <option
+                                                value="0"
+                                                selected={cycle.cycleType === 0}
+                                            >
+                                                One-time
+                                            </option>
+                                            <option
+                                                value="1"
+                                                selected={cycle.cycleType === 1}
+                                            >
+                                                Hourly
+                                            </option>
+                                            <option
+                                                value="2"
+                                                selected={cycle.cycleType === 2}
+                                            >
+                                                Daily
+                                            </option>
+                                            <option
+                                                value="3"
+                                                selected={cycle.cycleType === 3}
+                                            >
+                                                Monthly
+                                            </option>
+                                            <option
+                                                value="4"
+                                                selected={cycle.cycleType === 4}
+                                            >
+                                                Yearly
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Initial Price</label>
+                                        <input
+                                            value={cycle.initPrice}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][init_price]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Renewal Price</label>
+                                        <input
+                                            value={cycle.renewPrice}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][renew_price]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Setup fee</label>
+                                        <input
+                                            value={cycle.setupFee}
+                                            type="text"
+                                            name={`cycle[${cycle.id}][setup_fee]`}
+                                            class="form-control"
+                                            placeholder="Use default currency"
+                                        />
+                                    </div>
+                                    <div class="form-group col-lg-12">
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return this.parentNode.parentNode.remove()"
+                                        >
+                                            <i class="fas fa-trash" />
+                                        </button>
+                                        <hr />
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </div>
+                </div>
+            </form>
+            <form
+                action={`/api/admin/plan/${plan.id}/delete`}
+                method="POST"
+                id="deleteForm"
+            >
+            </form>
+            <div class="card-footer row justify-content-center">
+                <button
+                    type="submit"
+                    form="updateForm"
+                    class="btn btn-success btn-sm col-lg-2 col-3">Save</button
+                >
+                <button
+                    type="submit"
+                    form="deleteForm"
+                    class="btn btn-danger btn-sm col-lg-2 col-3 offset-lg-1 offset-2"
+                    >Delete</button
+                >
+            </div>
+        </div>
+    </div>
+</div>
+<script is:inline>
+    var i = 1;
+    $(document).on("click", "#add-cycle", function () {
+        $("#additional-cycles").append(`
+            <div class="row col-12">
+                <div class="form-group col-lg-3">
+                    <label>Cycle Length</label>
+                    <input type="number" name="new_cycle[${i}][cycle_length]" class="form-control" placeholder="e.g. enter '3', choose 'Monthly'">
+                </div>
+                <div class="form-group col-lg-3">
+                    <label>Cycle Type</label>
+                    <select class="form-control" name="new_cycle[${i}][cycle_type]">
+                        <option value="0">One-time</option>
+                        <option value="1">Hourly</option>
+                        <option value="2">Daily</option>
+                        <option value="3">Monthly</option>
+                        <option value="4">Yearly</option>
+                    </select>
+                </div>
+                <div class="form-group col-lg-3">
+                    <label>Initial Price</label>
+                    <input type="text" name="new_cycle[${i}][init_price]" class="form-control" placeholder="Use default currency">
+                </div>
+                <div class="form-group col-lg-3">
+                    <label>Renewal Price</label>
+                    <input type="text" name="new_cycle[${i}][renew_price]" class="form-control" placeholder="Use default currency">
+                </div>
+                <div class="form-group col-lg-3">
+                    <label>Setup fee</label>
+                    <input type="text" name="new_cycle[${i}][setup_fee]" class="form-control" placeholder="Use default currency">
+                </div>
+                <div class="form-group col-lg-12">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="return this.parentNode.parentNode.remove()"><i class="fas fa-trash"></i></button>
+                    <hr>
+                </div>
+            </div>
+        `);
+        i++;
+    });
+</script>
+<style>
+    .btn-xs {
+        padding: 0.125rem 0.25rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        border-radius: 0.15rem;
+        margin-right: 5px;
+    }
+</style>
+<script src="/plugins/toastr/toastr.min.js" is:inline></script>
+<script is:inline>
+    lazyLoadCss("/plugins/toastr/toastr.min.css");
+    $(document).ready(function () {
+        function updateNodesInput() {
+            const nodes = [];
+            $(".selected-nodes .badge").each(function () {
+                nodes.push($(this).data("value"));
+            });
+            $("#nodesInput").val(nodes.join(","));
+        }
+
+        function disableSelectedNodeOptions() {
+            $(".selected-nodes .badge").each(function () {
+                const value = $(this).data("value");
+                $(`.node-select option[value="${value}"]`).prop(
+                    "disabled",
+                    true,
+                );
+            });
+        }
+
+        function disableSelectedEggOptions() {
+            $(".selected-eggs .badge").each(function () {
+                const value = $(this).data("value");
+                $(`.egg-select option[value="${value}"]`).prop(
+                    "disabled",
+                    true,
+                );
+            });
+        }
+
+        function updateEggsInput() {
+            const eggs = [];
+            $(".selected-eggs .badge").each(function () {
+                eggs.push($(this).data("value"));
+            });
+            $("#eggsInput").val(eggs.join(","));
+        }
+
+        function updateCouponsInput() {
+            const coupons = [];
+            $(".selected-coupons .badge").each(function () {
+                coupons.push($(this).data("value"));
+            });
+            $("#couponsInput").val(coupons.join(","));
+        }
+
+        function createSelectedTag(value, groupLabel, itemLabel) {
+            return `
+            <div class="badge badge-info d-flex align-items-center m-1 p-2" data-value="${value}" style="position: relative;">
+                <div class="d-flex flex-column">
+                    <small class="text-white-50">${groupLabel}</small>
+                    <span>${itemLabel}</span>
+                </div>
+                <button type="button" class="btn btn-xs btn-tool tag-remove ml-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        }
+
+        function validateSelections() {
+            const hasNode = $(".selected-nodes .badge").length > 0;
+            const hasEgg = $(".selected-eggs .badge").length > 0;
+            const hasCategory = $("#categorySelect").val().length > 0;
+            if (!hasCategory) {
+                toastr.error("Please select a category");
+                return false;
+            }
+            if (!hasNode || !hasEgg) {
+                const missingItems = [];
+                if (!hasNode) missingItems.push("node");
+                if (!hasEgg) missingItems.push("egg");
+                toastr.error(
+                    `Please select at least one ${missingItems.join(" and ")}`,
+                );
+                return false;
+            }
+            return true;
+        }
+
+        function addNodeIfNotExists(option) {
+            const value = option.val();
+            if (!value) return;
+
+            const location = option.data("location");
+            const nodeName = option.data("node");
+
+            if (
+                location &&
+                nodeName &&
+                !$(`.selected-nodes .badge[data-value="${value}"]`).length
+            ) {
+                $(".selected-nodes").append(
+                    createSelectedTag(value, location, nodeName),
+                );
+                updateNodesInput();
+                option.prop("disabled", true);
+            }
+        }
+
+        function addEggIfNotExists(option) {
+            const value = option.val();
+            if (!value) return;
+
+            const nest = option.data("nest");
+            const eggName = option.data("egg");
+
+            if (
+                nest &&
+                eggName &&
+                !$(`.selected-eggs .badge[data-value="${value}"]`).length
+            ) {
+                $(".selected-eggs").append(
+                    createSelectedTag(value, nest, eggName),
+                );
+                updateEggsInput();
+                option.prop("disabled", true);
+            }
+        }
+
+        function addCouponIfNotExists(option) {
+            const value = option.val();
+            if (!value) return;
+
+            const code = option.data("code");
+            const discount = option.data("discount");
+
+            if (
+                code &&
+                discount &&
+                !$(`.selected-coupons .badge[data-value="${value}"]`).length
+            ) {
+                $(".selected-coupons").append(
+                    createSelectedTag(value, code, `${discount}% OFF`),
+                );
+                updateCouponsInput();
+                option.prop("disabled", true);
+            }
+        }
+
+        $(".node-select").change(function () {
+            const option = $(this).find("option:selected");
+            addNodeIfNotExists(option);
+            $(this).val("");
+        });
+
+        $(".egg-select").change(function () {
+            const option = $(this).find("option:selected");
+            addEggIfNotExists(option);
+            $(this).val("");
+        });
+
+        $(".coupon-select").change(function () {
+            const option = $(this).find("option:selected");
+            addCouponIfNotExists(option);
+            $(this).val("");
+        });
+
+        $(".select-all-nodes").click(function () {
+            $(".node-select option").each(function () {
+                if (
+                    !$(this).is(":disabled") &&
+                    $(this).val() &&
+                    $(this).data("location") &&
+                    $(this).data("node")
+                ) {
+                    addNodeIfNotExists($(this));
+                }
+            });
+        });
+
+        $(".select-all-eggs").click(function () {
+            $(".egg-select option").each(function () {
+                if (
+                    !$(this).is(":disabled") &&
+                    $(this).val() &&
+                    $(this).data("nest") &&
+                    $(this).data("egg")
+                ) {
+                    addEggIfNotExists($(this));
+                }
+            });
+        });
+
+        $(".select-all-coupons").click(function () {
+            $(".coupon-select option").each(function () {
+                if (
+                    !$(this).is(":disabled") &&
+                    $(this).val() &&
+                    $(this).data("code") &&
+                    $(this).data("discount")
+                ) {
+                    addCouponIfNotExists($(this));
+                }
+            });
+        });
+
+        $(".clear-all-nodes").click(function () {
+            $(".selected-nodes").empty();
+            updateNodesInput();
+            $(".node-select option").prop("disabled", false);
+            disableSelectedNodeOptions();
+        });
+
+        $(".clear-all-eggs").click(function () {
+            $(".selected-eggs").empty();
+            updateEggsInput();
+            $(".egg-select option").prop("disabled", false);
+            disableSelectedEggOptions();
+        });
+
+        $(".clear-all-coupons").click(function () {
+            $(".selected-coupons").empty();
+            updateCouponsInput();
+            $(".coupon-select option").prop("disabled", false);
+        });
+
+        $(document).on("click", ".tag-remove", function () {
+            const value = $(this).closest(".badge").data("value");
+            $(this).closest(".badge").remove();
+            updateNodesInput();
+            updateEggsInput();
+            updateCouponsInput();
+            $(`.node-select option[value="${value}"]`).prop("disabled", false);
+            $(`.egg-select option[value="${value}"]`).prop("disabled", false);
+            $(`.coupon-select option[value="${value}"]`).prop(
+                "disabled",
+                false,
+            );
+        });
+
+        disableSelectedNodeOptions();
+        disableSelectedEggOptions();
+
+        $("form").on("submit", function (e) {
+            if (!validateSelections()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>

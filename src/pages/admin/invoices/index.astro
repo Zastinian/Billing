@@ -1,0 +1,12 @@
+---
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/invoices/Invoices.astro";
+---
+
+<Layout
+    title="Invoices"
+    route="admin.invoices"
+    items={[{ title: "Dashboard", url: "/admin" }]}
+>
+    <View />
+</Layout>

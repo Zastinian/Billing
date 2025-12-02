@@ -1,0 +1,82 @@
+import type { APIRoute } from "astro";
+import { Coupons } from "@/database/entities/Coupons";
+import { clients, coupons } from "@/database/index";
+import profile from "@/utils/profile";
+
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
+  const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+  const c = profile(cookie);
+
+  if (c.success === true && c.clientId !== null) {
+    const client = await clients.findOneBy({ id: c.clientId });
+    if (client?.email !== c.email) {
+      return redirect("/");
+    }
+    if (client?.sessionToken !== c.sessionToken) {
+      return redirect("/");
+    }
+    if (client?.isAdmin !== 1) {
+      return redirect("/");
+    }
+    const data = Object.fromEntries(new URLSearchParams(await request.text()));
+    if (
+      !data.code ||
+      !data.percent_off ||
+      typeof Number(data.percent_off) !== "number" ||
+      Number.isNaN(Number(data.percent_off)) ||
+      Number(data.order) < 1 ||
+      Number(data.order) > 100 ||
+      !data.one_time ||
+      typeof Number(data.one_time) !== "number" ||
+      Number.isNaN(Number(data.one_time)) ||
+      Number(data.one_time) < 0 ||
+      Number(data.one_time) > 1 ||
+      !data.is_global ||
+      typeof Number(data.is_global) !== "number" ||
+      Number.isNaN(Number(data.is_global)) ||
+      Number(data.is_global) < 0 ||
+      Number(data.is_global) > 1
+    ) {
+      return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
+    }
+    const existCouponWithSameCode = await coupons.exists({
+      where: {
+        code: data.code,
+      },
+    });
+    if (existCouponWithSameCode) {
+      return redirect("/admin/coupons?type=danger&msg=admin.coupon.exists");
+    }
+    if (data.end_date) {
+      const endDate = new Date(data.end_date);
+      if (Number.isNaN(endDate.getTime())) {
+        return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
+      }
+    }
+    if (data.global_limit) {
+      const globalLimit = Number(data.global_limit);
+      if (Number.isNaN(globalLimit)) {
+        return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
+      }
+    }
+    if (data.per_client_limit) {
+      const perClientLimit = Number(data.per_client_limit);
+      if (Number.isNaN(perClientLimit)) {
+        return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
+      }
+    }
+    const coupon = new Coupons();
+    coupon.code = data.code;
+    coupon.percentOff = Number(data.percent_off);
+    coupon.oneTime = Number(data.one_time);
+    coupon.globalLimit = data.global_limit ? Number(data.global_limit) : null;
+    coupon.perClientLimit = data.per_client_limit ? Number(data.per_client_limit) : null;
+    coupon.isGlobal = Number(data.is_global);
+    coupon.endDate = data.end_date ? new Date(data.end_date) : null;
+    coupon.createdAt = new Date();
+    coupon.updatedAt = new Date();
+    await coupons.save(coupon);
+    return redirect("/admin/coupons?type=success&msg=admin.coupon.create.success");
+  }
+  return redirect("/");
+};

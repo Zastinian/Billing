@@ -1,0 +1,59 @@
+---
+import type Breadcrumb from "@/types/breadcrumb.d.ts";
+
+import MainHeader from "@/components/header/Header.astro";
+import ClientsHeader from "@/components/header/clients/Header.astro";
+
+import MainScripts from "@/components/scripts/Scripts.astro";
+
+import NavAdmin from "@/components/nav/admin/Nav.astro";
+
+import SidebarAdmin from "@/components/sidebar/admin/Sidebar.astro";
+
+import FooterClients from "@/components/footer/clients/Footer.astro";
+
+import Alerts from "@/components/alerts/index.astro";
+
+import Messages from "@/components/messages/index.astro";
+
+interface Props {
+  title: string;
+  route: string;
+  items?: Breadcrumb[];
+}
+
+const { title, route, items } = Astro.props;
+
+import { settings } from "@/database/index";
+
+const logoPath = await settings.findOneBy({ key: "logo_path" }).then((setting) => setting?.value);
+const companyName = await settings
+  .findOneBy({ key: "company_name" })
+  .then((setting) => setting?.value);
+---
+
+<!doctype html>
+<html lang="en">
+    <MainHeader title={title} />
+	<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed dark-mode">
+		<MainScripts />
+		<div class="wrapper">
+			<div class="preloader flex-column justify-content-center align-items-center">
+				<img class="animation__shake" src={logoPath} alt={`${companyName} Logo`} height="100" width="100" />
+			</div>
+			<NavAdmin />
+			<SidebarAdmin route={route} />
+			<div class="content-wrapper">
+				<ClientsHeader title={title} items={items} />
+				<div class="content">
+					<div class="container-fluid" id="content-container">
+                        <Alerts />
+                        <Messages />
+						<slot />
+					</div>
+				</div>
+			</div>
+			<FooterClients />
+		</div>
+	</body>
+</html>

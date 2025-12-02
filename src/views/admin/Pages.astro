@@ -1,0 +1,43 @@
+---
+import type { Pages as Page } from "@/database/entities/Pages";
+
+interface Props {
+  page: Page;
+}
+
+const { page } = Astro.props;
+---
+
+<form action="/api/admin/pages" method="POST">
+
+    <input type="hidden" name="name" value={page?.name} required>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-warning">
+                If you have changed the HTML in the 'Code View', make sure you exit it and preview the page before
+                saving.
+            </div>
+            <div class="card">
+                <div class="card-body row">
+                    <div class="form-group col-12">
+                        <textarea name="content" id="contentInput" placeholder="Page Body"
+                            style="height:200px;" set:html={page?.content}></textarea>
+                    </div>
+                </div>
+                <div class="card-footer row justify-content-center">
+                    <button type="submit" class="btn btn-success btn-sm col-lg-2 col-md-4">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script is:inline> lazyLoadCss('/plugins/summernote/summernote-bs4.min.css'); </script>
+
+<script src="/plugins/summernote/summernote-bs4.min.js" is:inline></script>
+
+
+<script is:inline>
+    $(function () { $('#contentInput').summernote() })
+</script>

@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/categories/Create.astro";
+---
+
+<Layout
+    title="Create Server Category"
+    route="admin.categories"
+    items={[
+        { title: "Dashboard", url: "/admin" },
+        { title: "Server Categories", url: "/admin/categories" },
+    ]}
+>
+    <View />
+</Layout>

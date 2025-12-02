@@ -1,0 +1,17 @@
+---
+const { id } = Astro.params;
+
+import Layout from "@/layouts/store/Layout.astro";
+import View from "@/views/store/plans/Plans.astro";
+import { categories } from "@/database/index";
+
+const category = await categories.findOneBy({ id: Number(id) }).catch(() => null);
+
+if (!category) {
+  return Astro.redirect("/plans");
+}
+---
+
+<Layout title="Server Plans">
+    <View category={category} />
+</Layout>

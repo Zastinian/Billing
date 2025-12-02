@@ -1,0 +1,34 @@
+---
+import { pages } from "@/database/index";
+
+interface Props {
+  page?: string;
+}
+
+const { page } = Astro.props;
+
+let Page;
+
+switch (page) {
+  case "privacy":
+    Page = (await pages.findOneBy({ name: "privacy" }))?.content || "";
+    break;
+  case "terms":
+    Page = (await pages.findOneBy({ name: "terms" }))?.content || "";
+    break;
+  case "status":
+    Page = (await pages.findOneBy({ name: "status" }))?.content || "";
+    break;
+  default:
+    Page = (await pages.findOneBy({ name: "home" }))?.content || "";
+    break;
+}
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body" set:html={Page} />
+        </div>
+    </div>
+</div>

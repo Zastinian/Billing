@@ -1,49 +1,39 @@
 {
-    "name": "hedystiabilling",
-    "version": "1.0.0",
-    "description": "A purchasing software for pterodactyl",
-    "private": true,
-    "scripts": {
-        "dev": "npm run development",
-        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "watch": "npm run development -- --watch",
-        "watch-poll": "npm run watch -- --watch-poll",
-        "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --disable-host-check --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "prod": "npm run production",
-        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "style": "mincss --sourcemap ./public/dist/css/adminlte.css ./public/dist/css/adminlte.min.css",
-        "start": "npm run production"
-    },
-    "devDependencies": {
-        "@tailwindcss/forms": "^0.2.1",
-        "alpinejs": "^2.7.3",
-        "axios": ">=0.21.1",
-        "cross-env": "^7.0",
-        "laravel-mix": "^5.0.1",
-        "lodash": "^4.17.19",
-        "postcss-import": "^12.0.1",
-        "resolve-url-loader": "^3.1.0",
-        "vue-template-compiler": "^2.6.12"
-    },
-    "dependencies": {
-        "@tailwindcss/postcss7-compat": "^2.0.2",
-        "autoprefixer": "^9.8.6",
-        "postcss": "^8.2.10",
-        "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/Zastinian/hedystiabilling.git"
-    },
-    "keywords": [
-        "Billing",
-        "Hedystia",
-        "Pterodactyl"
-    ],
-    "author": "contact@hedystia.com",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/Zastinian/hedystiabilling/issues"
-    },
-    "homepage": "https://github.com/Zastinian/hedystiabilling#readme"
+  "name": "billing",
+  "type": "module",
+  "version": "develop",
+  "scripts": {
+    "dev": "bunx --bun astro dev",
+    "start": "bun --bun run server.ts",
+    "build": "bunx --bun astro build",
+    "preview": "bunx --bun astro preview",
+    "check": "astro check --minimumSeverity --minimumFailingSeverity && tsc --noEmit && biome ci ./src --organize-imports-enabled=false",
+    "lint": "biome lint --write ./src",
+    "format": "biome format --write ./src",
+    "prepare:husky": "husky",
+    "db:create": "bunx --bun typeorm migration:create src/database/migrations/<name>",
+    "db:entity": "bunx --bun typeorm entity:create src/database/entities/<name>",
+    "db:migrate": "bunx --bun typeorm migration:run --dataSource src/database/data-source.ts",
+    "key:generate": "bun --bun run ./src/scripts/key.ts"
+  },
+  "dependencies": {
+    "@hedystia/astro-bun": "0.3.2",
+    "astro": "5.13.7",
+    "jsonwebtoken": "9.0.2",
+    "mongodb": "6.17.0",
+    "mssql": "11.0.1",
+    "mysql2": "3.14.1",
+    "pg": "8.16.0",
+    "reflect-metadata": "0.2.2",
+    "sqlite3": "5.1.7",
+    "typeorm": "0.3.26"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.4",
+    "@biomejs/biome": "2.2.4",
+    "@types/jsonwebtoken": "9.0.10",
+    "@types/node": "24.0.1",
+    "husky": "9.1.7",
+    "typescript": "5.9.2"
+  }
 }

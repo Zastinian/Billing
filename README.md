@@ -18,7 +18,7 @@
     <a href="/"><strong>Explore »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Zastinian/HedystiaBilling/issues/new">Report Bug</a>
+    <a href="https://github.com/Zastinian/Billing/issues/new">Report Bug</a>
     ·
     <a href="/.github/CONTRIBUTING.md">Contributing</a>
     ·
@@ -64,7 +64,7 @@
 
 ## Issues
 
-See the [open issues](https://github.com/Zastinian/HedystiaBilling/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/Zastinian/Billing/issues) for a full list of proposed features (and known issues).
 
 ## License
 
@@ -76,11 +76,11 @@ This project is licensed under a proprietary license. For more details, see the 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-[contributors-shield]: https://img.shields.io/github/contributors/Zastinian/HedystiaBilling.svg?style=for-the-badge
-[contributors-url]: https://github.com/Zastinian/HedystiaBilling/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Zastinian/HedystiaBilling.svg?style=for-the-badge
-[forks-url]: https://github.com/Zastinian/HedystiaBilling/network/members
-[stars-shield]: https://img.shields.io/github/stars/Zastinian/HedystiaBilling.svg?style=for-the-badge
-[stars-url]: https://github.com/Zastinian/HedystiaBilling/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Zastinian/HedystiaBilling.svg?style=for-the-badge
-[issues-url]: https://github.com/Zastinian/HedystiaBilling/issues
+[contributors-shield]: https://img.shields.io/github/contributors/Zastinian/Billing.svg?style=for-the-badge
+[contributors-url]: https://github.com/Zastinian/Billing/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Zastinian/Billing.svg?style=for-the-badge
+[forks-url]: https://github.com/Zastinian/Billing/network/members
+[stars-shield]: https://img.shields.io/github/stars/Zastinian/Billing.svg?style=for-the-badge
+[stars-url]: https://github.com/Zastinian/Billing/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Zastinian/Billing.svg?style=for-the-badge
+[issues-url]: https://github.com/Zastinian/Billing/issues

@@ -1,0 +1,114 @@
+---
+import { clients, currencies } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import CaptchaWidget from "@/components/CaptchaWidget.astro";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const allCurrencies = await currencies.find();
+---
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Basic Settings</h3>
+            </div>
+            <form action="/api/client/basic" method="POST">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="currencyInput">Currency</label>
+                        <select class="form-control" name="currency">
+                            {
+                                allCurrencies.map((currency) => (
+                                    <option value={currency.id} selected={currency.id === client?.currency}>
+                                        {currency.name}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="autoRenewInput">Enable Automatic Renewal</label>
+                        <select class="form-control" name="auto_renew">
+                            <option value="1" selected={client ? client.autoRenew === 1 : false}>Yes</option>
+                            <option value="0" selected={client ? client.autoRenew === 0 : false}>No</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Change Email Address</h3>
+            </div>
+            <form action="/api/client/email" method="POST">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="emailInput">Email Address</label>
+                        <input type="email" name="email" class="form-control" id="emailInput" placeholder="Email Address" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordInput">Current Password</label>
+                        <input type="password" name="password" class="form-control" id="passwordInput" placeholder="Current Password" required />
+                    </div>
+                    <div class="form-group">
+                        <div class="alert alert-info">Changing the account email will also change the panel email.</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Change Password</h3>
+            </div>
+            <form action="/api/client/password" method="POST">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="passwordInput">Current Password</label>
+                        <input type="password" name="current" class="form-control" id="passwordInput" placeholder="Current Password" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="newPasswordInput">New Password</label>
+                        <input type="password" name="password" class="form-control" id="newPasswordInput" placeholder="New Password" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPasswordInput">Confirm Password</label>
+                        <input
+                            type="password"
+                            name="password_confirmation"
+                            class="form-control"
+                            id="confirmPasswordInput"
+                            placeholder="Confirm Password"
+                            required
+                        />
+                    </div>
+                    <CaptchaWidget />
+                    <div class="form-group">
+                        <div class="alert alert-info">Changing the account password will also change the panel password.</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

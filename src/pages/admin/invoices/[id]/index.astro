@@ -1,0 +1,18 @@
+---
+import Layout from "@/layouts/admin/Layout.astro";
+import View from "@/views/admin/invoices/Show.astro";
+
+const { id } = Astro.params;
+---
+
+<Layout
+	title={`Invoice #${id}`}
+	route="admin.invoice.index"
+	items={[
+		{ title: "Dashboard", url: "/admin" },
+		{ title: "Invoices", url: "/admin/invoices" },
+		{ title: `Invoice #${id}`, url: `/admin/invoices/${id}` },
+	]}
+>
+	<View id={id!} />
+</Layout>

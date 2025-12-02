@@ -1,0 +1,14 @@
+---
+import { settings } from "@/database/index";
+
+const captcha_provider = await settings.findOneBy({ key: "captcha_provider" });
+const provider = captcha_provider?.value || "disabled";
+---
+
+{provider === "hcaptcha" && (
+  <script src="https://hcaptcha.com/1/api.js" async defer is:inline></script>
+)}
+
+{provider === "turnstile" && (
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+)}

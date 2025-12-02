@@ -1,0 +1,119 @@
+---
+import profile from "@/utils/profile";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+import type { Clients } from "@/database/entities/Clients";
+import type { Categories } from "@/database/entities/Categories";
+import { plans, servers, planCycles, currencies, clients } from "@/database/index";
+import { cycleTypeName, serverStatus } from "@/utils/status";
+
+interface Props {
+    category: Categories | null;
+}
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+    client = await clients.findOneBy({ id: c.clientId });
+}
+
+const { category } = Astro.props;
+
+let text = "You are viewing all server plans.";
+if (category) {
+    text = `You are viewing server plan ${category.name}.`;
+}
+
+const plansData = await plans.find({
+    order: { order: "ASC" },
+    select: ["id", "name", "description", "globalLimit", "ram", "cpu", "disk", "databases", "backups", "extraPorts"],
+    where: {
+        categoryId: category?.id,
+    },
+});
+
+const defaultCurrency = await currencies.findOne({ where: { id: 1 } });
+const clientCurrency = await currencies.findOne({ where: { id: client?.currency } });
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="callout callout-info">
+            <h5>{text}</h5>
+        </div>
+    </div>
+    <!-- if trial length is set, show trial length -->
+    <!-- <br /><h6 class="card-title">10 Days - Free Trial</h6> -->
+    <!-- end if trial length is set -->
+    <div class="col-lg-3 col-md-6">
+        {
+            plansData?.map(async (plan) => {
+                let serverLimit: number | null = null;
+                let disabled: boolean = false;
+                const planCycle = await planCycles.findOne({
+                    where: {
+                        planId: plan.id,
+                    },
+                    order: { id: "ASC" },
+                    select: ["renewPrice", "cycleType"],
+                });
+                if (typeof plan.globalLimit === "number") {
+                    const serversWithPlan = await servers.count({
+                        where: {
+                            planId: plan.id,
+                            status: serverStatus.active || serverStatus.pending || serverStatus.suspended,
+                        },
+                    });
+                    serverLimit = plan.globalLimit - serversWithPlan;
+                    if (serverLimit <= 0) disabled = true;
+                }
+                return (
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h5 class="card-title m-0">{plan.name}</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                {clientCurrency?.symbol}{convertCurrency(planCycle?.renewPrice ?? 0, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}
+                            </h6>
+                            <p class="card-text">
+                                {typeof serverLimit === "number" && (
+                                    <>
+                                        <small>{serverLimit} available!</small>
+                                        <br />
+                                    </>
+                                )}
+                                <small>{plan.description}</small>
+                                <ul class="list-unstyled">
+                                    <li>
+                                        RAM <span class="float-right">{plan.ram === 0 ? "Unlimited" : `${plan.ram} MB`}</span>
+                                    </li>
+                                    <li>
+                                        CPU <span class="float-right">{plan.cpu === 0 ? "Unlimited" : `${plan.cpu}%`}</span>
+                                    </li>
+                                    <li>
+                                        Disk <span class="float-right">{plan.disk === 0 ? "Unlimited" : `${plan.disk} MB`}</span>
+                                    </li>
+                                    <li>
+                                        Databases <span class="float-right">{plan.databases}</span>
+                                    </li>
+                                    <li>
+                                        Backups <span class="float-right">{plan.backups}</span>
+                                    </li>
+                                    <li>
+                                        Extra Ports <span class="float-right">{plan.extraPorts}</span>
+                                    </li>
+                                </ul>
+                            </p>
+                            <a href={disabled ? "#" : `/order/${plan.id}`} class={`btn btn-primary ${disabled ? "disabled" : ""}`}>
+                                Order <i class="fas fa-arrow-circle-right" />
+                            </a>
+                        </div>
+                    </div>
+                );
+            })
+        }
+    </div>
+</div>

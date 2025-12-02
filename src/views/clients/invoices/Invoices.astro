@@ -1,0 +1,110 @@
+---
+import { clients, currencies, invoices, servers, plans } from "@/database/index";
+import profile from "@/utils/profile";
+import type { Clients } from "@/database/entities/Clients";
+import { invoiceStatus } from "@/utils/status";
+import convertCurrency from "@/utils/convertCurrency";
+import type { Currencies } from "@/database/entities/Currencies";
+
+const cookie: string = `${Astro.cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
+const c = profile(cookie);
+
+let client: Clients | null = null;
+if (c.success === true && c.clientId !== null) {
+  client = await clients.findOneBy({ id: c.clientId });
+}
+
+const clientInvoices = await invoices.find({
+  where: { clientId: client?.id },
+  order: { createdAt: "DESC" },
+});
+const clientCurrency = await currencies.findOneBy({ id: client?.currency });
+
+const defaultCurrency = await currencies.findOneBy({ id: 1 });
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Unpaid Invoices</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Item</th>
+                            <th>Item Name</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Invoice Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            clientInvoices.filter((invoice) => invoice.paid === invoiceStatus.pending).map(async (invoice) => {
+                                const server = invoice.serverId ? await servers.findOneBy({ id: invoice.serverId }) : undefined;
+                                const serverPlan = server ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/invoices/${invoice.id}`}>1</a></td>
+                                        <td>{serverPlan ? serverPlan.name : "Credits"}</td>
+                                        <td>{server ? server.serverName : ""}</td>
+                                        <td>{clientCurrency?.symbol}{convertCurrency(invoice.total, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                        <td>{invoice.paymentMethod}</td>
+                                        <td>{invoice.createdAt?.toLocaleDateString()} - {invoice.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Paid Invoices</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Item</th>
+                            <th>Item Name</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Invoice Date</th>
+                            <th>Paid Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            clientInvoices.filter((invoice) => invoice.paid === invoiceStatus.paid).map(async (invoice) => {
+                                const server = invoice.serverId ? await servers.findOneBy({ id: invoice.serverId }) : undefined;
+                                const serverPlan = server ? await plans.findOneBy({ id: server.planId }) : undefined;
+                                return (
+                                    <tr>
+                                        <td><a href={`/client/invoices/${invoice.id}`}>1</a></td>
+                                        <td>{serverPlan ? serverPlan.name : "Credits"}</td>
+                                        <td>{server ? server.serverName : ""}</td>
+                                        <td>{clientCurrency?.symbol}{convertCurrency(invoice.total, defaultCurrency as Currencies, clientCurrency as Currencies)} {clientCurrency?.name}</td>
+                                        <td>{invoice.paymentMethod}</td>
+                                        <td>{invoice.createdAt?.toLocaleDateString()} - {invoice.createdAt?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                                    </tr>
+                                )
+                            })
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

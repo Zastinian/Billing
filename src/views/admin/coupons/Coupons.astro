@@ -1,0 +1,173 @@
+---
+import { coupons, usedCoupons } from "@/database/index";
+
+const couponsData = await coupons.find({
+    order: { updatedAt: "DESC" },
+    select: [
+        "id",
+        "code",
+        "percentOff",
+        "oneTime",
+        "isGlobal",
+        "globalLimit",
+        "endDate",
+        "createdAt",
+        "updatedAt",
+    ],
+});
+
+const usedCouponsData = await usedCoupons.find({
+    select: ["id", "couponId"],
+});
+---
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Coupons</h3>
+                <div class="card-tools">
+                    <a
+                        href="/admin/coupons/create"
+                        class="btn btn-success btn-sm float-right"
+                        >Create Coupon <i class="fas fa-plus"></i></a
+                    >
+                </div>
+            </div>
+            <div class="card-body table-responsive">
+                <table id="coupons-table" class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Code</th>
+                            <th>Percent Off</th>
+                            <th>One-time?</th>
+                            <th>Global?</th>
+                            <th>Valid?</th>
+                            <th>Total Uses</th>
+                            <th>Expiry Date</th>
+                            <th>Update Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            couponsData.map((coupon) => (
+                                <tr>
+                                    <td>
+                                        <a href={`/admin/coupons/${coupon.id}`}>
+                                            {coupon.id}
+                                        </a>
+                                    </td>
+                                    <td>{coupon.code}</td>
+                                    <td>{coupon.percentOff}%</td>
+                                    <td>
+                                        {coupon.oneTime ? (
+                                            <>
+                                                <i class="fas fa-check" /> Yes
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i class="fas fa-times" /> No
+                                            </>
+                                        )}
+                                    </td>
+                                    <td>
+                                        {coupon.isGlobal ? (
+                                            <>
+                                                <i class="fas fa-check" /> Yes
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i class="fas fa-times" /> No
+                                            </>
+                                        )}
+                                    </td>
+                                    <td>
+                                        {coupon.globalLimit &&
+                                        usedCouponsData.filter(
+                                            (coupon) =>
+                                                coupon.couponId === coupon.id,
+                                        ).length >= coupon.globalLimit ? (
+                                            <>
+                                                <i class="fas fa-times" />
+                                                No
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i class="fas fa-check" />
+                                                Yes
+                                            </>
+                                        )}
+                                    </td>
+                                    <td>
+                                        {
+                                            usedCouponsData.filter(
+                                                (couponUsed) =>
+                                                    couponUsed.couponId ===
+                                                    coupon.id,
+                                            ).length
+                                        }
+                                    </td>
+                                    <td>
+                                        {coupon.endDate?.toLocaleDateString()} -{" "}
+                                        {coupon.endDate?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                    <td>
+                                        {coupon.updatedAt?.toLocaleDateString()}{" "}
+                                        -{" "}
+                                        {coupon.updatedAt?.toLocaleTimeString(
+                                            undefined,
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false,
+                                            },
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>ID</th>
+                            <th>Code</th>
+                            <th>Percent Off</th>
+                            <th>One-time?</th>
+                            <th>Global?</th>
+                            <th>Valid?</th>
+                            <th>Total Uses</th>
+                            <th>Expiry Date</th>
+                            <th>Update Date</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script is:inline>
+    lazyLoadCss("/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css");
+</script>
+
+<script src="/plugins/datatables/jquery.dataTables.min.js" is:inline></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" is:inline
+></script>
+
+<script is:inline>
+    $(function () {
+        $("#coupons-table").DataTable({
+            responsive: false,
+            lengthChange: false,
+            autoWidth: false,
+        });
+    });
+</script>
