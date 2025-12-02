@@ -36,16 +36,14 @@ export class Invoices1725918553654 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: "credit",
-            type: "decimal",
-            precision: 16,
-            scale: 6,
-            unsigned: true,
-            default: 0.0,
-          },
-          {
             name: "payment_link",
             type: "text",
+            isNullable: true,
+          },
+          {
+            name: "payment_method",
+            type: "varchar",
+            length: "255",
             isNullable: true,
           },
           {
@@ -57,6 +55,13 @@ export class Invoices1725918553654 implements MigrationInterface {
             name: "paid",
             type: "tinyint",
             default: invoiceStatus.pending,
+          },
+          {
+            name: "credit",
+            type: "decimal",
+            precision: 16,
+            scale: 6,
+            isNullable: true,
           },
           {
             name: "created_at",

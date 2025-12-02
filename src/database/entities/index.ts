@@ -6,6 +6,7 @@ import { Credits } from "./Credits";
 import { Currencies } from "./Currencies";
 import { Discounts } from "./Discounts";
 import { Emails } from "./Emails";
+import { Extensions } from "./Extensions";
 import { FailedJobs } from "./FailedJobs";
 import { Invoices } from "./Invoices";
 import { Jobs } from "./Jobs";
@@ -31,6 +32,7 @@ export default [
   Currencies,
   Discounts,
   Emails,
+  Extensions,
   FailedJobs,
   Invoices,
   Jobs,

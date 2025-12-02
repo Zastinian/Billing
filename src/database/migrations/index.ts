@@ -21,6 +21,7 @@ import { Settings1725919183938 } from "./1725919183938-settings";
 import { TicketContents1725919218693 } from "./1725919218693-ticket_contents";
 import { Tickets1725919243975 } from "./1725919243975-tickets";
 import { UsedCoupons1725919262825 } from "./1725919262825-used_coupons";
+import { Extensions1749916212496 } from "./1749916212496-extensions";
 
 export default [
   Announcements1725918171200,
@@ -46,4 +47,5 @@ export default [
   TicketContents1725919218693,
   Tickets1725919243975,
   UsedCoupons1725919262825,
+  Extensions1749916212496
 ];
