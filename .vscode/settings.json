@@ -8,7 +8,7 @@
   },
   "editor.linkedEditing": true,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
+    "source.organizeImports.biome": "always"
   },
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": true,
@@ -22,9 +22,9 @@
   "editor.insertSpaces": false,
   "editor.detectIndentation": false,
   "[astro]": {
-    "editor.defaultFormatter": "astro-build.astro-vscode",
+    "editor.defaultFormatter": "biomejs.biome",
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "always"
+      "source.organizeImports.biome": "always"
     }
   },
   "tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list"],
@@ -43,5 +43,17 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "postman.settings.dotenv-detection-notification-visibility": false
+  "cSpell.words": [
+    "checkoutnow",
+    "firefox",
+    "hcaptcha",
+    "httpclient",
+    "mozilla",
+    "paypal",
+    "sitekey",
+    "tinyint",
+    "unsuspended",
+    "unsuspending",
+    "vivaldi"
+  ]
 }
