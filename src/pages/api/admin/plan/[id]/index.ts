@@ -1,17 +1,10 @@
-import { clients, plans, planCycles, servers } from "@/database/index";
-import { PlanCycles } from "@/database/entities/PlanCycles";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
+import { PlanCycles } from "@/database/entities/PlanCycles";
+import { clients, planCycles, plans, servers } from "@/database/index";
 import { serverStatus } from "@/src/utils/status";
-import { STORE_URL } from "astro:env/server";
+import profile from "@/utils/profile";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, params }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect, params }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
@@ -99,7 +92,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       Number(data.order) < 0 ||
       Number(data.order) > 1000
     ) {
-      return redirect("/admin/plans/${plan.id}?type=danger&msg=admin.plan.create.error");
+      return redirect(`/admin/plans/${plan.id}?type=danger&msg=admin.plan.create.error`);
     }
 
     interface NewCycle {
@@ -121,7 +114,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       .reduce((result: NewCycle[], [key, value]) => {
         const match = key.match(/^new_cycle\[(\d+)]\[(\w+)]$/);
         if (match) {
-          const index = parseInt(match[1], 10);
+          const index = Number.parseInt(match[1], 10);
           const field = match[2] as keyof NewCycle;
           if (!result[index]) {
             result[index] = {
@@ -176,7 +169,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
 
     for (const cycle of cyclesWithId) {
       for (const field of requiredFieldsNewCycle) {
-        if (typeof Number(cycle["id"]) !== "number") {
+        if (typeof Number(cycle.id) !== "number") {
           return redirect(`/admin/plans/${plan.id}?type=danger&msg=admin.plan.update.error`);
         }
         if (!cycle[field] || cycle[field].trim() === "") {
@@ -199,7 +192,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
           continue;
         }
         const numericValue = Number(rawValue);
-        if (isNaN(numericValue)) {
+        if (Number.isNaN(numericValue)) {
           return redirect(`/admin/plans/${plan.id}?type=danger&msg=admin.plan.create.error`);
         }
       }
@@ -208,7 +201,8 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
     for (const [field, regex] of Object.entries(formatFields)) {
       if (field in data && data[field].length === 0) {
         continue;
-      } else if (field in data && !regex.test(data[field])) {
+      }
+      if (field in data && !regex.test(data[field])) {
         return redirect(`/admin/plans/${plan.id}?type=danger&msg=admin.plan.create.error`);
       }
     }

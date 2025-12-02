@@ -1,17 +1,11 @@
 // Needs to implement the suspend of the servers owned by the client
 
+import type { APIRoute } from "astro";
 import { clients } from "@/database/index";
 import profile from "@/utils/profile";
-import type { APIRoute } from "astro";
-import { STORE_URL } from "astro:env/server";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, params }) => {
+export const POST: APIRoute = async ({ cookies, request, redirect, params }) => {
   const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
   if (c.success === true && c.clientId !== null) {

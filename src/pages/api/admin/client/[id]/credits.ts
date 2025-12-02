@@ -1,16 +1,9 @@
+import type { APIRoute } from "astro";
+import { Credits } from "@/database/entities/Credits";
 import { clients, credits } from "@/database/index";
 import profile from "@/utils/profile";
-import { Credits } from "@/database/entities/Credits";
-import type { APIRoute } from "astro";
-import { STORE_URL } from "astro:env/server";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, params }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect, params }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
   if (c.success === true && c.clientId !== null) {
@@ -40,7 +33,9 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
       Number(data.credit) < 0 ||
       Number(data.credit) > 999999.99
     ) {
-      return redirect(`/admin/clients/${client.id}/credits?type=danger&msg=admin.client.credits.error`);
+      return redirect(
+        `/admin/clients/${client.id}/credits?type=danger&msg=admin.client.credits.error`,
+      );
     }
     const credit = new Credits();
     credit.clientId = client.id;
@@ -52,7 +47,9 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite, para
     client.credit = Number(data.credit);
     client.updatedAt = new Date();
     await clients.save(client);
-    return redirect(`/admin/clients/${client.id}/credits?type=success&msg=admin.client.credits.success`);
+    return redirect(
+      `/admin/clients/${client.id}/credits?type=success&msg=admin.client.credits.success`,
+    );
   }
   return redirect("/");
 };

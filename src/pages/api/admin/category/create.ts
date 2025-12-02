@@ -1,17 +1,9 @@
-import { clients } from "@/database/index";
-import { categories } from "@/database/index";
-import { Categories } from "@/database/entities/Categories";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
-import { STORE_URL } from "astro:env/server";
+import { Categories } from "@/database/entities/Categories";
+import { categories, clients } from "@/database/index";
+import profile from "@/utils/profile";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
@@ -44,7 +36,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     category.createdAt = new Date();
     category.updatedAt = new Date();
     await categories.save(category);
-    return redirect(`/admin/categories?type=success&msg=admin.category.create.success`);
+    return redirect("/admin/categories?type=success&msg=admin.category.create.success");
   }
   return redirect("/");
 };

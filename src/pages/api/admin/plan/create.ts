@@ -1,18 +1,10 @@
-import { clients } from "@/database/index";
-import { plans, planCycles } from "@/database/index";
-import { Plans } from "@/database/entities/Plans";
-import { PlanCycles } from "@/database/entities/PlanCycles";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
-import { STORE_URL } from "astro:env/server";
+import { PlanCycles } from "@/database/entities/PlanCycles";
+import { Plans } from "@/database/entities/Plans";
+import { clients, planCycles, plans } from "@/database/index";
+import profile from "@/utils/profile";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
@@ -115,7 +107,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       .reduce((result: Cycle[], [key, value]) => {
         const match = key.match(/^cycle\[(\d+)]\[(\w+)]$/);
         if (match) {
-          const index = parseInt(match[1], 10);
+          const index = Number.parseInt(match[1], 10);
           const field = match[2] as keyof Cycle;
           if (!result[index]) {
             result[index] = {
@@ -135,15 +127,12 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     for (const [_, cycle] of cycles.entries()) {
       for (const field of requiredFields) {
         if (!cycle[field] || cycle[field].trim() === "") {
-          return redirect(`/admin/plans?type=danger&msg=admin.plan.create.error`);
+          return redirect("/admin/plans?type=danger&msg=admin.plan.create.error");
         }
       }
     }
 
-    const numericFields = [
-      "global_limit",
-      "per_client_limit",
-    ];
+    const numericFields = ["global_limit", "per_client_limit"];
 
     const formatFields = {
       locationsNodesId: /^(\d+:\d+,?)+$/,
@@ -157,8 +146,8 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
           continue;
         }
         const numericValue = Number(rawValue);
-        if (isNaN(numericValue)) {
-          return redirect(`/admin/plans?type=danger&msg=admin.plan.create.error`);
+        if (Number.isNaN(numericValue)) {
+          return redirect("/admin/plans?type=danger&msg=admin.plan.create.error");
         }
       }
     }
@@ -166,8 +155,9 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     for (const [field, regex] of Object.entries(formatFields)) {
       if (field in data && data[field].length === 0) {
         continue;
-      } else if (field in data && !regex.test(data[field])) {
-        return redirect(`/admin/plans?type=danger&msg=admin.plan.create.error`);
+      }
+      if (field in data && !regex.test(data[field])) {
+        return redirect("/admin/plans?type=danger&msg=admin.plan.create.error");
       }
     }
 
@@ -208,7 +198,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
       await planCycles.save(planCycle);
     }
 
-    return redirect(`/admin/plans?type=success&msg=admin.plan.create.success`);
+    return redirect("/admin/plans?type=success&msg=admin.plan.create.success");
   }
   return redirect("/");
 };

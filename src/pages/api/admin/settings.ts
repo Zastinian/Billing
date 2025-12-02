@@ -1,17 +1,9 @@
-import { clients } from "@/database/index";
-import { settings } from "@/database/index";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
 import { Settings } from "@/database/entities/Settings";
-import { STORE_URL } from "astro:env/server";
+import { clients, settings } from "@/database/index";
+import profile from "@/utils/profile";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
@@ -166,6 +158,36 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     } else {
       google_analytics_id.value = data.google_analytics_id ?? null;
       await settings.save(google_analytics_id);
+    }
+    const captcha_provider = await settings.findOneBy({ key: "captcha_provider" });
+    if (!captcha_provider) {
+      const newSetting = new Settings();
+      newSetting.key = "captcha_provider";
+      newSetting.value = data.captcha_provider ?? "disabled";
+      await settings.save(newSetting);
+    } else {
+      captcha_provider.value = data.captcha_provider ?? "disabled";
+      await settings.save(captcha_provider);
+    }
+    const hcaptcha_site_key = await settings.findOneBy({ key: "hcaptcha_site_key" });
+    if (!hcaptcha_site_key) {
+      const newSetting = new Settings();
+      newSetting.key = "hcaptcha_site_key";
+      newSetting.value = data.hcaptcha_site_key ?? null;
+      await settings.save(newSetting);
+    } else {
+      hcaptcha_site_key.value = data.hcaptcha_site_key ?? null;
+      await settings.save(hcaptcha_site_key);
+    }
+    const hcaptcha_secret_key = await settings.findOneBy({ key: "hcaptcha_secret_key" });
+    if (!hcaptcha_secret_key) {
+      const newSetting = new Settings();
+      newSetting.key = "hcaptcha_secret_key";
+      newSetting.setValue(data.hcaptcha_secret_key ?? null);
+      await settings.save(newSetting);
+    } else {
+      hcaptcha_secret_key.setValue(data.hcaptcha_secret_key ?? null);
+      await settings.save(hcaptcha_secret_key);
     }
     return redirect("/admin/settings?type=success&msg=admin.settings.success");
   }

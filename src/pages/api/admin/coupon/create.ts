@@ -1,17 +1,9 @@
-import { clients } from "@/database/index";
-import { coupons } from "@/database/index";
-import { Coupons } from "@/database/entities/Coupons";
-import profile from "@/utils/profile";
 import type { APIRoute } from "astro";
-import { STORE_URL } from "astro:env/server";
+import { Coupons } from "@/database/entities/Coupons";
+import { clients, coupons } from "@/database/index";
+import profile from "@/utils/profile";
 
-const storeUrl = new URL(STORE_URL ?? "");
-
-export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) => {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== storeUrl.origin) {
-    return rewrite("/404");
-  }
+export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;
   const c = profile(cookie);
 
@@ -57,19 +49,19 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     }
     if (data.end_date) {
       const endDate = new Date(data.end_date);
-      if (isNaN(endDate.getTime())) {
+      if (Number.isNaN(endDate.getTime())) {
         return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
       }
     }
     if (data.global_limit) {
       const globalLimit = Number(data.global_limit);
-      if (isNaN(globalLimit)) {
+      if (Number.isNaN(globalLimit)) {
         return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
       }
     }
     if (data.per_client_limit) {
       const perClientLimit = Number(data.per_client_limit);
-      if (isNaN(perClientLimit)) {
+      if (Number.isNaN(perClientLimit)) {
         return redirect("/admin/coupons?type=danger&msg=admin.coupon.create.error");
       }
     }
@@ -84,7 +76,7 @@ export const POST: APIRoute = async ({ cookies, request, redirect, rewrite }) =>
     coupon.createdAt = new Date();
     coupon.updatedAt = new Date();
     await coupons.save(coupon);
-    return redirect(`/admin/coupons?type=success&msg=admin.coupon.create.success`);
+    return redirect("/admin/coupons?type=success&msg=admin.coupon.create.success");
   }
   return redirect("/");
 };
