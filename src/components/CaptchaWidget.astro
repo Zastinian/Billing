@@ -1,0 +1,25 @@
+---
+import { settings } from "@/database/index";
+
+const captcha_provider = await settings.findOneBy({ key: "captcha_provider" });
+const provider = captcha_provider?.value || "disabled";
+
+let siteKey = "";
+if (provider === "hcaptcha") {
+  siteKey = (await settings.findOneBy({ key: "hcaptcha_site_key" }))?.value || "";
+} else if (provider === "turnstile") {
+  siteKey = (await settings.findOneBy({ key: "turnstile_site_key" }))?.value || "";
+}
+---
+
+{provider === "hcaptcha" && siteKey && (
+  <div class="form-group">
+    <div class="h-captcha" data-sitekey={siteKey}></div>
+  </div>
+)}
+
+{provider === "turnstile" && siteKey && (
+  <div class="form-group">
+    <div class="cf-turnstile" data-sitekey={siteKey}></div>
+  </div>
+)}
