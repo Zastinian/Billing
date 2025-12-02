@@ -1,6 +1,6 @@
+import { APP_KEY } from "astro:env/server";
 import jwt from "jsonwebtoken";
 import type profileType from "@/types/profile";
-import { APP_KEY } from "astro:env/server";
 
 export default function profile(myToken: string) {
   let clientId: number | null = null;

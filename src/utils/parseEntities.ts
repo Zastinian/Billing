@@ -5,7 +5,7 @@ interface Entity {
 
 export const isValidFormat = (input: string): boolean => {
   const [id, value] = input.split(":");
-  return /^\d+:\d+$/.test(input) && !isNaN(Number(id)) && !isNaN(Number(value));
+  return /^\d+:\d+$/.test(input) && !Number.isNaN(Number(id)) && !Number.isNaN(Number(value));
 };
 
 export default (input: string): Entity[] => {

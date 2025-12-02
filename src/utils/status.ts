@@ -32,14 +32,12 @@ export const invoiceStatus = {
   canceled: 0,
   pending: 1,
   paid: 2,
-  overdue: 3,
 };
 
 export const invoiceStatusName = {
   [invoiceStatus.canceled]: "canceled",
   [invoiceStatus.pending]: "Pending",
   [invoiceStatus.paid]: "Paid",
-  [invoiceStatus.overdue]: "Overdue",
 };
 
 export const cycleType = {
