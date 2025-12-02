@@ -1,23 +1,23 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
+import { Credits } from "@/database/entities/Credits";
+import { Servers } from "@/database/entities/Servers";
 import {
   clients,
+  coupons,
   credits,
-  plans,
   planCycles,
+  plans,
   servers,
   settings,
-  coupons,
   usedCoupons,
 } from "@/database/index";
-import { Servers } from "@/database/entities/Servers";
-import { Credits } from "@/database/entities/Credits";
-import profile from "@/utils/profile";
 import parseEntities, { isValidFormat } from "@/utils/parseEntities";
+import profile from "@/utils/profile";
 import { cycleType, serverStatus } from "@/utils/status";
 import { UsedCoupons } from "../database/entities/UsedCoupons";
 
-let userAlreadyCreatingAServer: any[] = [];
+const userAlreadyCreatingAServer: any[] = [];
 
 function percentOffToDiscount(price: number, percentOff: number) {
   return price - price * (percentOff / 100);
@@ -46,22 +46,31 @@ export const server = {
       ),
     }),
     handler: async (input, context) => {
-      if (input.serverName.length < 3 || input.serverName.length > 20)
+      if (input.serverName.length < 3 || input.serverName.length > 20) {
         throw new ActionError({ message: "Server name is invalid.", code: "CONFLICT" });
-      if (!isValidFormat(input.egg))
+      }
+      if (!isValidFormat(input.egg)) {
         throw new ActionError({ message: "Egg is invalid.", code: "CONFLICT" });
-      if (!isValidFormat(input.node))
+      }
+      if (!isValidFormat(input.node)) {
         throw new ActionError({ message: "Node is invalid.", code: "CONFLICT" });
+      }
       const cookies = context.request.headers.get("cookie");
-      if (!cookies) throw new Error("Session error.");
+      if (!cookies) {
+        throw new Error("Session error.");
+      }
       const cookie = cookies
         .split(";")
         .find((token) => token.includes("_SECURE_SESSION_TOKEN_"))
         ?.split("=")[1]
         ?.trim();
-      if (!cookie) throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      if (!cookie) {
+        throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      }
       const c = profile(cookie);
-      if (!c.clientId) throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      if (!c.clientId) {
+        throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      }
       if (userAlreadyCreatingAServer.includes(c.clientId)) {
         throw new ActionError({ message: "Server is being created.", code: "CONFLICT" });
       }
@@ -102,8 +111,7 @@ export const server = {
 
           const isPlanSpecificCoupon = coupon.isGlobal !== 1;
           const isCouponValidForPlan =
-            !isPlanSpecificCoupon ||
-            (plan.coupons && plan.coupons.split(",").includes(coupon.id.toString()));
+            !isPlanSpecificCoupon || plan.coupons?.split(",").includes(coupon.id.toString());
 
           if (!isGlobalLimitReached && !isClientLimitReached && isCouponValidForPlan) {
             discount = coupon.percentOff;
@@ -278,20 +286,17 @@ export const server = {
       const environment: any = {};
       eggData.attributes.relationships.variables.data.map((variable: any) => {
         environment[variable.attributes.env_variable] = variable.attributes.default_value;
+        return null;
       });
-      const createServer = await fetch(new URL(`/api/application/servers`, panelUrl).toString(), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${panelAppApiKey}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+
+      const { createPterodactylServer } = await import("@/utils/pterodactylServer");
+      const createServer = await createPterodactylServer(
+        {
           name: input.serverName,
-          description: plan.serverDescription,
-          user: client.userId,
-          egg: eggData.attributes.id,
-          docker_image: eggData.attributes.docker_image,
+          description: plan.serverDescription || "",
+          userId: client.userId || 0,
+          eggId: eggData.attributes.id,
+          dockerImage: eggData.attributes.docker_image,
           startup: eggData.attributes.startup,
           environment,
           limits: {
@@ -301,23 +306,17 @@ export const server = {
             swap: plan.swap,
             io: plan.io,
           },
-          feature_limits: {
+          featureLimits: {
             databases: plan.databases,
             backups: plan.backups,
             allocations: plan.extraPorts,
           },
-          allocation: {
-            default: nextAllocation,
-          },
-        }),
-      })
-        .then((res) => (res.status === 201 ? res.json() : null))
-        .catch(() => null);
+          allocationId: nextAllocation,
+        },
+        { panelUrl, panelAppApiKey },
+      );
+
       if (!createServer) {
-        userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
-        throw new ActionError({ message: "Server not created.", code: "NOT_FOUND" });
-      }
-      if (!createServer.attributes.identifier) {
         userAlreadyCreatingAServer.splice(userAlreadyCreatingAServer.indexOf(c.clientId), 1);
         throw new ActionError({ message: "Server not created.", code: "NOT_FOUND" });
       }
@@ -348,15 +347,15 @@ export const server = {
         const newUsedCoupon = new UsedCoupons();
         newUsedCoupon.couponId = couponId;
         newUsedCoupon.clientId = client.id;
-        newUsedCoupon.serverId = createServer.attributes.id;
+        newUsedCoupon.serverId = createServer.id;
         newUsedCoupon.createdAt = new Date();
         newUsedCoupon.updatedAt = new Date();
 
         await usedCoupons.save(newUsedCoupon);
       }
       const server = new Servers();
-      server.serverId = createServer.attributes.id;
-      server.identifier = createServer.attributes.identifier;
+      server.serverId = createServer.id;
+      server.identifier = createServer.identifier;
       server.planId = planCycle.planId;
       server.clientId = client.id;
       server.planCycle = planCycle.id;
@@ -394,15 +393,21 @@ export const server = {
     }),
     handler: async (input, context) => {
       const cookies = context.request.headers.get("cookie");
-      if (!cookies) throw new Error("Session error.");
+      if (!cookies) {
+        throw new Error("Session error.");
+      }
       const cookie = cookies
         .split(";")
         .find((token) => token.includes("_SECURE_SESSION_TOKEN_"))
         ?.split("=")[1]
         ?.trim();
-      if (!cookie) throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      if (!cookie) {
+        throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      }
       const c = profile(cookie);
-      if (!c.clientId) throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      if (!c.clientId) {
+        throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
+      }
       const client = await clients.findOneBy({ id: c.clientId });
       if (!client) {
         throw new ActionError({ message: "Session error.", code: "UNAUTHORIZED" });
