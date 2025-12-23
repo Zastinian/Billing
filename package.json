@@ -1,7 +1,7 @@
 {
   "name": "billing",
   "type": "module",
-  "version": "v2.0.0-beta.2",
+  "version": "v2.0.0-beta.3",
   "scripts": {
     "dev": "bunx --bun astro dev",
     "start": "bun --bun run server.ts",
