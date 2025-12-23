@@ -1,9 +1,11 @@
-import { APP_KEY } from "astro:env/server";
 import type { APIRoute } from "astro";
 import jwt from "jsonwebtoken";
+import config from "@/config/index";
 import { Clients } from "@/database/entities/Clients";
 import { clients, settings } from "@/database/index";
 import { verifyCaptcha } from "@/utils/captcha";
+
+const { APP_KEY } = config;
 
 export const POST: APIRoute = async ({ cookies, redirect, request }) => {
   const openRegistration = await settings.findOneBy({ key: "open_registration" });

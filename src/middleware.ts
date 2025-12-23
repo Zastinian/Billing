@@ -1,7 +1,9 @@
-import { STORE_URL } from "astro:env/server";
 import { defineMiddleware } from "astro:middleware";
+import config from "@/config/index";
 import { clients } from "@/database/index";
 import profile from "@/utils/profile";
+
+const { STORE_URL } = config;
 
 // Rate limit and time frame settings
 const PAGE_RATE_LIMIT = 75; // Maximum number of requests allowed for pages

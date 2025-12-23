@@ -1,6 +1,8 @@
-import { APP_KEY } from "astro:env/server";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import config from "@/config/index";
+
+const { APP_KEY } = config;
 
 @Entity("extensions")
 export class Extensions {
@@ -27,7 +29,9 @@ export class Extensions {
   }
 
   async getValue(): Promise<string | null> {
-    if (!this.value) return null;
+    if (!this.value) {
+      return null;
+    }
     return this.decrypt(this.value);
   }
 

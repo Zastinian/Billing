@@ -1,9 +1,11 @@
-import { APP_KEY } from "astro:env/server";
 import type { APIRoute } from "astro";
 import jwt from "jsonwebtoken";
+import config from "@/config/index";
 import { clients, settings } from "@/database/index";
 import { verifyCaptcha } from "@/utils/captcha";
 import profile from "@/utils/profile";
+
+const { APP_KEY } = config;
 
 export const POST: APIRoute = async ({ cookies, request, redirect }) => {
   const cookie: string = `${cookies.get("_SECURE_SESSION_TOKEN_")?.value}`;

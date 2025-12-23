@@ -1,19 +1,9 @@
-import { DataSource } from "typeorm";
-import {
-  APP_KEY,
-  DB_CONNECTION,
-  DB_DATABASE,
-  DB_HOST,
-  DB_PASSWORD,
-  DB_PORT,
-  DB_USERNAME,
-  STORE_URL,
-} from "astro:env/server";
 import path from "path";
+import { DataSource } from "typeorm";
+import config from "../config";
 
-if (!APP_KEY) {
-  throw new Error("APP_KEY is not set, use `bun run key:generate` to generate a new key");
-}
+const { DB_CONNECTION, DB_DATABASE, DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME, STORE_URL } =
+  config;
 
 if (!STORE_URL) {
   throw new Error("STORE_URL is not set in .env");
@@ -59,7 +49,9 @@ const getDatabaseConfig = () => {
     case "sqlite": {
       return {
         type: DB_CONNECTION,
-        database: path.resolve(`${DB_DATABASE}${DB_DATABASE.includes(".sqlite") ? "" : ".sqlite"}`),
+        database: path.resolve(
+          `${DB_DATABASE}${DB_DATABASE?.includes(".sqlite") ? "" : ".sqlite"}`,
+        ),
       };
     }
     case "mssql": {

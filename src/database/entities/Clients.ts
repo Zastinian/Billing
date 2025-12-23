@@ -1,6 +1,8 @@
-import { APP_KEY } from "astro:env/server";
 import { createHmac, randomBytes } from "crypto";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import config from "@/config/index";
+
+const { APP_KEY } = config;
 
 @Entity("clients")
 export class Clients {

@@ -1,8 +1,10 @@
-import { APP_KEY } from "astro:env/server";
 import type { APIRoute } from "astro";
 import jwt from "jsonwebtoken";
+import config from "@/config/index";
 import { clients } from "@/database/index";
 import { verifyCaptcha } from "@/utils/captcha";
+
+const { APP_KEY } = config;
 
 export const POST: APIRoute = async ({ cookies, redirect, request }) => {
   const data = Object.fromEntries(new URLSearchParams(await request.text()));
