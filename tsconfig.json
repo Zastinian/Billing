@@ -18,6 +18,7 @@
     "noPropertyAccessFromIndexSignature": false,
     "paths": {
       "@/*": ["./*"],
+      "@/config/*": ["./src/config/*"],
       "@/components/*": ["./src/components/*"],
       "@/database/*": ["./src/database/*"],
       "@/i18n/*": ["./src/i18n/*"],
